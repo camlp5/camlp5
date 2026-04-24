@@ -74,7 +74,7 @@
   (((` (as (range '0' '9') c))
     (a (end_exponent_part_under (Buff.store len c))) !)
    a)
-  (() (raise (Stream.Error "ill-formed floating-point constant")))))
+  (() (raise (Istream.Error "ill-formed floating-point constant")))))
 
 (define (exponent_part len)
  (parser
@@ -139,7 +139,7 @@
   ((s) ep
    (if (List.mem x no_ident)
     (Ploc.raise (Ploc.make_unlined (values (- ep 2) (- ep 1)))
-     (Stream.Error "bad quote"))
+     (Istream.Error "bad quote"))
     (let*
      ((len (Buff.store (Buff.store 0 ''') x)) (s (Buff.get (ident len s))))
      (values "LIDENT" s))))))
@@ -323,13 +323,13 @@
     (Sstring loc _) (Suid loc _) (Suidv loc _))
    loc)))
 (define (error_loc loc err)
- (Ploc.raise loc (Stream.Error (^ err " expected"))))
+ (Ploc.raise loc (Istream.Error (^ err " expected"))))
 (define (error se err) (error_loc (loc_of_sexpr se) err))
 (:= Pcaml.sync.val (lambda _ ()))
 
 (define strm_n "strm__")
-(define (peek_fun loc) <:expr< Stream.peek >>)
-(define (junk_fun loc) <:expr< Stream.junk >>)
+(define (peek_fun loc) <:expr< Istream.peek >>)
+(define (junk_fun loc) <:expr< Istream.junk >>)
 
 (define assoc_left_parsed_op_list ["+" "*" "+." "*." "land" "lor" "lxor"])
 (define assoc_right_parsed_op_list ["and" "or" "^" "@"])
@@ -1370,7 +1370,7 @@ EXTEND
       | s = ANTIQUOT_LOC "list" -> (Santi loc "list" s)
       | s = ANTIQUOT_LOC "_list" -> (Santi loc "_list" s)
       | NL / s = sexpr -> s
-      | NL -> (raise Stream.Failure) ] ]
+      | NL -> (raise Istream.Failure) ] ]
   /
   pa_extend_keyword :
     [ [ "_" -> "_"

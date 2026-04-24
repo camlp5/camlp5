@@ -74,9 +74,9 @@ let parse_interf = ref (Grammar.Entry.parse interf);;
 let parse_implem = ref (Grammar.Entry.parse implem);;
 
 let rec skip_to_eol cs =
-  match Stream.peek cs with
+  match Istream.peek cs with
     Some '\n' -> ()
-  | Some c -> Stream.junk cs; skip_to_eol cs
+  | Some c -> Istream.junk cs; skip_to_eol cs
   | _ -> ()
 ;;
 let sync = ref skip_to_eol;;
@@ -154,7 +154,7 @@ let expand_quotation gloc expander shift name str =
 ;;
 
 let parse_quotation_result entry loc shift name str =
-  let cs = Stream.of_string str in
+  let cs = Istream.of_string str in
   try Grammar.Entry.parse entry cs with
     Ploc.Exc (iloc, Qerror (_, Expanding, exc)) ->
       let ctx = ParsingResult (iloc, str) in
@@ -329,10 +329,10 @@ let print_exn =
   | Match_failure (file, line, char) ->
       Format.print_string "Pattern matching failed";
       print_file_failed file line char
-  | Stream.Error str ->
+  | Istream.Error str ->
       if str = "" then Format.print_string "Parse error"
       else print_format ("Parse error: " ^ str)
-  | Stream.Failure -> Format.print_string "Parse failure"
+  | Istream.Failure -> Format.print_string "Parse failure"
   | Plexing.Error str ->
       Format.print_string "Lexing error";
       if str <> "" then

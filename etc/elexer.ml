@@ -56,13 +56,13 @@ value tok_match =
       [ 0 -> fun c -> String.make 1 c
       | 1 ->
           let d = prm.[0] in
-          fun c -> if c = d then prm else raise Stream.Failure
+          fun c -> if c = d then prm else raise Istream.Failure
       | n ->
           let orc = make_or_chars prm in
           fun c ->
             loop orc where rec loop =
               fun
-              [ [] -> raise Stream.Failure
+              [ [] -> raise Istream.Failure
               | [Chr d :: orc] ->
                   if c = d then String.make 1 c
                   else loop orc
@@ -112,13 +112,13 @@ value implode l =
 value check_char =
   Gram.Entry.of_parser "check_char"
     (fun strm__ ->
-       match Stream.npeek 2 strm__ with
+       match Istream.npeek 2 strm__ with
        [ [_; '''] -> ()
-       | _ -> raise Stream.Failure ])
+       | _ -> raise Istream.Failure ])
 ;
 
 value invalid_char c =
-  raise (Stream.Error ("invalid character: " ^ String.escaped c))
+  raise (Istream.Error ("invalid character: " ^ String.escaped c))
 ;
 
 value next_token = Gram.Entry.create "lex";
@@ -256,7 +256,7 @@ value func kwd_table cs =
   let loct = loct_create () in
   let pb = Gram.parsable cs in
   let ts =
-    Stream.from
+    Istream.from
       (fun i -> do {
          let (tok, loc) = next_token_loc kwd_table (cs, pb) in
          loct_add loct i loc;

@@ -504,7 +504,7 @@ value rec make_ctyp styp tvar =
   | STself loc x ->
       if tvar = "" then
         Ploc.raise loc
-          (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
+          (Istream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$tvar$ >>
   | STtyp t -> t
   | STnone -> failwith "make_ctyp: internal error"

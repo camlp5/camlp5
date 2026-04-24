@@ -4,12 +4,12 @@
 
 type t 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
-    (Stream.t 'te -> 'a) -> Stream.t 'te -> 'b
+    (Istream.t 'te -> 'a) -> Istream.t 'te -> 'b
 ;
 
 type tsep 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
-    (Stream.t 'te -> 'a) -> (Stream.t 'te -> unit) -> Stream.t 'te -> 'b
+    (Istream.t 'te -> 'a) -> (Istream.t 'te -> unit) -> Istream.t 'te -> 'b
 ;
 
 value sfold0 : ('a -> 'b -> 'b) -> 'b -> t _ 'a 'b;

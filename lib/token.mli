@@ -19,7 +19,7 @@ type glexer 'te = Plexing.lexer 'te ==
     tok_comm : mutable option (list Ploc.t) }
 ;
 
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
+type lexer_func 'te = Istream.t char -> (Istream.t 'te * location_function)
 and location_function = int -> Ploc.t;
 
 value lexer_text : pattern -> string;
@@ -28,13 +28,13 @@ value default_match : pattern -> (string * string) -> string;
    (** Use now [Plexing.default_match] *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
+  ((Istream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
    (** Use now [Plexing.lexer_func_of_parser] *)
 value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** Use now [Plexing.lexer_func_of_ocamllex] *)
 
 value make_stream_and_location :
-  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Istream.t 'te * location_function);
    (** Use now [Plexing.make_stream_and_location] *)
 
 value eval_char : string -> char;

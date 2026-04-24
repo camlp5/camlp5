@@ -181,7 +181,7 @@ value mstream_pattern_component m skont =
       let e2 = fun_p_strm_e loc p skont in
       <:expr< $uid:m$.b_seq $fun_strm_e_strm loc e$ $e2$ $lid:strm_n$ >>
   | SpStr loc p ->
-      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
+      Ploc.raise loc (Istream.Error "not impl: stream_pattern_component 1")
   | SpWhn loc e ->
       <:expr< if $e$ then $skont$ else None >>
   | SpCut loc ->

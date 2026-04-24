@@ -131,7 +131,7 @@ value rec final_action =
 
 value parse_standard_symbol e rkont fkont ending_act =
   <:expr<
-     match try Some ($e$ strm__) with [ Stream.Failure -> None ] with
+     match try Some ($e$ strm__) with [ Istream.Failure -> None ] with
      [ Some $nth_patt_of_act ending_act$ -> $rkont$
      | _ -> $fkont$ ]
   >>
@@ -140,7 +140,7 @@ value parse_standard_symbol e rkont fkont ending_act =
 value parse_symbol_no_failure e rkont fkont ending_act =
   <:expr<
      let $nth_patt_of_act ending_act$ =
-       try $e$ strm__ with [ Stream.Failure -> raise (Stream.Error "") ]
+       try $e$ strm__ with [ Istream.Failure -> raise (Istream.Error "") ]
      in
      $rkont$
   >>
@@ -260,11 +260,11 @@ value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
           in
           let el =
             List.fold_left
-              (fun el _ -> [<:expr< Stream.junk strm__ >> :: el])
+              (fun el _ -> [<:expr< Istream.junk strm__ >> :: el])
               [p1] tokl
           in
           <:expr<
-            match Stream.npeek $int:string_of_int len$ strm__ with
+            match Istream.npeek $int:string_of_int len$ strm__ with
             [ $p$ -> do { $list:el $ }
             | _ -> $p2$ ]
           >>
@@ -274,7 +274,7 @@ value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
 and parse_kont entry nlevn alevn act_kont s son =
   let err =
     let txt = tree_failed entry s son in
-    <:expr< raise (Stream.Error $txt$) >>
+    <:expr< raise (Istream.Error $txt$) >>
   in
   match son with
   [ Node {brother = DeadEnd} ->
@@ -282,17 +282,17 @@ and parse_kont entry nlevn alevn act_kont s son =
   | _ ->
       let p1 =
         parse_tree entry nlevn alevn (son, True) act_kont
-          <:expr< raise Stream.Failure >>
+          <:expr< raise Istream.Failure >>
       in
-      <:expr< try $p1$ with [ Stream.Failure -> $err$ ] >> ]
+      <:expr< try $p1$ with [ Istream.Failure -> $err$ ] >> ]
 and parse_symbol entry nlevn s rkont fkont ending_act =
   match s with
   [ Stoken tok ->
       let patt = nth_patt_of_act ending_act in
       let p = patt_of_token patt tok in
       <:expr<
-        match Stream.peek strm__ with
-        [ Some $p$ -> do { Stream.junk strm__; $rkont$ }
+        match Istream.peek strm__ with
+        [ Some $p$ -> do { Istream.junk strm__; $rkont$ }
         | _ -> $fkont$ ]
       >>
   | s ->
@@ -319,10 +319,10 @@ and symbol_parser entry nlevn =
   | Sopt s -> <:expr< P.option $symbol_parser entry nlevn s$ >>
   | Sflag s -> <:expr< P.bool $symbol_parser entry nlevn s$ >>
   | Stree tree ->
-      let kont = <:expr< raise Stream.Failure >> in
+      let kont = <:expr< raise Istream.Failure >> in
       let act_kont _ act = gen_let_loc loc (final_action act) in
       let e = parse_tree phony_entry 0 0 (tree, True) act_kont kont in
-      <:expr< fun (strm__ : Stream.t _) -> $e$ >>
+      <:expr< fun (strm__ : Istream.t _) -> $e$ >>
   | Snterm e ->
       let n =
         match e.edesc with
@@ -361,7 +361,7 @@ value rec start_parser_of_levels entry clevn levs =
   let p = <:patt< $lid:n$ >> in
   match levs with
   [ [] ->
-      [Some (p, <:expr< fun (strm__ : Stream.t _) -> raise Stream.Failure >>)]
+      [Some (p, <:expr< fun (strm__ : Istream.t _) -> raise Istream.Failure >>)]
   | [lev :: levs] ->
       let pel = start_parser_of_levels entry (succ clevn) levs in
       match lev.lprefix with
@@ -374,15 +374,15 @@ value rec start_parser_of_levels entry clevn levs =
           let curr =
             <:expr< let a = $lid:next$ strm__ in $lid:ncont$ bp a strm__ >>
           in
-          let curr = <:expr< let bp = Stream.count strm__ in $curr$ >> in
-          let e = <:expr< fun (strm__ : Stream.t _) -> $curr$ >> in
+          let curr = <:expr< let bp = Istream.count strm__ in $curr$ >> in
+          let e = <:expr< fun (strm__ : Istream.t _) -> $curr$ >> in
           let pel = if levs = [] then [] else pel in
           [Some (p, e) :: pel]
       | tree ->
           let alevn = clevn in
           let (kont, pel) =
             match levs with
-            [ [] -> (<:expr< raise Stream.Failure >>, [])
+            [ [] -> (<:expr< raise Istream.Failure >>, [])
             | _ ->
                 let e =
                   match (lev.assoc, lev.lsuffix) with
@@ -408,8 +408,8 @@ value rec start_parser_of_levels entry clevn levs =
           let curr =
             parse_tree entry (succ clevn) alevn (tree, True) act_kont kont
           in
-          let curr = <:expr< let bp = Stream.count strm__ in $curr$ >> in
-          let e = <:expr< fun (strm__ : Stream.t _) -> $curr$ >> in
+          let curr = <:expr< let bp = Istream.count strm__ in $curr$ >> in
+          let e = <:expr< fun (strm__ : Istream.t _) -> $curr$ >> in
           [Some (p, e) :: pel] ] ]
 ;
 
@@ -479,8 +479,8 @@ value empty_entry ename =
   let p = <:patt< $lid:ename$ >> in
   let e =
     <:expr<
-      fun (strm__ : Stream.t _) ->
-        raise (Stream.Error $str:"entry [" ^ ename ^ "] is empty"$) >>
+      fun (strm__ : Istream.t _) ->
+        raise (Istream.Error $str:"entry [" ^ ename ^ "] is empty"$) >>
   in
   [Some (p, e)]
 ;

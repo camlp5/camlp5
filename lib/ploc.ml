@@ -84,7 +84,7 @@ value from_file fname loc =
   let (bp, ep) = (first_pos loc, last_pos loc) in
   try
     let ic = open_in_bin fname in
-    let strm = Stream.of_channel ic in
+    let strm = Istream.of_channel ic in
     let rec loop fname lin =
       let rec not_a_line_dir col =
         parser cnt
@@ -135,7 +135,7 @@ value from_file fname loc =
     in
     let r =
       try loop fname 1 with
-      [ Stream.Failure ->
+      [ Istream.Failure ->
           let bol = bol_pos loc in
           (fname, line_nb loc, bp - bol, ep - bol) ]
     in

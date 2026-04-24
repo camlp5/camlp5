@@ -4,7 +4,7 @@
 
 open Printf;;
 
-type 'a parser_t = 'a Stream.t -> Obj.t;;
+type 'a parser_t = 'a Istream.t -> Obj.t;;
 type 'a fparser_t = 'a Fstream.t -> (Obj.t * 'a Fstream.t) option;;
 type 'a bparser_t = ('a, Obj.t) Fstream.bp;;
 

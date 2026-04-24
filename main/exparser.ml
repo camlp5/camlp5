@@ -23,8 +23,8 @@ type spat_comp_opt =
 ;
 
 value strm_n = "strm__";
-value peek_fun loc = <:expr< Stream.peek >>;
-value junk_fun loc = <:expr< Stream.junk >>;
+value peek_fun loc = <:expr< Istream.peek >>;
+value junk_fun loc = <:expr< Istream.junk >>;
 
 (* Parsers *)
 
@@ -45,13 +45,13 @@ value is_raise e =
 
 value is_raise_failure e =
   match e with
-  [ <:expr< raise Stream.Failure >> -> True
+  [ <:expr< raise Istream.Failure >> -> True
   | _ -> False ]
 ;
 
 value rec handle_failure e =
   match e with
-  [ <:expr< try $te$ with [ Stream.Failure -> $e$] >> -> handle_failure e
+  [ <:expr< try $te$ with [ Istream.Failure -> $e$] >> -> handle_failure e
   | <:expr< match $me$ with [ $list:pel$ ] >> ->
       handle_failure me &&
       List.for_all
@@ -68,7 +68,7 @@ value rec handle_failure e =
       True
   | <:expr< raise $e$ >> ->
       match e with
-      [ <:expr< Stream.Failure >> -> False
+      [ <:expr< Istream.Failure >> -> False
       | _ -> True ]
   | <:expr< $f$ $x$ >> ->
       no_raising_failure_fun f && handle_failure f && handle_failure x
@@ -77,7 +77,7 @@ and no_raising_failure_fun =
   fun
   [ <:expr< $uid:_$ >> -> True
   | <:expr< $lid:_$ >> -> False
-  | <:expr< Stream.peek >> | <:expr< Stream.junk >> -> True
+  | <:expr< Istream.peek >> | <:expr< Istream.junk >> -> True
   | <:expr< $x$ $y$ >> -> no_raising_failure_fun x && handle_failure y
   | _ -> False ]
 ;
@@ -129,7 +129,7 @@ value stream_pattern_component skont ckont =
   | SpNtr loc p e ->
       let e =
         match e with
-        [ <:expr< fun [ ($lid:v$ : Stream.t _) -> $e$ ] >> when v = strm_n ->
+        [ <:expr< fun [ ($lid:v$ : Istream.t _) -> $e$ ] >> when v = strm_n ->
             e
         | _ -> <:expr< $e$ $lid:strm_n$ >> ]
       in
@@ -137,25 +137,25 @@ value stream_pattern_component skont ckont =
         if pattern_eq_expression p skont then
           if is_raise_failure ckont then e
           else if handle_failure e then e
-          else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
+          else <:expr< try $e$ with [ Istream.Failure -> $ckont$ ] >>
         else if is_raise_failure ckont then
           let p = wildcard_if_not_bound p skont in
           <:expr< let $p$ = $e$ in $skont$ >>
         else if is_raise ckont then
           let tst =
             if handle_failure e then e
-            else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
+            else <:expr< try $e$ with [ Istream.Failure -> $ckont$ ] >>
           in
           let p = wildcard_if_not_bound p skont in
           <:expr< let $p$ = $tst$ in $skont$ >>
         else if pattern_eq_expression <:patt< Some $p$ >> skont then
-          <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
+          <:expr< try Some $e$ with [ Istream.Failure -> $ckont$ ] >>
         else
-          <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
+          <:expr< match try Some $e$ with [ Istream.Failure -> None ] with
                   [ Some $p$ -> $skont$
                   | _ -> $ckont$ ] >>
       else
-        <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
+        <:expr< match try Some $e$ with [ Istream.Failure -> None ] with
                 [ Some $p$ -> $skont$
                 | _ -> $ckont$ ] >>
   | SpLet _ _ _ -> assert False
@@ -167,14 +167,14 @@ value stream_pattern_component skont ckont =
       let len = List.length pl in
       if List.exists (fun pl -> List.length pl <> len) pll then
         Ploc.raise loc
-          (Stream.Error "lookahead patterns must be of the same lengths")
+          (Istream.Error "lookahead patterns must be of the same lengths")
       else
         let p =
           let p = mklistpat loc pl in
           let pl = List.map (mklistpat loc) pll in
           List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl
         in
-        <:expr< match Stream.npeek $int:string_of_int len$ strm__ with
+        <:expr< match Istream.npeek $int:string_of_int len$ strm__ with
                 [ $p$ -> $skont$
                 | _ -> $ckont$ ] >>
   | SpLhd loc [] -> ckont
@@ -191,7 +191,7 @@ value rec stream_pattern loc epo e ekont =
   fun
   [ [] ->
       match epo with
-      [ Some ep -> <:expr< let $ep$ = Stream.count $lid:strm_n$ in $e$ >>
+      [ Some ep -> <:expr< let $ep$ = Istream.count $lid:strm_n$ in $e$ >>
       | _ -> e ]
   | [(SpLet loc p1 e1, _) :: spcl] ->
       let skont = stream_pattern loc epo e ekont spcl in
@@ -200,9 +200,9 @@ value rec stream_pattern loc epo e ekont =
       let skont =
         let ekont =
           fun
-          [ SpoQues estr -> <:expr< raise (Stream.Error $estr$) >>
-          | SpoBang -> <:expr< raise Stream.Failure >>
-          | SpoNoth -> <:expr< raise (Stream.Error "") >> ]
+          [ SpoQues estr -> <:expr< raise (Istream.Error $estr$) >>
+          | SpoBang -> <:expr< raise Istream.Failure >>
+          | SpoNoth -> <:expr< raise (Istream.Error "") >> ]
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -218,9 +218,9 @@ value stream_patterns_term loc ekont tspel =
          let e =
            let ekont =
              fun
-             [ SpoQues estr -> <:expr< raise (Stream.Error $estr$) >>
-             | SpoBang -> <:expr< raise Stream.Failure >>
-             | SpoNoth -> <:expr< raise (Stream.Error "") >> ]
+             [ SpoQues estr -> <:expr< raise (Istream.Error $estr$) >>
+             | SpoBang -> <:expr< raise Istream.Failure >>
+             | SpoNoth -> <:expr< raise (Istream.Error "") >> ]
            in
            let skont = stream_pattern loc epo e ekont spcl in
            <:expr< do { $junk_fun loc$ $lid:strm_n$; $skont$ } >>
@@ -242,7 +242,7 @@ value rec group_terms =
 
 value rec parser_cases loc =
   fun
-  [ [] -> <:expr< raise Stream.Failure >>
+  [ [] -> <:expr< raise Istream.Failure >>
   | spel ->
       if optim.val then
         match group_terms spel with
@@ -254,7 +254,7 @@ value rec parser_cases loc =
         match spel with
         [ [(spcl, epo, e) :: spel] ->
             stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
-        | [] -> <:expr< raise Stream.Failure >> ] ]
+        | [] -> <:expr< raise Istream.Failure >> ] ]
 ;
 
 (* optim: left factorization of consecutive rules *)
@@ -323,7 +323,7 @@ value mk_rule x =
       let e =
         let rl = List.map (fun (rl, (eo, a)) -> (rl, eo, a)) ll in
         let e = parser_cases loc rl in
-        let p = <:patt< ($lid:strm_n$ : Stream.t _) >> in
+        let p = <:patt< ($lid:strm_n$ : Istream.t _) >> in
         <:expr< fun $p$ -> $e$ >>
       in
       let spo =
@@ -356,12 +356,12 @@ value cparser loc bpo pc =
   let e =
     let loc = Ploc.with_comment loc "" in
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $e$ >>
+    [ Some bp -> <:expr< let $bp$ = Istream.count $lid:strm_n$ in $e$ >>
     | None -> e ]
   in
   let p =
     let loc = Ploc.with_comment loc "" in
-    <:patt< ($lid:strm_n$ : Stream.t _) >>
+    <:patt< ($lid:strm_n$ : Istream.t _) >>
   in
   <:expr< fun $p$ -> $e$ >>
 ;
@@ -369,7 +369,7 @@ value cparser loc bpo pc =
 value rec is_not_bound s =
   fun
   [ <:expr< $uid:_$ >> -> True
-  | <:expr< raise Stream.Failure >> -> True
+  | <:expr< raise Istream.Failure >> -> True
   | _ -> False ]
 ;
 
@@ -380,7 +380,7 @@ value cparser_match loc me bpo pc =
   let e =
     let loc = iloc in
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
+    [ Some bp -> <:expr< let $bp$ = Istream.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
   in
   match me with
@@ -391,10 +391,10 @@ value cparser_match loc me bpo pc =
         if is_not_bound strm_n e then <:patt< _ >>
         else <:patt< $lid:strm_n$ >>
       in
-      <:expr< let ($p$ : Stream.t _) = $me$ in $e$ >> ]
+      <:expr< let ($p$ : Istream.t _) = $me$ in $e$ >> ]
 ;
 
-(* Streams *)
+(* Istreams *)
 
 value rec not_computing =
   fun
@@ -424,16 +424,16 @@ value rec cstream gloc =
   fun
   [ [] ->
       let loc = gloc in
-      <:expr< Stream.sempty >>
+      <:expr< Istream.sempty >>
   | [SeTrm loc e] ->
-      if not_computing e then <:expr< Stream.ising $e$ >>
-      else <:expr< Stream.lsing $slazy loc e$ >>
+      if not_computing e then <:expr< Istream.ising $e$ >>
+      else <:expr< Istream.lsing $slazy loc e$ >>
   | [SeTrm loc e :: secl] ->
-      if not_computing e then <:expr< Stream.icons $e$ $cstream gloc secl$ >>
-      else <:expr< Stream.lcons $slazy loc e$ $cstream gloc secl$ >>
+      if not_computing e then <:expr< Istream.icons $e$ $cstream gloc secl$ >>
+      else <:expr< Istream.lcons $slazy loc e$ $cstream gloc secl$ >>
   | [SeNtr loc e] ->
-      if not_computing e then e else <:expr< Stream.slazy $slazy loc e$ >>
+      if not_computing e then e else <:expr< Istream.slazy $slazy loc e$ >>
   | [SeNtr loc e :: secl] ->
-      if not_computing e then <:expr< Stream.iapp $e$ $cstream gloc secl$ >>
-      else <:expr< Stream.lapp $slazy loc e$ $cstream gloc secl$ >> ]
+      if not_computing e then <:expr< Istream.iapp $e$ $cstream gloc secl$ >>
+      else <:expr< Istream.lapp $slazy loc e$ $cstream gloc secl$ >> ]
 ;

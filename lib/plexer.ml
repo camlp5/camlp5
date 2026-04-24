@@ -49,7 +49,7 @@ value rev_implode l =
 value implode l = rev_implode (List.rev l);
 
 value stream_peek_nth n strm =
-  loop n (Stream.npeek n strm) where rec loop n =
+  loop n (Istream.npeek n strm) where rec loop n =
     fun
     [ [] -> None
     | [x] -> if n == 1 then Some x else None
@@ -65,28 +65,28 @@ value greek_tab =
 
 value greek_letter buf strm =
   if utf8_lexing.val then
-    match Stream.peek strm with
+    match Istream.peek strm with
     [ Some c ->
         if Char.code c >= 128 then
-          let x = implode (Stream.npeek 2 strm) in
-          if List.mem x greek_tab then do { Stream.junk strm; $add c }
-          else raise Stream.Failure
-        else raise Stream.Failure
-    | None -> raise Stream.Failure ]
+          let x = implode (Istream.npeek 2 strm) in
+          if List.mem x greek_tab then do { Istream.junk strm; $add c }
+          else raise Istream.Failure
+        else raise Istream.Failure
+    | None -> raise Istream.Failure ]
   else
-    raise Stream.Failure
+    raise Istream.Failure
 ;
 
 value misc_letter buf strm =
   if utf8_lexing.val then
-    match Stream.peek strm with
+    match Istream.peek strm with
     [ Some c ->
         if Char.code c >= 128 then
-          match implode (Stream.npeek 3 strm) with
-          [ "→" | "≤" | "≥" -> raise Stream.Failure
-          | _ -> do { Stream.junk strm; $add c } ]
-        else raise Stream.Failure
-    | None -> raise Stream.Failure ]
+          match implode (Istream.npeek 3 strm) with
+          [ "→" | "≤" | "≥" -> raise Istream.Failure
+          | _ -> do { Istream.junk strm; $add c } ]
+        else raise Istream.Failure
+    | None -> raise Istream.Failure ]
   else
     match strm with lexer [ '\128'-'\225' | '\227'-'\255' ]
 ;
@@ -152,7 +152,7 @@ value rec digits_under kind =
 value digits kind =
   lexer
   [ kind (digits_under kind)!
-  | -> raise (Stream.Error "ill-formed integer constant") ]
+  | -> raise (Istream.Error "ill-formed integer constant") ]
 ;
 
 value rec decimal_digits_under =
@@ -469,7 +469,7 @@ value rec next_token ctx buf =
       if linedir 1 s then do {
         let buf = any_to_nl ($add '#') s in
         incr Plexing.line_nb.val;
-        Plexing.bol_pos.val.val := Stream.count s;
+        Plexing.bol_pos.val.val := Istream.count s;
         ctx.set_line_nb ();
         ctx.after_space := True;
         next_token ctx buf s
@@ -492,7 +492,7 @@ value rec next_token ctx buf =
        tok = next_token_after_spaces ctx bp $empty :] ep ->
       let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) comm in
       (tok, loc)
-  | [: comm = get_comment buf; _ = Stream.empty :] ->
+  | [: comm = get_comment buf; _ = Istream.empty :] ->
       let loc = ctx.make_lined_loc (bp, bp + 1) comm in
       (("EOI", ""), loc) ]
 ;
@@ -508,7 +508,7 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     | None -> () ];
     Plexing.line_nb.val := s_line_nb;
     Plexing.bol_pos.val := s_bol_pos;
-    let comm_bp = Stream.count cstrm in
+    let comm_bp = Istream.count cstrm in
     ctx.set_line_nb ();
     ctx.after_space := False;
     let (r, loc) = next_token ctx $empty cstrm in
@@ -522,8 +522,8 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     (r, loc)
   }
   with
-  [ Stream.Error str ->
-      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
+  [ Istream.Error str ->
+      err ctx (Istream.count cstrm, Istream.count cstrm + 1) str ]
 ;
 
 value func kwd_table glexr =
@@ -553,7 +553,7 @@ value func kwd_table glexr =
 ;
 
 value rec check_keyword_stream =
-  parser [: _ = check $empty; _ = Stream.empty :] -> True
+  parser [: _ = check $empty; _ = Istream.empty :] -> True
 and check =
   lexer
   [ [ 'A'-'Z' | 'a'-'z' | misc_letter ] check_ident!
@@ -600,7 +600,7 @@ and check_ident2 =
 ;
 
 value check_keyword s =
-  try check_keyword_stream (Stream.of_string s) with _ -> False
+  try check_keyword_stream (Istream.of_string s) with _ -> False
 ;
 
 value error_no_respect_rules p_con p_prm =
@@ -704,35 +704,35 @@ value tok_match =
           [ ("ANTIQUOT", prm) ->
               if prm <> "" && prm.[String.length prm - 1] = ':' then
                 if eq_before_colon p_prm prm then after_colon_except_last prm
-                else raise Stream.Failure
-              else raise Stream.Failure
-          | _ -> raise Stream.Failure ]
+                else raise Istream.Failure
+              else raise Istream.Failure
+          | _ -> raise Istream.Failure ]
         else
           fun
           [ ("ANTIQUOT", prm) ->
               if prm <> "" && prm.[String.length prm - 1] = ':' then
-                raise Stream.Failure
+                raise Istream.Failure
               else if eq_before_colon p_prm prm then after_colon prm
-              else raise Stream.Failure
-          | _ -> raise Stream.Failure ]
+              else raise Istream.Failure
+          | _ -> raise Istream.Failure ]
       else
         fun
         [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
-        | _ -> raise Stream.Failure ]
+        | _ -> raise Istream.Failure ]
   | ("LIDENT", p_prm) ->
       (* also treats the case when a LIDENT is also a keyword *)
       fun (con, prm) ->
         if con = "LIDENT" then
-          if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
+          if p_prm = "" || prm = p_prm then prm else raise Istream.Failure
         else
-          if con = "" && prm = p_prm then prm else raise Stream.Failure
+          if con = "" && prm = p_prm then prm else raise Istream.Failure
   | ("UIDENT", p_prm) ->
       (* also treats the case when a UIDENT is also a keyword *)
       fun (con, prm) ->
         if con = "UIDENT" then
-          if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
+          if p_prm = "" || prm = p_prm then prm else raise Istream.Failure
         else
-          if con = "" && prm = p_prm then prm else raise Stream.Failure
+          if con = "" && prm = p_prm then prm else raise Istream.Failure
   | tok -> Plexing.default_match tok ]
 ;
 

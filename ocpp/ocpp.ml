@@ -29,13 +29,13 @@ and locate cs =
   match cs with parser
   [ [: `'0'..'9' :] -> locate cs
   | [: `':' :] -> inside_locate cs
-  | [: :] -> raise (Stream.Error "colon char expected") ]
+  | [: :] -> raise (Istream.Error "colon char expected") ]
 and inside_locate cs =
   match cs with parser
   [ [: `'$' :] -> copy_strip_locate cs
   | [: `'\\'; `c :] -> do { print_char c; inside_locate cs }
   | [: `c :] -> do { print_char c; inside_locate cs }
-  | [: :] -> raise (Stream.Error "end of file in locate directive") ]
+  | [: :] -> raise (Istream.Error "end of file in locate directive") ]
 ;
 
 value quot name pos str =
@@ -53,7 +53,7 @@ value quot name pos str =
     [ Ploc.Exc _ exc -> Ploc.raise loc exc
     | exc -> Ploc.raise loc exc ]
   in
-  let cs = Stream.of_string new_str in copy_strip_locate cs
+  let cs = Istream.of_string new_str in copy_strip_locate cs
 ;
 
 value rec ident len =
@@ -79,7 +79,7 @@ and inside_quot name pos len cs =
   match cs with parser
   [ [: `'>' :] -> maybe_end_quot name pos len cs
   | [: `c :] -> inside_quot name pos (store len c) cs
-  | [: :] -> raise (Stream.Error "end of file in quotation") ]
+  | [: :] -> raise (Istream.Error "end of file in quotation") ]
 and maybe_end_quot name pos len cs =
   match cs with parser
   [ [: `'>' :] -> do { quot name pos (get_buff len); copy cs }
@@ -88,7 +88,7 @@ and inside_string cs =
   match cs with parser
   [ [: `'"' :] -> do { print_char '"'; copy cs }
   | [: `c :] -> do { print_char c; inside_string cs }
-  | [: :] -> raise (Stream.Error "end of file in string") ]
+  | [: :] -> raise (Istream.Error "end of file in string") ]
 ;
 
 value copy_quot cs = do { copy cs; flush stdout; };
@@ -111,7 +111,7 @@ Arg.parse [] (fun x -> file.val := x) "ocpp <objects> <file>";
 value main () =
   try
     if file.val <> "" then
-      copy_quot (Stream.of_channel (open_in_bin file.val))
+      copy_quot (Istream.of_channel (open_in_bin file.val))
     else ()
   with exc ->
     do {

@@ -1012,7 +1012,7 @@ let rec make_ctyp styp tvar =
   | STself (loc, x) ->
       if tvar = "" then
         Ploc.raise loc
-          (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
+          (Istream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else MLast.TyQuo (loc, tvar)
   | STtyp t -> t
   | STnone -> failwith "make_ctyp: internal error"
@@ -1943,16 +1943,16 @@ let symbol = Grammar.Entry.create gram "symbol";;
 let semi_sep =
   if !syntax_name = "Scheme" then
     Grammar.Entry.of_parser gram "'/'"
-      (fun (strm__ : _ Stream.t) ->
-         match Stream.peek strm__ with
-           Some ("", "/") -> Stream.junk strm__; ()
-         | _ -> raise Stream.Failure)
+      (fun (strm__ : _ Istream.t) ->
+         match Istream.peek strm__ with
+           Some ("", "/") -> Istream.junk strm__; ()
+         | _ -> raise Istream.Failure)
   else
     Grammar.Entry.of_parser gram "';'"
-      (fun (strm__ : _ Stream.t) ->
-         match Stream.peek strm__ with
-           Some ("", ";") -> Stream.junk strm__; ()
-         | _ -> raise Stream.Failure)
+      (fun (strm__ : _ Istream.t) ->
+         match Istream.peek strm__ with
+           Some ("", ";") -> Istream.junk strm__; ()
+         | _ -> raise Istream.Failure)
 ;;
 
 Grammar.extend

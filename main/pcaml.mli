@@ -16,9 +16,9 @@ value syntax_name : ref string;
 type status = option Ploc.t;
 
 value parse_interf :
-  ref (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
+  ref (Istream.t char -> (list (MLast.sig_item * MLast.loc) * status));
 value parse_implem :
-  ref (Stream.t char -> (list (MLast.str_item * MLast.loc) * status));
+  ref (Istream.t char -> (list (MLast.str_item * MLast.loc) * status));
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -170,7 +170,7 @@ value expr_eoi : Grammar.Entry.e MLast.expr;
 value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);
 value report_error : exn -> unit;
-value sync : ref (Stream.t char -> unit);
+value sync : ref (Istream.t char -> unit);
 value patt_reloc :
   (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
 value expr_reloc :

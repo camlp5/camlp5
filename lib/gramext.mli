@@ -2,7 +2,7 @@
 (* gramext.mli,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-type parser_t 'a = Stream.t 'a -> Obj.t;
+type parser_t 'a = Istream.t 'a -> Obj.t;
 type fparser_t 'a = Fstream.t 'a -> option (Obj.t * Fstream.t 'a);
 type bparser_t 'a = Fstream.bp 'a Obj.t;
 

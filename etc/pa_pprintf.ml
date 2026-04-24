@@ -231,16 +231,16 @@ value parse_format_type loc rev_str_al al =
   [ [: `'a' :] ->
       match al with
       [ [a1; a2 :: al] -> ([a2; a1 :: rev_str_al], al)
-      | [_] | [] -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+      | [_] | [] -> Ploc.raise loc (Istream.Error "Not enough parameters") ]
   | [: `'A'..'Z' | 'a'..'z' :] ->
       match al with
       [ [a :: al] -> ([a :: rev_str_al], al)
-      | [] -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+      | [] -> Ploc.raise loc (Istream.Error "Not enough parameters") ]
   | [: `'!' | '%' :] ->
       (rev_str_al, al)
   | [: `c :] ->
       Ploc.raise loc
-        (Stream.Error ("Invalid format type: %" ^ String.make 1 c))
+        (Istream.Error ("Invalid format type: %" ^ String.make 1 c))
   | [: :] ->
       (rev_str_al, al) ]
 ;
@@ -289,13 +289,13 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
         let (f, a, al) =
           match al with
           [ [f; a :: al] -> (f, a, al)
-          | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+          | _ -> Ploc.raise loc (Istream.Error "Not enough parameters") ]
         in
         let (a_dang, al) =
           if with_dang then
             match al with
             [ [a :: al] -> (Some a, al)
-            | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+            | _ -> Ploc.raise loc (Istream.Error "Not enough parameters") ]
           else (None, al)
         in
         let (aft_al, al) = get_assoc_args loc fmt2 al in
@@ -317,7 +317,7 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
                   match al with
                   [ [f; a :: al] -> (f, a, al)
                   | _ ->
-                      Ploc.raise loc (Stream.Error "Not enough parameters") ]
+                      Ploc.raise loc (Istream.Error "Not enough parameters") ]
                 in
                 let (a_dang, al) =
                   if with_dang then
@@ -325,7 +325,7 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
                     [ [a :: al] -> (Some a, al)
                     | _ ->
                         Ploc.raise loc
-                          (Stream.Error "Not enough parameters") ]
+                          (Istream.Error "Not enough parameters") ]
                   else (None, al)
                 in
                 let (aft_al, al) = get_assoc_args loc fmt al in
@@ -466,7 +466,7 @@ value expr_of_tree loc fmt pc al t =
   [ [] -> e
   | [a :: _] ->
       let loc = MLast.loc_of_expr a in
-      Ploc.raise loc (Stream.Error "Too many parameters") ]
+      Ploc.raise loc (Istream.Error "Too many parameters") ]
 ;
 
 value expand_pprintf loc pc fmt al =

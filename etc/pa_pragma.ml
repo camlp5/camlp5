@@ -150,7 +150,7 @@ value bad_type loc expected_t found_t =
     else
       Printf.sprintf "\n  type expected: %s\n     type found: %s\n" s1 s2
   in
-  Ploc.raise loc (Stream.Error s)
+  Ploc.raise loc (Istream.Error s)
 ;
 
 value unbound_var loc s =
@@ -965,21 +965,21 @@ value val_tab = do {
         {ctyp = <:ctyp< Grammar.Entry.e MLast.str_item >>;
          expr = Obj.repr Pcaml.str_item;
          patt = no_patt loc});
-     ("Stream.Error",
+     ("Istream.Error",
       fun loc ->
         {ctyp = <:ctyp< string -> exn >>;
-         expr = Obj.repr (fun s -> Stream.Error s);
+         expr = Obj.repr (fun s -> Istream.Error s);
          patt = no_patt loc});
-     ("Stream.of_string",
+     ("Istream.of_string",
       fun loc ->
-        {ctyp = <:ctyp< string -> Stream.t char >>;
-         expr = Obj.repr Stream.of_string;
+        {ctyp = <:ctyp< string -> Istream.t char >>;
+         expr = Obj.repr Istream.of_string;
          patt = no_patt loc});
-     ("Stream.peek",
+     ("Istream.peek",
       fun loc ->
         let ta = ty_var () in
-        {ctyp = <:ctyp< Stream.t $ta$ -> option $ta$ >>;
-         expr = Obj.repr Stream.peek;
+        {ctyp = <:ctyp< Istream.t $ta$ -> option $ta$ >>;
+         expr = Obj.repr Istream.peek;
          patt = no_patt loc});
      ("String.get",
       fun loc ->

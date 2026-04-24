@@ -4,12 +4,12 @@
 
 type t 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
-    (Stream.t 'te -> 'a) -> Stream.t 'te -> 'b
+    (Istream.t 'te -> 'a) -> Istream.t 'te -> 'b
 ;
 
 type tsep 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
-    (Stream.t 'te -> 'a) -> (Stream.t 'te -> unit) -> Stream.t 'te -> 'b
+    (Istream.t 'te -> 'a) -> (Istream.t 'te -> unit) -> Istream.t 'te -> 'b
 ;
 
 value gen_fold0 final f e entry symbl psymb =
@@ -55,7 +55,7 @@ value gen_fold1sep final f e entry symbl psymb psep =
   let parse_top =
     fun
     [ [symb; _] -> Grammar.parse_top_symb entry symb
-    | _ -> raise Stream.Failure ]
+    | _ -> raise Istream.Failure ]
   in
   let rec kont accu =
     parser
@@ -64,7 +64,7 @@ value gen_fold1sep final f e entry symbl psymb psep =
            parser
            [ [: a = psymb :] -> a
            | [: a = parse_top symbl :] -> Obj.magic a
-           | [: :] -> raise (Stream.Error (failed symbl)) ];
+           | [: :] -> raise (Istream.Error (failed symbl)) ];
          a = kont (f a accu) ! :] ->
         a
     | [: :] -> accu ]

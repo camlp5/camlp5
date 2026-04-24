@@ -78,7 +78,7 @@ value rec parse_file pa getdir useast = do {
   let name = Pcaml.input_file.val in
   Pcaml.warning.val := print_warning;
   let ic = if name = "-" then stdin else open_in_bin name in
-  let cs = Stream.of_channel ic in
+  let cs = Istream.of_channel ic in
   let clear () = if name = "-" then () else close_in ic in
   let phr =
     try
@@ -102,7 +102,7 @@ value rec parse_file pa getdir useast = do {
                       try Pcaml.find_directive x eo with
                       [ Not_found ->
                           let msg = sprintf "unknown directive #%s" x in
-                          Ploc.raise loc (Stream.Error msg) ];
+                          Ploc.raise loc (Istream.Error msg) ];
                       pl
                     } ]
               | None -> pl ]

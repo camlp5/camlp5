@@ -458,7 +458,7 @@ let rec top_symb entry =
     Sself | Snext -> Snterm entry
   | Snterml (e, _) -> Snterm e
   | Slist1sep (s, sep, b) -> Slist1sep (top_symb entry s, sep, b)
-  | _ -> raise Stream.Failure
+  | _ -> raise Istream.Failure
 ;;
 
 let entry_of_symb entry =
@@ -466,38 +466,38 @@ let entry_of_symb entry =
     Sself | Snext -> entry
   | Snterm e -> e
   | Snterml (e, _) -> e
-  | _ -> raise Stream.Failure
+  | _ -> raise Istream.Failure
 ;;
 
 let top_tree entry =
   function
     Node {node = s; brother = bro; son = son} ->
       Node {node = top_symb entry s; brother = bro; son = son}
-  | LocAct (_, _) | DeadEnd -> raise Stream.Failure
+  | LocAct (_, _) | DeadEnd -> raise Istream.Failure
 ;;
 
 let skip_if_empty bp p strm =
-  if Stream.count strm == bp then Gramext.action (fun a -> p strm)
-  else raise Stream.Failure
+  if Istream.count strm == bp then Gramext.action (fun a -> p strm)
+  else raise Istream.Failure
 ;;
 
-let continue entry bp a s son p1 (strm__ : _ Stream.t) =
+let continue entry bp a s son p1 (strm__ : _ Istream.t) =
   let a = (entry_of_symb entry s).econtinue 0 bp a strm__ in
   let act =
     try p1 strm__ with
-      Stream.Failure -> raise (Stream.Error (tree_failed entry a s son))
+      Istream.Failure -> raise (Istream.Error (tree_failed entry a s son))
   in
   Gramext.action (fun _ -> app act a)
 ;;
 
 let do_recover parser_of_tree entry nlevn alevn bp a s son
-    (strm__ : _ Stream.t) =
+    (strm__ : _ Istream.t) =
   try parser_of_tree entry nlevn alevn (top_tree entry son) strm__ with
-    Stream.Failure ->
+    Istream.Failure ->
       try
-        skip_if_empty bp (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
+        skip_if_empty bp (fun (strm__ : _ Istream.t) -> raise Istream.Failure)
           strm__
-      with Stream.Failure ->
+      with Istream.Failure ->
         continue entry bp a s son (parser_of_tree entry nlevn alevn son)
           strm__
 ;;
@@ -505,15 +505,15 @@ let do_recover parser_of_tree entry nlevn alevn bp a s son
 let strict_parsing = ref false;;
 
 let recover parser_of_tree entry nlevn alevn bp a s son strm =
-  if !strict_parsing then raise (Stream.Error (tree_failed entry a s son))
+  if !strict_parsing then raise (Istream.Error (tree_failed entry a s son))
   else do_recover parser_of_tree entry nlevn alevn bp a s son strm
 ;;
 
 let token_count = ref 0;;
 
 let peek_nth n strm =
-  let list = Stream.npeek n strm in
-  token_count := Stream.count strm + n;
+  let list = Istream.npeek n strm in
+  token_count := Istream.count strm + n;
   let rec loop list n =
     match list, n with
       x :: _, 1 -> Some x
@@ -572,31 +572,31 @@ let token_ematch gram (tok, vala) =
                 a :: al ->
                   let pa = gram.glexer.Plexing.tok_match ("V", a) in
                   let pal = loop al in
-                  (fun tok -> try pa tok with Stream.Failure -> pal tok)
-              | [] -> fun tok -> raise Stream.Failure
+                  (fun tok -> try pa tok with Istream.Failure -> pal tok)
+              | [] -> fun tok -> raise Istream.Failure
             in
             loop al
       in
       (fun tok ->
          try Obj.repr (Ploc.VaAnt (Obj.magic (pa tok : string))) with
-           Stream.Failure -> Obj.repr (Ploc.VaVal (tematch tok)))
+           Istream.Failure -> Obj.repr (Ploc.VaVal (tematch tok)))
   | None -> fun tok -> Obj.repr (tematch tok : string)
 ;;
 
 let rec parser_of_tree entry nlevn alevn =
   function
-    DeadEnd -> (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
-  | LocAct (act, _) -> (fun (strm__ : _ Stream.t) -> act)
+    DeadEnd -> (fun (strm__ : _ Istream.t) -> raise Istream.Failure)
+  | LocAct (act, _) -> (fun (strm__ : _ Istream.t) -> act)
   | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          let a = entry.estart alevn strm__ in app act a)
   | Node {node = Scut; son = son; brother = _} ->
       parser_of_tree entry nlevn alevn son
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          match
-           try Some (entry.estart alevn strm__) with Stream.Failure -> None
+           try Some (entry.estart alevn strm__) with Istream.Failure -> None
          with
            Some a -> app act a
          | _ -> p2 strm__)
@@ -612,13 +612,13 @@ let rec parser_of_tree entry nlevn alevn =
           let ps = parser_of_symbol entry nlevn s in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn s son in
-          (fun (strm__ : _ Stream.t) ->
-             let bp = Stream.count strm__ in
+          (fun (strm__ : _ Istream.t) ->
+             let bp = Istream.count strm__ in
              let a = ps strm__ in
              let act =
                try p1 bp a strm__ with
-                 Stream.Failure ->
-                   raise (Stream.Error (tree_failed entry a s son))
+                 Istream.Failure ->
+                   raise (Istream.Error (tree_failed entry a s son))
              in
              app act a)
       | Some (rev_tokl, (last_tok, svala), son) ->
@@ -631,7 +631,7 @@ let rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
           parser_of_token_list entry s son p1
-            (fun (strm__ : _ Stream.t) -> raise Stream.Failure) rev_tokl
+            (fun (strm__ : _ Istream.t) -> raise Istream.Failure) rev_tokl
             (last_tok, svala)
       end
   | Node {node = s; son = son; brother = bro} ->
@@ -647,15 +647,15 @@ let rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn s son in
           let p2 = parser_of_tree entry nlevn alevn bro in
-          (fun (strm : _ Stream.t) ->
-             let bp = Stream.count strm in
-             match try Some (ps strm) with Stream.Failure -> None with
+          (fun (strm : _ Istream.t) ->
+             let bp = Istream.count strm in
+             match try Some (ps strm) with Istream.Failure -> None with
                Some a ->
                  begin match
-                   (try Some (p1 bp a strm) with Stream.Failure -> None)
+                   (try Some (p1 bp a strm) with Istream.Failure -> None)
                  with
                    Some act -> app act a
-                 | None -> raise (Stream.Error (tree_failed entry a s son))
+                 | None -> raise (Istream.Error (tree_failed entry a s son))
                  end
              | None -> p2 strm)
       | Some (rev_tokl, (last_tok, vala), son) ->
@@ -671,11 +671,11 @@ let rec parser_of_tree entry nlevn alevn =
           let p1 =
             parser_of_token_list entry lt son p1 p2 rev_tokl (last_tok, vala)
           in
-          fun (strm__ : _ Stream.t) ->
-            try p1 strm__ with Stream.Failure -> p2 strm__
-and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
+          fun (strm__ : _ Istream.t) ->
+            try p1 strm__ with Istream.Failure -> p2 strm__
+and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Istream.t) =
   try p1 strm__ with
-    Stream.Failure ->
+    Istream.Failure ->
       recover parser_of_tree entry nlevn alevn bp a s son strm__
 and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
   let plast =
@@ -685,24 +685,24 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
       match peek_nth n strm with
         Some tok ->
           let r = tematch tok in
-          for i = 1 to n do Stream.junk strm done; Obj.repr r
-      | None -> raise Stream.Failure
+          for i = 1 to n do Istream.junk strm done; Obj.repr r
+      | None -> raise Istream.Failure
     in
-    fun (strm : _ Stream.t) ->
-      let bp = Stream.count strm in
+    fun (strm : _ Istream.t) ->
+      let bp = Istream.count strm in
       let a = ps strm in
-      match try Some (p1 bp a strm) with Stream.Failure -> None with
+      match try Some (p1 bp a strm) with Istream.Failure -> None with
         Some act -> app act a
-      | None -> raise (Stream.Error (tree_failed entry a s son))
+      | None -> raise (Istream.Error (tree_failed entry a s son))
   in
   match List.rev rev_tokl with
-    [] -> (fun (strm__ : _ Stream.t) -> plast strm__)
+    [] -> (fun (strm__ : _ Istream.t) -> plast strm__)
   | tok :: tokl ->
       let tematch = token_ematch entry.egram tok in
       let ps strm =
         match peek_nth 1 strm with
           Some tok -> tematch tok
-        | None -> raise Stream.Failure
+        | None -> raise Istream.Failure
       in
       let p1 =
         let rec loop n =
@@ -713,15 +713,15 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
               let ps strm =
                 match peek_nth n strm with
                   Some tok -> tematch tok
-                | None -> raise Stream.Failure
+                | None -> raise Istream.Failure
               in
               let p1 = loop (n + 1) tokl in
-              fun (strm__ : _ Stream.t) ->
+              fun (strm__ : _ Istream.t) ->
                 let a = ps strm__ in let act = p1 strm__ in app act a
         in
         loop 2 tokl
       in
-      fun (strm__ : _ Stream.t) ->
+      fun (strm__ : _ Istream.t) ->
         let a = ps strm__ in let act = p1 strm__ in app act a
 and parser_of_symbol entry nlevn =
   function
@@ -734,122 +734,122 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = call_and_push (parser_of_symbol entry nlevn s) in
-      let rec loop al (strm__ : _ Stream.t) =
-        match try Some (ps al strm__) with Stream.Failure -> None with
+      let rec loop al (strm__ : _ Istream.t) =
+        match try Some (ps al strm__) with Istream.Failure -> None with
           Some al -> loop al strm__
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          let a = loop [] strm__ in Obj.repr (List.rev a))
   | Slist0sep (symb, sep, false) ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
-      let rec kont al (strm__ : _ Stream.t) =
-        match try Some (pt strm__) with Stream.Failure -> None with
+      let rec kont al (strm__ : _ Istream.t) =
+        match try Some (pt strm__) with Istream.Failure -> None with
           Some v ->
             let al =
               try ps al strm__ with
-                Stream.Failure ->
-                  raise (Stream.Error (symb_failed entry v sep symb))
+                Istream.Failure ->
+                  raise (Istream.Error (symb_failed entry v sep symb))
             in
             kont al strm__
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
-         match try Some (ps [] strm__) with Stream.Failure -> None with
+      (fun (strm__ : _ Istream.t) ->
+         match try Some (ps [] strm__) with Istream.Failure -> None with
            Some al -> let a = kont al strm__ in Obj.repr (List.rev a)
          | _ -> Obj.repr [])
   | Slist0sep (symb, sep, true) ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
-      let rec kont al (strm__ : _ Stream.t) =
-        match try Some (pt strm__) with Stream.Failure -> None with
+      let rec kont al (strm__ : _ Istream.t) =
+        match try Some (pt strm__) with Istream.Failure -> None with
           Some v ->
             begin match
-              (try Some (ps al strm__) with Stream.Failure -> None)
+              (try Some (ps al strm__) with Istream.Failure -> None)
             with
               Some al -> kont al strm__
             | _ -> al
             end
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
-         match try Some (ps [] strm__) with Stream.Failure -> None with
+      (fun (strm__ : _ Istream.t) ->
+         match try Some (ps [] strm__) with Istream.Failure -> None with
            Some al -> let a = kont al strm__ in Obj.repr (List.rev a)
          | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = call_and_push (parser_of_symbol entry nlevn s) in
-      let rec loop al (strm__ : _ Stream.t) =
-        match try Some (ps al strm__) with Stream.Failure -> None with
+      let rec loop al (strm__ : _ Istream.t) =
+        match try Some (ps al strm__) with Istream.Failure -> None with
           Some al -> loop al strm__
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          let al = ps [] strm__ in
          let a = loop al strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep, false) ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
-      let rec kont al (strm__ : _ Stream.t) =
-        match try Some (pt strm__) with Stream.Failure -> None with
+      let rec kont al (strm__ : _ Istream.t) =
+        match try Some (pt strm__) with Istream.Failure -> None with
           Some v ->
             let al =
               try ps al strm__ with
-                Stream.Failure ->
+                Istream.Failure ->
                   let a =
                     try parse_top_symb entry symb strm__ with
-                      Stream.Failure ->
-                        raise (Stream.Error (symb_failed entry v sep symb))
+                      Istream.Failure ->
+                        raise (Istream.Error (symb_failed entry v sep symb))
                   in
                   a :: al
             in
             kont al strm__
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          let al = ps [] strm__ in
          let a = kont al strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep, true) ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
-      let rec kont al (strm__ : _ Stream.t) =
-        match try Some (pt strm__) with Stream.Failure -> None with
+      let rec kont al (strm__ : _ Istream.t) =
+        match try Some (pt strm__) with Istream.Failure -> None with
           Some v ->
             begin match
-              (try Some (ps al strm__) with Stream.Failure -> None)
+              (try Some (ps al strm__) with Istream.Failure -> None)
             with
               Some al -> kont al strm__
             | _ ->
                 match
                   try Some (parse_top_symb entry symb strm__) with
-                    Stream.Failure -> None
+                    Istream.Failure -> None
                 with
                   Some a -> kont (a :: al) strm__
                 | _ -> al
             end
         | _ -> al
       in
-      (fun (strm__ : _ Stream.t) ->
+      (fun (strm__ : _ Istream.t) ->
          let al = ps [] strm__ in
          let a = kont al strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
-      (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
+      (fun (strm__ : _ Istream.t) ->
+         match try Some (ps strm__) with Istream.Failure -> None with
            Some a -> Obj.repr (Some a)
          | _ -> Obj.repr None)
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
-      (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
+      (fun (strm__ : _ Istream.t) ->
+         match try Some (ps strm__) with Istream.Failure -> None with
            Some _ -> Obj.repr true
          | _ -> Obj.repr false)
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
-      (fun (strm__ : _ Stream.t) ->
-         let bp = Stream.count strm__ in
+      (fun (strm__ : _ Istream.t) ->
+         let bp = Istream.count strm__ in
          let a = pt strm__ in
-         let ep = Stream.count strm__ in
+         let ep = Istream.count strm__ in
          let loc = loc_of_token_interval bp ep in app a loc)
   | Svala (al, s) ->
       let pa =
@@ -866,7 +866,7 @@ and parser_of_symbol entry nlevn =
             in
             begin match t with
               Some t -> parser_of_token entry (t, "")
-            | None -> fun (strm__ : _ Stream.t) -> raise Stream.Failure
+            | None -> fun (strm__ : _ Istream.t) -> raise Istream.Failure
             end
         | al ->
             let rec loop =
@@ -874,30 +874,30 @@ and parser_of_symbol entry nlevn =
                 a :: al ->
                   let pa = parser_of_token entry ("V", a) in
                   let pal = loop al in
-                  (fun (strm__ : _ Stream.t) ->
-                     try pa strm__ with Stream.Failure -> pal strm__)
-              | [] -> fun (strm__ : _ Stream.t) -> raise Stream.Failure
+                  (fun (strm__ : _ Istream.t) ->
+                     try pa strm__ with Istream.Failure -> pal strm__)
+              | [] -> fun (strm__ : _ Istream.t) -> raise Istream.Failure
             in
             loop al
       in
       let ps = parser_of_symbol entry nlevn s in
-      (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
+      (fun (strm__ : _ Istream.t) ->
+         match try Some (pa strm__) with Istream.Failure -> None with
            Some a -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
          | _ -> let a = ps strm__ in Obj.repr (Ploc.VaVal a))
-  | Snterm e -> (fun (strm__ : _ Stream.t) -> e.estart 0 strm__)
+  | Snterm e -> (fun (strm__ : _ Istream.t) -> e.estart 0 strm__)
   | Snterml (e, l) ->
-      (fun (strm__ : _ Stream.t) -> e.estart (level_number e l) strm__)
-  | Sself -> (fun (strm__ : _ Stream.t) -> entry.estart 0 strm__)
-  | Snext -> (fun (strm__ : _ Stream.t) -> entry.estart nlevn strm__)
-  | Scut -> (fun (strm__ : _ Stream.t) -> Obj.repr ())
+      (fun (strm__ : _ Istream.t) -> e.estart (level_number e l) strm__)
+  | Sself -> (fun (strm__ : _ Istream.t) -> entry.estart 0 strm__)
+  | Snext -> (fun (strm__ : _ Istream.t) -> entry.estart nlevn strm__)
+  | Scut -> (fun (strm__ : _ Istream.t) -> Obj.repr ())
   | Stoken tok -> parser_of_token entry tok
 and parser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
-    match Stream.peek strm with
-      Some tok -> let r = f tok in Stream.junk strm; Obj.repr r
-    | None -> raise Stream.Failure
+    match Istream.peek strm with
+      Some tok -> let r = f tok in Istream.junk strm; Obj.repr r
+    | None -> raise Istream.Failure
 and parse_top_symb entry symb =
   parser_of_symbol entry 0 (top_symb entry symb)
 ;;
@@ -906,7 +906,7 @@ let symb_failed_txt e s1 s2 = symb_failed e 0 s1 s2;;
 
 let rec start_parser_of_levels entry clevn =
   function
-    [] -> (fun levn (strm__ : _ Stream.t) -> raise Stream.Failure)
+    [] -> (fun levn (strm__ : _ Istream.t) -> raise Istream.Failure)
   | lev :: levs ->
       let p1 = start_parser_of_levels entry (succ clevn) levs in
       match lev.lprefix with
@@ -928,21 +928,21 @@ let rec start_parser_of_levels entry clevn =
                  if levn > clevn then match strm with parser []
                  else
                  *)
-                 let (strm__ : _ Stream.t) = strm in
-                 let bp = Stream.count strm__ in
+                 let (strm__ : _ Istream.t) = strm in
+                 let bp = Istream.count strm__ in
                  let act = p2 strm__ in
-                 let ep = Stream.count strm__ in
+                 let ep = Istream.count strm__ in
                  let a = app act (loc_of_token_interval bp ep) in
                  entry.econtinue levn bp a strm)
           | _ ->
               fun levn strm ->
                 if levn > clevn then p1 levn strm
                 else
-                  let (strm__ : _ Stream.t) = strm in
-                  let bp = Stream.count strm__ in
-                  match try Some (p2 strm__) with Stream.Failure -> None with
+                  let (strm__ : _ Istream.t) = strm in
+                  let bp = Istream.count strm__ in
+                  match try Some (p2 strm__) with Istream.Failure -> None with
                     Some act ->
-                      let ep = Stream.count strm__ in
+                      let ep = Istream.count strm__ in
                       let a = app act (loc_of_token_interval bp ep) in
                       entry.econtinue levn bp a strm
                   | _ -> p1 levn strm__
@@ -950,7 +950,7 @@ let rec start_parser_of_levels entry clevn =
 
 let rec continue_parser_of_levels entry clevn =
   function
-    [] -> (fun levn bp a (strm__ : _ Stream.t) -> raise Stream.Failure)
+    [] -> (fun levn bp a (strm__ : _ Istream.t) -> raise Istream.Failure)
   | lev :: levs ->
       let p1 = continue_parser_of_levels entry (succ clevn) levs in
       match lev.lsuffix with
@@ -965,11 +965,11 @@ let rec continue_parser_of_levels entry clevn =
           fun levn bp a strm ->
             if levn > clevn then p1 levn bp a strm
             else
-              let (strm__ : _ Stream.t) = strm in
+              let (strm__ : _ Istream.t) = strm in
               try p1 levn bp a strm__ with
-                Stream.Failure ->
+                Istream.Failure ->
                   let act = p2 strm__ in
-                  let ep = Stream.count strm__ in
+                  let ep = Istream.count strm__ in
                   let a = app act a (loc_of_token_interval bp ep) in
                   entry.econtinue levn bp a strm
 ;;
@@ -978,13 +978,13 @@ let continue_parser_of_entry entry =
   match entry.edesc with
     Dlevels elev ->
       let p = continue_parser_of_levels entry 0 elev in
-      (fun levn bp a (strm__ : _ Stream.t) ->
-         try p levn bp a strm__ with Stream.Failure -> a)
-  | Dparser p -> fun levn bp a (strm__ : _ Stream.t) -> raise Stream.Failure
+      (fun levn bp a (strm__ : _ Istream.t) ->
+         try p levn bp a strm__ with Istream.Failure -> a)
+  | Dparser p -> fun levn bp a (strm__ : _ Istream.t) -> raise Istream.Failure
 ;;
 
 let empty_entry ename levn strm =
-  raise (Stream.Error ("entry [" ^ ename ^ "] is empty"))
+  raise (Istream.Error ("entry [" ^ ename ^ "] is empty"))
 ;;
 
 let start_parser_of_entry entry =
@@ -1075,7 +1075,7 @@ let bfparser_of_token entry tok return_value =
               begin
                 if !backtrack_trace || !backtrack_trace_try then
                   Printf.eprintf " (stalling limit reached)\n%!";
-                raise Stream.Failure
+                raise Istream.Failure
               end
           end
     in
@@ -1087,7 +1087,7 @@ let bfparser_of_token entry tok return_value =
             if !backtrack_trace then Printf.eprintf " yes \"%s\"\n%!" r
           in
           nb_ftry := 0; return_value r strm
-        with Stream.Failure ->
+        with Istream.Failure ->
           let _ = if !backtrack_trace then Printf.eprintf " not found\n%!" in
           None
         end
@@ -2285,8 +2285,8 @@ let tokens g con =
 let glexer g = g.glexer;;
 
 type 'te gen_parsable =
-  { pa_chr_strm : char Stream.t;
-    pa_tok_strm : 'te Stream.t;
+  { pa_chr_strm : char Istream.t;
+    pa_tok_strm : 'te Istream.t;
     mutable pa_tok_fstrm : 'te Fstream.t;
     pa_loc_func : Plexing.location_function }
 ;;
@@ -2296,9 +2296,9 @@ type parsable = token gen_parsable;;
 let fstream_of_stream ts =
   Fstream.from
     (fun _ ->
-       match Stream.peek ts with
+       match Istream.peek ts with
          None -> None
-       | x -> Stream.junk ts; x)
+       | x -> Istream.junk ts; x)
 ;;
 
 let parsable g cs =
@@ -2319,30 +2319,31 @@ let parse_parsable entry p =
   in
   let get_loc () =
     try
-      let cnt = Stream.count ts in
+      let cnt = Istream.count ts in
       let loc = fun_loc cnt in
       if !token_count - 1 <= cnt then loc
       else Ploc.encl loc (fun_loc (!token_count - 1))
-    with Failure _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+    with Failure _ ->
+      Ploc.make_unlined (Istream.count cs, Istream.count cs + 1)
   in
   floc := fun_loc;
   token_count := 0;
   try let r = efun ts in restore (); r with
-    Stream.Failure ->
+    Istream.Failure ->
       let loc = get_loc () in
       restore ();
-      Ploc.raise loc (Stream.Error ("illegal begin of " ^ entry.ename))
-  | Stream.Error _ as exc ->
+      Ploc.raise loc (Istream.Error ("illegal begin of " ^ entry.ename))
+  | Istream.Error _ as exc ->
       let loc = get_loc () in restore (); Ploc.raise loc exc
   | exc ->
-      let loc = Stream.count cs, Stream.count cs + 1 in
+      let loc = Istream.count cs, Istream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
 let bfparse entry efun restore2 p =
   let default_loc () =
     let cs = p.pa_chr_strm in
-    Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+    Ploc.make_unlined (Istream.count cs, Istream.count cs + 1)
   in
   let restore =
     let old_tc = !token_count in
@@ -2364,7 +2365,7 @@ let bfparse entry efun restore2 p =
   let r =
     let fts = p.pa_tok_fstrm in
     try efun no_err fts with
-      Stream.Failure | Fstream.Cut ->
+      Istream.Failure | Fstream.Cut ->
         let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
         let loc = get_loc cnt in
         let mess =
@@ -2386,7 +2387,7 @@ let bfparse entry efun restore2 p =
             Printf.sprintf " (cnt %d) (cnt+unfrozen %d)" !token_count cnt
           else mess
         in
-        restore (); Ploc.raise loc (Stream.Error mess)
+        restore (); Ploc.raise loc (Istream.Error mess)
     | exc -> restore (); Ploc.raise (default_loc ()) exc
   in
   restore (); r
@@ -2397,7 +2398,7 @@ let bfparse_token_stream entry efun ts =
   if !backtrack_trace then
     Printf.eprintf "%sbfparse_token_stream [%s]\n%!" !tind entry.ename;
   let p =
-    {pa_chr_strm = Stream.sempty; pa_tok_strm = ts;
+    {pa_chr_strm = Istream.sempty; pa_tok_strm = ts;
      pa_tok_fstrm = fstream_of_stream ts; pa_loc_func = !floc}
   in
   bfparse entry efun restore2 p
@@ -2420,7 +2421,7 @@ let fparse_token_stream entry ts =
   let efun err fts =
     match entry.fstart 0 err fts with
       Some (a, _) -> Obj.magic a
-    | None -> raise Stream.Failure
+    | None -> raise Istream.Failure
   in
   bfparse_token_stream entry efun ts
 ;;
@@ -2429,7 +2430,7 @@ let fparse_parsable entry p =
   let efun err fts =
     match entry.fstart 0 err fts with
       Some (r, strm) -> p.pa_tok_fstrm <- strm; r
-    | None -> raise Stream.Failure
+    | None -> raise Istream.Failure
   in
   bfparse_parsable entry p efun
 ;;
@@ -2438,7 +2439,7 @@ let bparse_token_stream entry ts =
   let efun err fts =
     match entry.bstart 0 err fts with
       Some (a, _, _) -> Obj.magic a
-    | None -> raise Stream.Failure
+    | None -> raise Istream.Failure
   in
   bfparse_token_stream entry efun ts
 ;;
@@ -2447,7 +2448,7 @@ let bparse_parsable entry p =
   let efun err fts =
     match entry.bstart 0 err fts with
       Some (r, strm, _) -> p.pa_tok_fstrm <- strm; r
-    | None -> raise Stream.Failure
+    | None -> raise Istream.Failure
   in
   bfparse_parsable entry p efun
 ;;
@@ -2492,7 +2493,7 @@ let bparse_parsable_all entry p =
     in
     restore (); rl
   with exc ->
-    let loc = Stream.count cs, Stream.count cs + 1 in
+    let loc = Istream.count cs, Istream.count cs + 1 in
     restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
@@ -2560,7 +2561,7 @@ let bfparser_of_parser p fstrm return_value =
   floc := (fun i -> old_floc (shift_token_number + i));
   let ts =
     let fts = ref fstrm in
-    Stream.from
+    Istream.from
       (fun _ ->
          match Fstream.next !fts with
            Some (v, fstrm) -> fts := fstrm; Some v
@@ -2577,13 +2578,13 @@ let bfparser_of_parser p fstrm return_value =
               Some (_, fstrm) -> loop fstrm (i - 1)
             | None -> failwith "internal error in Entry.of_parser"
         in
-        loop fstrm (Stream.count ts)
+        loop fstrm (Istream.count ts)
       in
       return_value r fstrm
     with e ->
       restore ();
       match e with
-        Stream.Failure -> None
+        Istream.Failure -> None
       | _ -> raise e
   in
   restore (); r
@@ -2609,7 +2610,8 @@ module Entry =
     type 'a e = te g_entry;;
     let create g n =
       {egram = g; ename = n; elocal = false; estart = empty_entry n;
-       econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+       econtinue =
+         (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
        fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
        fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
        bstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
@@ -2640,7 +2642,7 @@ module Entry =
           begin match !default_algorithm_var with
             Predictive | DefaultAlgorithm ->
               begin try Obj.magic [(parse_parsable entry p : Obj.t)] with
-                Stream.Failure | Stream.Error _ -> []
+                Istream.Failure | Istream.Error _ -> []
               end
           | Backtracking ->
               Obj.magic (bparse_parsable_all entry p : Obj.t list)
@@ -2649,7 +2651,7 @@ module Entry =
           end
       | Predictive ->
           begin try Obj.magic [(parse_parsable entry p : Obj.t)] with
-            Stream.Failure | Stream.Error _ -> []
+            Istream.Failure | Istream.Error _ -> []
           end
       | Functional ->
           failwith "parse_parsable_all: functional parsing not impl"
@@ -2689,15 +2691,16 @@ module Entry =
       parse_token_stream entry ts
     ;;
     let name e = e.ename;;
-    let of_parser g n (p : te Stream.t -> 'a) : 'a e =
+    let of_parser g n (p : te Istream.t -> 'a) : 'a e =
       {egram = g; ename = n; elocal = false;
-       estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
-       econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+       estart = (fun _ -> (Obj.magic p : te Istream.t -> Obj.t));
+       econtinue =
+         (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
        fstart = (fun _ -> fparser_of_parser p);
        fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
        bstart = (fun _ -> bparser_of_parser p);
        bcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
-       edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
+       edesc = Dparser (Obj.magic p : te Istream.t -> Obj.t)}
     ;;
     external obj : 'a e -> te Gramext.g_entry = "%identity";;
     let print ppf e = fprintf ppf "%a@." print_entry (obj e);;
@@ -2709,7 +2712,7 @@ let of_entry e = e.egram;;
 
 let create_local_entry g n =
   {egram = g; ename = n; elocal = true; estart = empty_entry n;
-   econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+   econtinue = (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
    fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
    fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
    bstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
@@ -2720,8 +2723,8 @@ let create_local_entry g n =
 (* Unsafe *)
 
 let clear_entry e =
-  e.estart <- (fun _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-  e.econtinue <- (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+  e.estart <- (fun _ (strm__ : _ Istream.t) -> raise Istream.Failure);
+  e.econtinue <- (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
   e.fstart <- (fun _ _ (strm__ : _ Fstream.t) -> None);
   e.fcontinue <- (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
   e.bstart <- (fun _ _ (strm__ : _ Fstream.t) -> None);
@@ -2748,7 +2751,7 @@ module type S =
   sig
     type te;;
     type parsable;;
-    val parsable : char Stream.t -> parsable;;
+    val parsable : char Istream.t -> parsable;;
     val tokens : string -> (string * int) list;;
     val glexer : te Plexing.lexer;;
     val set_algorithm : parse_algorithm -> unit;;
@@ -2758,11 +2761,11 @@ module type S =
         val create : string -> 'a e;;
         val parse : 'a e -> parsable -> 'a;;
         val name : 'a e -> string;;
-        val of_parser : string -> (te Stream.t -> 'a) -> 'a e;;
-        val parse_token_stream : 'a e -> te Stream.t -> 'a;;
+        val of_parser : string -> (te Istream.t -> 'a) -> 'a e;;
+        val parse_token_stream : 'a e -> te Istream.t -> 'a;;
         val print : Format.formatter -> 'a e -> unit;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
-        val parse_token : 'a e -> te Stream.t -> 'a;;
+        val parse_token : 'a e -> te Istream.t -> 'a;;
       end
     ;;
     module Unsafe :
@@ -2801,7 +2804,7 @@ module GMake (L : GLexerType) =
         let create n =
           {egram = gram; ename = n; elocal = false; estart = empty_entry n;
            econtinue =
-             (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+             (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
            fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
            fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
            bstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
@@ -2851,16 +2854,16 @@ module GMake (L : GLexerType) =
           parse_token_stream entry ts
         ;;
         let name e = e.ename;;
-        let of_parser n (p : te Stream.t -> 'a) : 'a e =
+        let of_parser n (p : te Istream.t -> 'a) : 'a e =
           {egram = gram; ename = n; elocal = false;
-           estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
+           estart = (fun _ -> (Obj.magic p : te Istream.t -> Obj.t));
            econtinue =
-             (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+             (fun _ _ _ (strm__ : _ Istream.t) -> raise Istream.Failure);
            fstart = (fun _ -> fparser_of_parser p);
            fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
            bstart = (fun _ -> bparser_of_parser p);
            bcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
-           edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
+           edesc = Dparser (Obj.magic p : te Istream.t -> Obj.t)}
         ;;
         let print ppf e = fprintf ppf "%a@." print_entry (obj e);;
       end

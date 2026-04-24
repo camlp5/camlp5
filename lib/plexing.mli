@@ -60,7 +60,7 @@ type lexer 'te =
        put the locations of the comments, if its initial value is not
        [None]. If it is [None], nothing has to be done by the lexer. *)
 
-and lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
+and lexer_func 'te = Istream.t char -> (Istream.t 'te * location_function)
   (** The type of a lexer function (field [tok_func] of the type
       [glexer]). The character stream is the input stream to be
       lexed. The result is a pair of a token stream and a location
@@ -96,7 +96,7 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
+  ((Istream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -107,7 +107,7 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
 (** Function to build a stream and a location function *)
 
 value make_stream_and_location :
-  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Istream.t 'te * location_function);
    (** General function *)
 
 (** Useful functions and values *)

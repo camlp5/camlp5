@@ -241,7 +241,7 @@ value substt mloc env =
 
 value cannot_eval e =
   let loc = MLast.loc_of_expr e in
-  Ploc.raise loc (Stream.Error "can't eval")
+  Ploc.raise loc (Istream.Error "can't eval")
 ;
 
 value rec eval =
@@ -400,7 +400,7 @@ value apply_directive loc n dp =
   [ Some f -> f (Pcaml.unvala dp)
   | None ->
       let msg = sprintf "unknown directive #%s" n in
-      Ploc.raise loc (Stream.Error msg) ]
+      Ploc.raise loc (Istream.Error msg) ]
 ;
 
 EXTEND

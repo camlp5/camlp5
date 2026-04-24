@@ -258,7 +258,7 @@ Grammar.extend
            (MLast.ExApp
               (loc,
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Stream"),
+                 (loc, MLast.ExUid (loc, "Istream"),
                   MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, strm_n)) :
             'expr));

@@ -217,7 +217,7 @@ EXTEND
       | "$"; LIDENT "empty" ->
           empty loc
       | "$"; LIDENT "pos" ->
-          <:expr< Stream.count $lid:strm_n$ >> ] ]
+          <:expr< Istream.count $lid:strm_n$ >> ] ]
   ;
   rules:
     [ [ "["; rl = LIST0 rule SEP "|"; "]" -> rl ] ]

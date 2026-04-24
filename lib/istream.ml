@@ -152,7 +152,7 @@ value iter f strm =
     | None → () ]
 ;
 
-(* Stream building functions *)
+(* Istream building functions *)
 
 value from f = {count = 0; data = Sgen {curr = None; func = f}};
 
@@ -169,7 +169,7 @@ value of_channel ic =
    data = Sbuffio {ic = ic; buff = Bytes.create 4096; len = 0; ind = 0}}
 ;
 
-(* Stream expressions builders *)
+(* Istream expressions builders *)
 
 value iapp i s = {count = 0; data = Sapp i.data s.data};
 value icons i s = {count = 0; data = Scons i s.data};

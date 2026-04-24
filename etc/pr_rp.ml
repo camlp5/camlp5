@@ -38,20 +38,20 @@ value semi_after elem pc x = pprintf pc "%p;" elem x;
 
 value loc = Ploc.dummy;
 
-(* Streams *)
+(* Istreams *)
 
 value stream pc e =
   let rec get =
     fun
-    [ <:expr< Stream.iapp $x$ $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.icons $x$ $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.ising $x$ >> -> [(True, x)]
-    | <:expr< Stream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.lsing (fun _ -> $x$) >> -> [(True, x)]
-    | <:expr< Stream.sempty >> -> []
-    | <:expr< Stream.slazy (fun _ -> $x$) >> -> [(False, x)]
-    | <:expr< Stream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
+    [ <:expr< Istream.iapp $x$ $y$ >> -> [(False, x) :: get y]
+    | <:expr< Istream.icons $x$ $y$ >> -> [(True, x) :: get y]
+    | <:expr< Istream.ising $x$ >> -> [(True, x)]
+    | <:expr< Istream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
+    | <:expr< Istream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
+    | <:expr< Istream.lsing (fun _ -> $x$) >> -> [(True, x)]
+    | <:expr< Istream.sempty >> -> []
+    | <:expr< Istream.slazy (fun _ -> $x$) >> -> [(False, x)]
+    | <:expr< Istream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
     | e -> [(False, e)] ]
   in
   let elem pc e =
@@ -187,30 +187,30 @@ value err =
 value rec unstream_pattern_kont ge =
   match ge with
   [ <:expr<
-      match Stream.peek strm__ with
-      [ Some $p1$ → do { Stream.junk strm__; $e1$ }
-      | _ → raise (Stream.Error $e2$) ]
+      match Istream.peek strm__ with
+      [ Some $p1$ → do { Istream.junk strm__; $e1$ }
+      | _ → raise (Istream.Error $e2$) ]
     >> →
       let (sp, epo, e) = unstream_pattern_kont e1 in
       let sp = [(SpTrm loc p1 <:vala< None >>, err e2) :: sp] in
       (sp, epo, e)
   | <:expr<
-      match try Some $f$ with [ Stream.Failure -> None ] with
+      match try Some $f$ with [ Istream.Failure -> None ] with
       [ Some $p1$ -> $e1$
-      | _ -> raise (Stream.Error $e2$) ]
+      | _ -> raise (Istream.Error $e2$) ]
     >> ->
       let f =
         match f with
         [ <:expr< $f$ strm__ >> -> f
-        | _ -> <:expr< fun (strm__ : Stream.t _) -> $f$ >> ]
+        | _ -> <:expr< fun (strm__ : Istream.t _) -> $f$ >> ]
       in
       let (sp, epo, e) = unstream_pattern_kont e1 in
       let sp =[(SpNtr loc p1 f, err e2) :: sp] in
       (sp, epo, e)
   | <:expr<
-      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      match try Some ($f$ strm__) with [ Istream.Failure → None ] with
       [ Some $p1$ → $e1$
-      | _ → raise Stream.Failure ]
+      | _ → raise Istream.Failure ]
     >> →
       let p1_eq_e1 =
         match (p1, e1) with
@@ -223,11 +223,11 @@ value rec unstream_pattern_kont ge =
         let (sp, epo, e) = unstream_pattern_kont e1 in
         ([(SpNtr loc p1 f, SpoBang) :: sp], epo, e)
   | <:expr<
-      match try Some $e1$ with [ Stream.Failure → None ] with
+      match try Some $e1$ with [ Istream.Failure → None ] with
       [ Some $p1$ → $e2$
-      | _ → raise Stream.Failure ]
+      | _ → raise Istream.Failure ]
     >> →
-      let f = <:expr< fun (strm__ : Stream.t _) -> $e1$ >> in
+      let f = <:expr< fun (strm__ : Istream.t _) -> $e1$ >> in
       let (sp, epo, e) = unstream_pattern_kont e2 in
       ([(SpNtr loc p1 f, SpoBang) :: sp], epo, e)
   | e ->
@@ -237,8 +237,8 @@ value rec unstream_pattern_kont ge =
 value rec unparser_cases_list ge =
   match ge with
   [ <:expr<
-      match Stream.peek strm__ with
-      [ Some $p1$ → do { Stream.junk strm__; $e1$ }
+      match Istream.peek strm__ with
+      [ Some $p1$ → do { Istream.junk strm__; $e1$ }
       | _ → $e2$ ]
     >> →
       let spe =
@@ -249,7 +249,7 @@ value rec unparser_cases_list ge =
       let spel = unparser_cases_list e2 in
       [spe :: spel]
   | <:expr<
-      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      match try Some ($f$ strm__) with [ Istream.Failure → None ] with
       [ Some $p1$ → $e1$
       | _ → $e2$ ]
     >> →
@@ -260,7 +260,7 @@ value rec unparser_cases_list ge =
       in
       let spel = unparser_cases_list e2 in
       [spe :: spel]
-  | <:expr< raise Stream.Failure >> ->
+  | <:expr< raise Istream.Failure >> ->
       []
   | e ->
       [([], None, e)] ]
@@ -269,7 +269,7 @@ value rec unparser_cases_list ge =
 value unparser_body e =
   let (po, e) =
     match e with
-    [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
+    [ <:expr< let $lid:bp$ = Istream.count $lid:strm_n$ in $e$ >> ->
         (Some bp, e)
     | _ ->
         (None, e) ]
@@ -281,7 +281,7 @@ value unparser_body e =
 
 value print_parser pc e =
   match e with
-  [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
+  [ <:expr< fun (strm__ : Istream.t _) -> $e$ >> ->
       let pa = unparser_body e in
       pprintf pc "parser%p" parser_body pa
   | e -> expr pc e ]
@@ -289,12 +289,12 @@ value print_parser pc e =
 
 value print_match_with_parser pc e =
   match e with
-  [ <:expr< let ($_$ : Stream.t _) = $e1$ in $e2$ >> ->
+  [ <:expr< let ($_$ : Istream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
       pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
   | <:expr<
-      match Stream.peek strm__ with
-      [ Some $_$ → do { Stream.junk strm__; $_$ }
+      match Istream.peek strm__ with
+      [ Some $_$ → do { Istream.junk strm__; $_$ }
       | _ → $_$ ]
     >> as e →
       let pa = unparser_body e in
@@ -311,36 +311,36 @@ pr_expr_fun_args.val :=
 
 EXTEND_PRINTER
   pr_expr: LEVEL "top"
-    [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
+    [ [ <:expr< fun (strm__ : Istream.t _) -> $_$ >> as e ->
           print_parser pc e
-      | <:expr< let ($_$ : Stream.t _) = $_$ in $_$ >> as e ->
+      | <:expr< let ($_$ : Istream.t _) = $_$ in $_$ >> as e ->
           print_match_with_parser pc e
       | <:expr<
-          match Stream.peek strm__ with
-          [ Some $_$ → do { Stream.junk strm__; $_$ }
+          match Istream.peek strm__ with
+          [ Some $_$ → do { Istream.junk strm__; $_$ }
           | _ → $_$ ]
         >> as e →
           print_match_with_parser pc e ] ]
   ;
   pr_expr: LEVEL "apply"
-    [ [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
-        <:expr< Stream.ising $_$ >> |
-        <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
-        <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
-        <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
-        <:expr< Stream.slazy $_$ >> as e ->
+    [ [ <:expr< Istream.iapp $_$ $_$ >> | <:expr< Istream.icons $_$ $_$ >> |
+        <:expr< Istream.ising $_$ >> |
+        <:expr< Istream.lapp (fun _ -> $_$) $_$ >> |
+        <:expr< Istream.lcons (fun _ -> $_$) $_$ >> |
+        <:expr< Istream.lsing (fun _ -> $_$) >> | <:expr< Istream.sempty >> |
+        <:expr< Istream.slazy $_$ >> as e ->
           stream pc e ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< Stream.sempty >> -> pprintf pc "[: :]" ] ]
+    [ [ <:expr< Istream.sempty >> -> pprintf pc "[: :]" ] ]
   ;
   pr_expr: LEVEL "simple"
-    [ [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
-        <:expr< Stream.ising $_$ >> |
-        <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
-        <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
-        <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
-        <:expr< Stream.slazy $_$ >> as e ->
+    [ [ <:expr< Istream.iapp $_$ $_$ >> | <:expr< Istream.icons $_$ $_$ >> |
+        <:expr< Istream.ising $_$ >> |
+        <:expr< Istream.lapp (fun _ -> $_$) $_$ >> |
+        <:expr< Istream.lcons (fun _ -> $_$) $_$ >> |
+        <:expr< Istream.lsing (fun _ -> $_$) >> | <:expr< Istream.sempty >> |
+        <:expr< Istream.slazy $_$ >> as e ->
           stream pc e ] ]
   ;
 END;

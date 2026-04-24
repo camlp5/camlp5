@@ -90,26 +90,26 @@ value is_operator = do {
 value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
-       match Stream.npeek 2 strm with
+       match Istream.npeek 2 strm with
        [ [("", s); ("", ")")] when is_operator s -> do {
-           Stream.junk strm;
-           Stream.junk strm;
+           Istream.junk strm;
+           Istream.junk strm;
            s
          }
-       | _ -> raise Stream.Failure ])
+       | _ -> raise Istream.Failure ])
 ;
 
 value check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
     (fun strm ->
        let tok =
-         match Stream.npeek 4 strm with
+         match Istream.npeek 4 strm with
          [ [("LIDENT", _); tok :: _] -> tok
          | [("", "("); ("", s); ("", ")"); tok] when is_operator s -> tok
-         | _ -> raise Stream.Failure ]
+         | _ -> raise Istream.Failure ]
        in
        match tok with
-       [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
+       [ ("", "," | "as" | "|" | "::") -> raise Istream.Failure
        | _ -> () ])
 ;
 
@@ -194,19 +194,19 @@ value infixop4 =
 value test_constr_decl =
   Grammar.Entry.of_parser gram "test_constr_decl"
     (fun strm ->
-       match Stream.npeek 1 strm with
+       match Istream.npeek 1 strm with
        [ [("UIDENT", _)] ->
-           match Stream.npeek 2 strm with
-           [ [_; ("", ".")] -> raise Stream.Failure
-           | [_; ("", "(")] -> raise Stream.Failure
+           match Istream.npeek 2 strm with
+           [ [_; ("", ".")] -> raise Istream.Failure
+           | [_; ("", "(")] -> raise Istream.Failure
            | [_ :: _] -> ()
-           | _ -> raise Stream.Failure ]
+           | _ -> raise Istream.Failure ]
        | [("", "|")] -> ()
-       | _ -> raise Stream.Failure ])
+       | _ -> raise Istream.Failure ])
 ;
 
 value stream_peek_nth n strm =
-  loop n (Stream.npeek n strm) where rec loop n =
+  loop n (Istream.npeek n strm) where rec loop n =
     fun
     [ [] -> None
     | [x] -> if n == 1 then Some x else None
@@ -231,7 +231,7 @@ value test_ctyp_minusgreater =
              skip_simple_ctyp (n + 1)
          | Some ("QUESTIONIDENT" | "LIDENT" | "UIDENT", _) ->
              skip_simple_ctyp (n + 1)
-         | Some _ | None -> raise Stream.Failure ]
+         | Some _ | None -> raise Istream.Failure ]
        and ignore_upto end_kwd n =
          match stream_peek_nth n strm with
          [ Some ("", prm) when prm = end_kwd -> n
@@ -239,11 +239,11 @@ value test_ctyp_minusgreater =
              ignore_upto end_kwd (ignore_upto "]" (n + 1) + 1)
          | Some ("", "(") -> ignore_upto end_kwd (ignore_upto ")" (n + 1) + 1)
          | Some _ -> ignore_upto end_kwd (n + 1)
-         | None -> raise Stream.Failure ]
+         | None -> raise Istream.Failure ]
        in
-       match Stream.peek strm with
+       match Istream.peek strm with
        [ Some (("", "[") | ("LIDENT" | "UIDENT", _)) -> skip_simple_ctyp 1
-       | Some ("", "object") -> raise Stream.Failure
+       | Some ("", "object") -> raise Istream.Failure
        | _ -> 1 ])
 ;
 
@@ -255,7 +255,7 @@ value test_label_eq =
            test (lev + 1) strm
        | Some ("ANTIQUOT_LOC", _) -> ()
        | Some ("", "=" | ";" | "}") -> ()
-       | _ -> raise Stream.Failure ])
+       | _ -> raise Istream.Failure ])
 ;
 
 value test_typevar_list_dot =
@@ -264,11 +264,11 @@ value test_typevar_list_dot =
        match stream_peek_nth lev strm with
        [ Some ("", "'") -> test2 (lev + 1) strm
        | Some ("", ".") -> ()
-       | _ -> raise Stream.Failure ]
+       | _ -> raise Istream.Failure ]
      and test2 lev strm =
        match stream_peek_nth lev strm with
        [ Some ("UIDENT" | "LIDENT", _) -> test (lev + 1) strm
-       | _ -> raise Stream.Failure ]
+       | _ -> raise Istream.Failure ]
      in
      test 1)
 ;
@@ -361,7 +361,7 @@ value expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
   [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
-  | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
+  | _ -> Ploc.raise loc (Istream.Error "identifier expected") ]
 ;
 
 EXTEND
@@ -1032,7 +1032,7 @@ EXTEND
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
         "virtual"; lab = V LIDENT "lid" ""; ":"; t = ctyp ->
           if Pcaml.unvala ov then
-            Ploc.raise loc (Stream.Error "virtual value cannot override")
+            Ploc.raise loc (Istream.Error "virtual value cannot override")
           else
             <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
       | "val"; "virtual"; mf = V (FLAG "mutable"); lab = V LIDENT "lid" "";

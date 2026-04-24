@@ -34,7 +34,7 @@ Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
 value not_impl loc s =
-  Ploc.raise loc (Stream.Error ("not implemented feature [" ^ s ^ "]"))
+  Ploc.raise loc (Istream.Error ("not implemented feature [" ^ s ^ "]"))
 ;
 
 type altern 'a 'b = [ Left of 'a | Right of 'b ];
@@ -97,7 +97,7 @@ value expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
   [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
-  | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
+  | _ -> Ploc.raise loc (Istream.Error "identifier expected") ]
 ;
 
 value apply_bind loc e bl =
@@ -210,10 +210,10 @@ value function_of_clause_list loc xl =
          let (fname, fname_loc, nbpat) =
            if fname = "" then (x1, loc, List.length x2)
            else if x1 <> fname then
-             Ploc.raise loc (Stream.Error ("'" ^ fname ^ "' expected"))
+             Ploc.raise loc (Istream.Error ("'" ^ fname ^ "' expected"))
            else if List.length x2 <> nbpat then
              Ploc.raise loc
-               (Stream.Error "bad number of patterns in that clause")
+               (Istream.Error "bad number of patterns in that clause")
            else (fname, fname_loc, nbpat)
          in
          let x4 =

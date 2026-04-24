@@ -28,7 +28,7 @@ val glexer : g -> token Plexing.lexer;;
    (** Return the lexer used by the grammar *)
 
 type parsable;;
-val parsable : g -> char Stream.t -> parsable;;
+val parsable : g -> char Istream.t -> parsable;;
    (** Type and value allowing to keep the same token stream between
        several calls of entries of the same grammar, to prevent possible
        loss of tokens. To be used with [Entry.parse_parsable] below *)
@@ -37,16 +37,16 @@ module Entry :
   sig
     type 'a e;;
     val create : g -> string -> 'a e;;
-    val parse : 'a e -> char Stream.t -> 'a;;
-    val parse_all : 'a e -> char Stream.t -> 'a list;;
+    val parse : 'a e -> char Istream.t -> 'a;;
+    val parse_all : 'a e -> char Istream.t -> 'a list;;
     val parse_parsable : 'a e -> parsable -> 'a;;
     val name : 'a e -> string;;
-    val of_parser : g -> string -> (token Stream.t -> 'a) -> 'a e;;
-    val parse_token_stream : 'a e -> token Stream.t -> 'a;;
+    val of_parser : g -> string -> (token Istream.t -> 'a) -> 'a e;;
+    val parse_token_stream : 'a e -> token Istream.t -> 'a;;
     val print : Format.formatter -> 'a e -> unit;;
     val find : 'a e -> string -> Obj.t e;;
     external obj : 'a e -> token Gramext.g_entry = "%identity";;
-    val parse_token : 'a e -> token Stream.t -> 'a;;
+    val parse_token : 'a e -> token Istream.t -> 'a;;
   end
 ;;
    (** Module to handle entries.
@@ -142,7 +142,7 @@ module type S =
   sig
     type te;;
     type parsable;;
-    val parsable : char Stream.t -> parsable;;
+    val parsable : char Istream.t -> parsable;;
     val tokens : string -> (string * int) list;;
     val glexer : te Plexing.lexer;;
     val set_algorithm : parse_algorithm -> unit;;
@@ -152,11 +152,11 @@ module type S =
         val create : string -> 'a e;;
         val parse : 'a e -> parsable -> 'a;;
         val name : 'a e -> string;;
-        val of_parser : string -> (te Stream.t -> 'a) -> 'a e;;
-        val parse_token_stream : 'a e -> te Stream.t -> 'a;;
+        val of_parser : string -> (te Istream.t -> 'a) -> 'a e;;
+        val parse_token_stream : 'a e -> te Istream.t -> 'a;;
         val print : Format.formatter -> 'a e -> unit;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
-        val parse_token : 'a e -> te Stream.t -> 'a;;
+        val parse_token : 'a e -> te Istream.t -> 'a;;
       end
     ;;
     module Unsafe :
@@ -243,7 +243,7 @@ val extend :
 val delete_rule : 'a Entry.e -> token Gramext.g_symbol list -> unit;;
 
 val parse_top_symb :
-  'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Stream.t -> Obj.t;;
+  'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Istream.t -> Obj.t;;
 val symb_failed_txt :
   'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Gramext.g_symbol ->
     string;;

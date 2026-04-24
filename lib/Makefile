@@ -4,7 +4,7 @@ TOP=..
 include $(TOP)/config/Makefile
 
 OCAMLCFLAGS=$(WARNERR) -I $(OTOPP)
-OBJS=versdep.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
+OBJS=versdep.cmo istream.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma
 

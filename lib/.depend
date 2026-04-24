@@ -3,29 +3,31 @@ diff.cmx: diff.cmi versdep.cmx
 eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi
 eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx
 eprinter.cmi: extfun.cmi pprintf.cmi
-extfold.cmo: extfold.cmi gramext.cmi grammar.cmi
-extfold.cmx: extfold.cmi gramext.cmx grammar.cmx
-extfold.cmi: gramext.cmi
+extfold.cmo: extfold.cmi gramext.cmi grammar.cmi istream.cmi
+extfold.cmx: extfold.cmi gramext.cmx grammar.cmx istream.cmx
+extfold.cmi: gramext.cmi istream.cmi
 extfun.cmo: extfun.cmi
 extfun.cmx: extfun.cmi
 fstream.cmo: fstream.cmi
 fstream.cmx: fstream.cmi
-gramext.cmo: fstream.cmi gramext.cmi plexing.cmi
-gramext.cmx: fstream.cmx gramext.cmi plexing.cmx
-gramext.cmi: fstream.cmi plexing.cmi
-grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
-grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
-grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
+gramext.cmo: fstream.cmi gramext.cmi istream.cmi plexing.cmi
+gramext.cmx: fstream.cmx gramext.cmi istream.cmx plexing.cmx
+gramext.cmi: fstream.cmi istream.cmi plexing.cmi
+grammar.cmo: fstream.cmi gramext.cmi grammar.cmi istream.cmi plexing.cmi \
+    ploc.cmi
+grammar.cmx: fstream.cmx gramext.cmx grammar.cmi istream.cmx plexing.cmx \
+    ploc.cmx
+grammar.cmi: gramext.cmi istream.cmi plexing.cmi ploc.cmi
 istream.cmo: istream.cmi
 istream.cmx: istream.cmi
-plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmo
-plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
+plexer.cmo: istream.cmi plexer.cmi plexing.cmi ploc.cmi versdep.cmo
+plexer.cmx: istream.cmx plexer.cmi plexing.cmx ploc.cmx versdep.cmx
 plexer.cmi: plexing.cmi
-plexing.cmo: plexing.cmi ploc.cmi versdep.cmo
-plexing.cmx: plexing.cmi ploc.cmx versdep.cmx
-plexing.cmi: ploc.cmi
-ploc.cmo: ploc.cmi
-ploc.cmx: ploc.cmi
+plexing.cmo: istream.cmi plexing.cmi ploc.cmi versdep.cmo
+plexing.cmx: istream.cmx plexing.cmi ploc.cmx versdep.cmx
+plexing.cmi: istream.cmi ploc.cmi
+ploc.cmo: istream.cmi ploc.cmi
+ploc.cmx: istream.cmx ploc.cmi
 pprintf.cmo: pprintf.cmi pretty.cmi
 pprintf.cmx: pprintf.cmi pretty.cmx
 pretty.cmo: ploc.cmi pretty.cmi versdep.cmo
@@ -33,6 +35,6 @@ pretty.cmx: ploc.cmx pretty.cmi versdep.cmx
 stdpp.cmo: ploc.cmi stdpp.cmi
 stdpp.cmx: ploc.cmx stdpp.cmi
 stdpp.cmi: ploc.cmi
-token.cmo: plexing.cmi ploc.cmi token.cmi
-token.cmx: plexing.cmx ploc.cmx token.cmi
-token.cmi: plexing.cmi ploc.cmi
+token.cmo: istream.cmi plexing.cmi ploc.cmi token.cmi
+token.cmx: istream.cmx plexing.cmx ploc.cmx token.cmi
+token.cmi: istream.cmi plexing.cmi ploc.cmi

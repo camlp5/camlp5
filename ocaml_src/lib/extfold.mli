@@ -3,13 +3,13 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 type ('te, 'a, 'b) t =
-  'te Gramext.g_entry -> 'te Gramext.g_symbol list -> ('te Stream.t -> 'a) ->
-    'te Stream.t -> 'b
+  'te Gramext.g_entry -> 'te Gramext.g_symbol list -> ('te Istream.t -> 'a) ->
+    'te Istream.t -> 'b
 ;;
 
 type ('te, 'a, 'b) tsep =
-  'te Gramext.g_entry -> 'te Gramext.g_symbol list -> ('te Stream.t -> 'a) ->
-    ('te Stream.t -> unit) -> 'te Stream.t -> 'b
+  'te Gramext.g_entry -> 'te Gramext.g_symbol list -> ('te Istream.t -> 'a) ->
+    ('te Istream.t -> unit) -> 'te Istream.t -> 'b
 ;;
 
 val sfold0 : ('a -> 'b -> 'b) -> 'b -> (_, 'a, 'b) t;;

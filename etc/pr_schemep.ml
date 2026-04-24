@@ -28,21 +28,21 @@ value not_impl name pc x =
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-(* Streams *)
+(* Istreams *)
 
 (*
 value stream pc e =
   let rec get =
     fun
-    [ <:expr< Stream.iapp $x$ $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.icons $x$ $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.ising $x$ >> -> [(True, x)]
-    | <:expr< Stream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.lsing (fun _ -> $x$) >> -> [(True, x)]
-    | <:expr< Stream.sempty >> -> []
-    | <:expr< Stream.slazy (fun _ -> $x$) >> -> [(False, x)]
-    | <:expr< Stream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
+    [ <:expr< Istream.iapp $x$ $y$ >> -> [(False, x) :: get y]
+    | <:expr< Istream.icons $x$ $y$ >> -> [(True, x) :: get y]
+    | <:expr< Istream.ising $x$ >> -> [(True, x)]
+    | <:expr< Istream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
+    | <:expr< Istream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
+    | <:expr< Istream.lsing (fun _ -> $x$) >> -> [(True, x)]
+    | <:expr< Istream.sempty >> -> []
+    | <:expr< Istream.slazy (fun _ -> $x$) >> -> [(False, x)]
+    | <:expr< Istream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
     | e -> [(False, e)] ]
   in
   let elem pc e =
@@ -237,7 +237,7 @@ value parser_body pc spel =
 
 value print_parser pc e =
   match e with
-  [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
+  [ <:expr< fun (strm__ : Istream.t _) -> $e$ >> ->
       let (po, spel) = unparser_body e in
       let pc =
         {(pc) with ind = pc.ind + 1;
@@ -259,7 +259,7 @@ value print_parser pc e =
 
 value print_match_with_parser pc e =
   match e with
-  [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
+  [ <:expr< let (strm__ : Istream.t _) = $e1$ in $e2$ >> ->
       let (po, spel) = unparser_body e2 in
       let fl =
         let fl = [(fun pc -> parser_body pc spel, "")] in
@@ -283,9 +283,9 @@ pr_expr_fun_args.val :=
 
 EXTEND_PRINTER
   pr_expr: LEVEL "top"
-    [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
+    [ [ <:expr< fun (strm__ : Istream.t _) -> $_$ >> as e ->
           print_parser pc e
-      | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
+      | <:expr< let (strm__ : Istream.t _) = $_$ in $_$ >> as e ->
           print_match_with_parser pc e
       | x ->
           not_impl "expr" pc x ] ]

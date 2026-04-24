@@ -7,7 +7,7 @@
 
 module P =
   struct
-    value gloc bp strm = Grammar.loc_of_token_interval bp (Stream.count strm);
+    value gloc bp strm = Grammar.loc_of_token_interval bp (Istream.count strm);
     value vala symb = parser [: a = symb :] -> <:vala< a >>;
     value list0 symb =
       let rec loop al =

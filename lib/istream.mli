@@ -12,7 +12,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(** Streams and parsers. *)
+(** Istreams and parsers. *)
 
 type t α = β;
 (** The type of streams holding values of type ['a]. *)
@@ -26,7 +26,7 @@ exception Error of string;
    accepted, but one of the following components is rejected. *)
 
 
-(** {6 Stream builders}
+(** {6 Istream builders}
 
    Warning: these functions create streams with fast access; it is illegal
    to mix them with streams built with [[< >]]; would raise [Failure]
@@ -34,7 +34,7 @@ exception Error of string;
 *)
 
 value from : (int → option α) → t α;
-(** [Stream.from f] returns a stream built from the function [f].
+(** [Istream.from f] returns a stream built from the function [f].
    To create a new stream element, the function [f] is called with
    the current stream count. The user function [f] must return either
    [Some <value>] for a value or [None] to specify the end of the
@@ -51,10 +51,10 @@ value of_channel : in_channel → t char;
 (** Return the stream of the characters read from the input channel. *)
 
 
-(** {6 Stream iterator} *)
+(** {6 Istream iterator} *)
 
 value iter : (α → unit) → t α → unit;
-(** [Stream.iter f s] scans the whole stream s, applying function [f]
+(** [Istream.iter f s] scans the whole stream s, applying function [f]
    in turn to each stream element encountered. *)
 
 
@@ -62,10 +62,10 @@ value iter : (α → unit) → t α → unit;
 
 value next : t α → α;
 (** Return the first element of the stream and remove it from the
-   stream. Raise Stream.Failure if the stream is empty. *)
+   stream. Raise Istream.Failure if the stream is empty. *)
 
 value empty : t α → unit;
-(** Return [()] if the stream is empty, else raise [Stream.Failure]. *)
+(** Return [()] if the stream is empty, else raise [Istream.Failure]. *)
 
 
 (** {6 Useful functions} *)

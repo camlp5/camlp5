@@ -24,10 +24,10 @@ type spat_comp_opt =
 
 let strm_n = "strm__";;
 let peek_fun loc =
-  MLast.ExAcc (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "peek"))
+  MLast.ExAcc (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "peek"))
 ;;
 let junk_fun loc =
-  MLast.ExAcc (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "junk"))
+  MLast.ExAcc (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "junk"))
 ;;
 
 (* Parsers *)
@@ -52,7 +52,7 @@ let is_raise_failure e =
     MLast.ExApp
       (_, MLast.ExLid (_, "raise"),
        MLast.ExAcc
-         (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure"))) ->
+         (_, MLast.ExUid (_, "Istream"), MLast.ExUid (_, "Failure"))) ->
       true
   | _ -> false
 ;;
@@ -62,7 +62,7 @@ let rec handle_failure e =
     MLast.ExTry
       (_, te,
        [MLast.PaAcc
-          (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+          (_, MLast.PaUid (_, "Istream"), MLast.PaUid (_, "Failure")),
         None, e]) ->
       handle_failure e
   | MLast.ExMat (_, me, pel) ->
@@ -82,7 +82,7 @@ let rec handle_failure e =
   | MLast.ExApp (_, MLast.ExLid (_, "raise"), e) ->
       begin match e with
         MLast.ExAcc
-          (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure")) ->
+          (_, MLast.ExUid (_, "Istream"), MLast.ExUid (_, "Failure")) ->
           false
       | _ -> true
       end
@@ -93,8 +93,8 @@ and no_raising_failure_fun =
   function
     MLast.ExUid (_, _) -> true
   | MLast.ExLid (_, _) -> false
-  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")) |
-    MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")) ->
+  | MLast.ExAcc (_, MLast.ExUid (_, "Istream"), MLast.ExLid (_, "peek")) |
+    MLast.ExAcc (_, MLast.ExUid (_, "Istream"), MLast.ExLid (_, "junk")) ->
       true
   | MLast.ExApp (_, x, y) -> no_raising_failure_fun x && handle_failure y
   | _ -> false
@@ -157,7 +157,7 @@ let stream_pattern_component skont ckont =
                  MLast.TyApp
                    (_,
                     MLast.TyAcc
-                      (_, MLast.TyUid (_, "Stream"), MLast.TyLid (_, "t")),
+                      (_, MLast.TyUid (_, "Istream"), MLast.TyLid (_, "t")),
                     MLast.TyAny _)),
               None, e])
           when v = strm_n ->
@@ -172,7 +172,7 @@ let stream_pattern_component skont ckont =
             MLast.ExTry
               (loc, e,
                [MLast.PaAcc
-                  (loc, MLast.PaUid (loc, "Stream"),
+                  (loc, MLast.PaUid (loc, "Istream"),
                    MLast.PaUid (loc, "Failure")),
                 None, ckont])
         else if is_raise_failure ckont then
@@ -185,7 +185,7 @@ let stream_pattern_component skont ckont =
               MLast.ExTry
                 (loc, e,
                  [MLast.PaAcc
-                    (loc, MLast.PaUid (loc, "Stream"),
+                    (loc, MLast.PaUid (loc, "Istream"),
                      MLast.PaUid (loc, "Failure")),
                   None, ckont])
           in
@@ -198,7 +198,7 @@ let stream_pattern_component skont ckont =
           MLast.ExTry
             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
              [MLast.PaAcc
-                (loc, MLast.PaUid (loc, "Stream"),
+                (loc, MLast.PaUid (loc, "Istream"),
                  MLast.PaUid (loc, "Failure")),
               None, ckont])
         else
@@ -207,7 +207,7 @@ let stream_pattern_component skont ckont =
              MLast.ExTry
                (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
                 [MLast.PaAcc
-                   (loc, MLast.PaUid (loc, "Stream"),
+                   (loc, MLast.PaUid (loc, "Istream"),
                     MLast.PaUid (loc, "Failure")),
                  None, MLast.ExUid (loc, "None")]),
              [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
@@ -218,7 +218,7 @@ let stream_pattern_component skont ckont =
            MLast.ExTry
              (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
               [MLast.PaAcc
-                 (loc, MLast.PaUid (loc, "Stream"),
+                 (loc, MLast.PaUid (loc, "Istream"),
                   MLast.PaUid (loc, "Failure")),
                None, MLast.ExUid (loc, "None")]),
            [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
@@ -235,7 +235,7 @@ let stream_pattern_component skont ckont =
       let len = List.length pl in
       if List.exists (fun pl -> List.length pl <> len) pll then
         Ploc.raise loc
-          (Stream.Error "lookahead patterns must be of the same lengths")
+          (Istream.Error "lookahead patterns must be of the same lengths")
       else
         let p =
           let p = mklistpat loc pl in
@@ -249,7 +249,7 @@ let stream_pattern_component skont ckont =
               MLast.ExApp
                 (loc,
                  MLast.ExAcc
-                   (loc, MLast.ExUid (loc, "Stream"),
+                   (loc, MLast.ExUid (loc, "Istream"),
                     MLast.ExLid (loc, "npeek")),
                  MLast.ExInt (loc, string_of_int len, "")),
               MLast.ExLid (loc, "strm__")),
@@ -275,7 +275,7 @@ let rec stream_pattern loc epo e ekont =
               MLast.ExApp
                 (loc,
                  MLast.ExAcc
-                   (loc, MLast.ExUid (loc, "Stream"),
+                   (loc, MLast.ExUid (loc, "Istream"),
                     MLast.ExLid (loc, "count")),
                  MLast.ExLid (loc, strm_n))],
              e)
@@ -294,14 +294,14 @@ let rec stream_pattern loc epo e ekont =
                  MLast.ExApp
                    (loc,
                     MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "Stream"),
+                      (loc, MLast.ExUid (loc, "Istream"),
                        MLast.ExUid (loc, "Error")),
                     estr))
           | SpoBang ->
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "raise"),
                  MLast.ExAcc
-                   (loc, MLast.ExUid (loc, "Stream"),
+                   (loc, MLast.ExUid (loc, "Istream"),
                     MLast.ExUid (loc, "Failure")))
           | SpoNoth ->
               MLast.ExApp
@@ -309,7 +309,7 @@ let rec stream_pattern loc epo e ekont =
                  MLast.ExApp
                    (loc,
                     MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "Stream"),
+                      (loc, MLast.ExUid (loc, "Istream"),
                        MLast.ExUid (loc, "Error")),
                     MLast.ExStr (loc, "")))
         in
@@ -332,14 +332,14 @@ let stream_patterns_term loc ekont tspel =
                     MLast.ExApp
                       (loc,
                        MLast.ExAcc
-                         (loc, MLast.ExUid (loc, "Stream"),
+                         (loc, MLast.ExUid (loc, "Istream"),
                           MLast.ExUid (loc, "Error")),
                        estr))
              | SpoBang ->
                  MLast.ExApp
                    (loc, MLast.ExLid (loc, "raise"),
                     MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "Stream"),
+                      (loc, MLast.ExUid (loc, "Istream"),
                        MLast.ExUid (loc, "Failure")))
              | SpoNoth ->
                  MLast.ExApp
@@ -347,7 +347,7 @@ let stream_patterns_term loc ekont tspel =
                     MLast.ExApp
                       (loc,
                        MLast.ExAcc
-                         (loc, MLast.ExUid (loc, "Stream"),
+                         (loc, MLast.ExUid (loc, "Istream"),
                           MLast.ExUid (loc, "Error")),
                        MLast.ExStr (loc, "")))
            in
@@ -379,7 +379,7 @@ let rec parser_cases loc =
       MLast.ExApp
         (loc, MLast.ExLid (loc, "raise"),
          MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Stream"), MLast.ExUid (loc, "Failure")))
+           (loc, MLast.ExUid (loc, "Istream"), MLast.ExUid (loc, "Failure")))
   | spel ->
       if !optim then
         match group_terms spel with
@@ -395,7 +395,7 @@ let rec parser_cases loc =
             MLast.ExApp
               (loc, MLast.ExLid (loc, "raise"),
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Stream"),
+                 (loc, MLast.ExUid (loc, "Istream"),
                   MLast.ExUid (loc, "Failure")))
 ;;
 
@@ -472,7 +472,7 @@ let mk_rule x =
              MLast.TyApp
                (loc,
                 MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+                  (loc, MLast.TyUid (loc, "Istream"), MLast.TyLid (loc, "t")),
                 MLast.TyAny loc))
         in
         MLast.ExFun (loc, [p, None, e])
@@ -515,7 +515,7 @@ let cparser loc bpo pc =
             MLast.ExApp
               (loc,
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Stream"),
+                 (loc, MLast.ExUid (loc, "Istream"),
                   MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, strm_n))],
            e)
@@ -528,7 +528,7 @@ let cparser loc bpo pc =
        MLast.TyApp
          (loc,
           MLast.TyAcc
-            (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+            (loc, MLast.TyUid (loc, "Istream"), MLast.TyLid (loc, "t")),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
@@ -540,7 +540,7 @@ let rec is_not_bound s =
   | MLast.ExApp
       (_, MLast.ExLid (_, "raise"),
        MLast.ExAcc
-         (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure"))) ->
+         (_, MLast.ExUid (_, "Istream"), MLast.ExUid (_, "Failure"))) ->
       true
   | _ -> false
 ;;
@@ -559,7 +559,7 @@ let cparser_match loc me bpo pc =
             MLast.ExApp
               (loc,
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Stream"),
+                 (loc, MLast.ExUid (loc, "Istream"),
                   MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, strm_n))],
            pc)
@@ -580,13 +580,13 @@ let cparser_match loc me bpo pc =
              MLast.TyApp
                (loc,
                 MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+                  (loc, MLast.TyUid (loc, "Istream"), MLast.TyLid (loc, "t")),
                 MLast.TyAny loc)),
           me],
          e)
 ;;
 
-(* Streams *)
+(* Istreams *)
 
 let rec not_computing =
   function
@@ -618,19 +618,19 @@ let rec cstream gloc =
     [] ->
       let loc = gloc in
       MLast.ExAcc
-        (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "sempty"))
+        (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "sempty"))
   | [SeTrm (loc, e)] ->
       if not_computing e then
         MLast.ExApp
           (loc,
            MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "ising")),
+             (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "ising")),
            e)
       else
         MLast.ExApp
           (loc,
            MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "lsing")),
+             (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "lsing")),
            slazy loc e)
   | SeTrm (loc, e) :: secl ->
       if not_computing e then
@@ -639,7 +639,7 @@ let rec cstream gloc =
            MLast.ExApp
              (loc,
               MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Stream"),
+                (loc, MLast.ExUid (loc, "Istream"),
                  MLast.ExLid (loc, "icons")),
               e),
            cstream gloc secl)
@@ -649,7 +649,7 @@ let rec cstream gloc =
            MLast.ExApp
              (loc,
               MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Stream"),
+                (loc, MLast.ExUid (loc, "Istream"),
                  MLast.ExLid (loc, "lcons")),
               slazy loc e),
            cstream gloc secl)
@@ -659,7 +659,7 @@ let rec cstream gloc =
         MLast.ExApp
           (loc,
            MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "slazy")),
+             (loc, MLast.ExUid (loc, "Istream"), MLast.ExLid (loc, "slazy")),
            slazy loc e)
   | SeNtr (loc, e) :: secl ->
       if not_computing e then
@@ -668,7 +668,8 @@ let rec cstream gloc =
            MLast.ExApp
              (loc,
               MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "iapp")),
+                (loc, MLast.ExUid (loc, "Istream"),
+                 MLast.ExLid (loc, "iapp")),
               e),
            cstream gloc secl)
       else
@@ -677,7 +678,8 @@ let rec cstream gloc =
            MLast.ExApp
              (loc,
               MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "lapp")),
+                (loc, MLast.ExUid (loc, "Istream"),
+                 MLast.ExLid (loc, "lapp")),
               slazy loc e),
            cstream gloc secl)
 ;;

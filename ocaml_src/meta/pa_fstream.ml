@@ -328,7 +328,7 @@ let mstream_pattern_component m skont =
             e2),
          MLast.ExLid (loc, strm_n))
   | SpStr (loc, p) ->
-      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
+      Ploc.raise loc (Istream.Error "not impl: stream_pattern_component 1")
   | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
   | SpCut loc ->
       MLast.ExMat

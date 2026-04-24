@@ -42,9 +42,9 @@ value no_ident = ['('; ')'; ' '; '\t'; '\n'; '\r'; ';'];
 value rec ident len =
   parser
     [: :] ->
-      match Stream.peek strm__ with
+      match Istream.peek strm__ with
       [ Some x when not (List.mem x no_ident) → do {
-          Stream.junk strm__;
+          Istream.junk strm__;
           let s = strm__ in
           ident (Buff.store len x) s
         }
@@ -100,19 +100,19 @@ value rec next_token_after_spaces kwt =
   [ [: `'(' :] -> (("", "("), (bp, bp + 1))
   | [: `')' :] -> (("", ")"), (bp, bp + 1))
   | [: `'"'; s = string 0 :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       (("STRING", s), (bp, ep))
   | [: `'''; tok = quote :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       (tok, (bp, ep))
   | [: `'<'; tok = less :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       (tok, (bp, ep))
   | [: `('0'..'9' as c); n = number (Buff.store 0 c) :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       (n, (bp, ep))
   | [: `x; s = ident (Buff.store 0 x) :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       let con =
         try do {
           (Hashtbl.find kwt s : unit);
@@ -167,7 +167,7 @@ and semi len kwt bp =
       let s = strm__ in
       lexer len kwt s
   | [: :] ->
-      let ep = Stream.count strm__ in
+      let ep = Istream.count strm__ in
       (Buff.get len, (("", ";"), (bp, ep))) ]
 ;
 
@@ -208,7 +208,7 @@ type sexpr =
   | Squot of MLast.loc and string and string ]
 and atom = [ Alid | Auid | Aint | Achar | Astring ];
 
-value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
+value error_loc loc err = Ploc.raise loc (Istream.Error (err ^ " expected"));
 value error se err =
   let loc =
     match se with [ Satom loc _ _ | Sexpr loc _ | Squot loc _ _ → loc ]
@@ -238,8 +238,8 @@ value ctyp_id loc s =
 ;
 
 value strm_n = "strm__";
-value peek_fun loc = <:expr< Stream.peek >>;
-value junk_fun loc = <:expr< Stream.junk >>;
+value peek_fun loc = <:expr< Istream.peek >>;
+value junk_fun loc = <:expr< Istream.junk >>;
 
 value rec module_expr_se =
   fun
@@ -342,10 +342,10 @@ and expr_se =
         [ [(Satom _ _ _ as se) :: sel] →
             let p = patt_se se in
             let pc = parser_cases_se loc sel in
-            <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>
+            <:expr< let $p$ = Istream.count $lid:strm_n$ in $pc$ >>
         | _ → parser_cases_se loc sel ]
       in
-      <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>
+      <:expr< fun ($lid:strm_n$ : Istream.t _) -> $e$ >>
   | Sexpr loc [Satom _ Alid "try"; se :: sel] →
       let e = expr_se se in
       let pel = List.map (match_case loc) sel in
@@ -423,18 +423,18 @@ and expr_ident_se loc s =
       if i = String.length s then
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
-          Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
+          Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "expr expected")
       else if s.[i] = '.' then
         if i > ibeg then
           let e1 = expr_id loc (String.sub s ibeg (i - ibeg)) in
           let e2 = loop (i + 1) (i + 1) in
           <:expr< $e1$ . $e2$ >>
         else
-          Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
+          Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "expr expected")
       else loop ibeg (i + 1)
 and parser_cases_se loc =
   fun
-  [ [] → <:expr< raise Stream.Failure >>
+  [ [] → <:expr< raise Istream.Failure >>
   | [Sexpr loc [Sexpr _ spsel :: act] :: sel] →
       let ekont _ = parser_cases_se loc sel in
       let act =
@@ -443,7 +443,7 @@ and parser_cases_se loc =
         | [sep; se] →
             let p = patt_se sep in
             let e = expr_se se in
-            <:expr< let $p$ = Stream.count $lid:strm_n$ in $e$ >>
+            <:expr< let $p$ = Istream.count $lid:strm_n$ in $e$ >>
         | _ → error_loc loc "parser_case" ]
       in
       stream_pattern_se loc act ekont spsel
@@ -452,7 +452,7 @@ and stream_pattern_se loc act ekont =
   fun
   [ [] → act
   | [se :: sel] →
-      let ckont err = <:expr< raise (Stream.Error $err$) >> in
+      let ckont err = <:expr< raise (Istream.Error $err$) >> in
       let skont = stream_pattern_se loc act ckont sel in
       stream_pattern_component skont ekont <:expr< "" >> se ]
 and stream_pattern_component skont ekont err =
@@ -475,7 +475,7 @@ and stream_pattern_component skont ekont err =
       let p = patt_se se1 in
       let e =
         let e = expr_se se2 in
-        <:expr< try Some ($e$ $lid:strm_n$) with [ Stream.Failure -> None ] >>
+        <:expr< try Some ($e$ $lid:strm_n$) with [ Istream.Failure -> None ] >>
       in
       let k = ekont err in
       <:expr< match $e$ with [ Some $p$ -> $skont$ | _ -> $k$ ] >>
@@ -531,13 +531,13 @@ and patt_ident_se loc s =
   loop 0 0 where rec loop ibeg i =
     if i = String.length s then
       if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "patt expected")
     else if s.[i] = '.' then
       if i > ibeg then
         let p1 = patt_id loc (String.sub s ibeg (i - ibeg)) in
         let p2 = loop (i + 1) (i + 1) in
         <:patt< $p1$ . $p2$ >>
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "patt expected")
     else loop ibeg (i + 1)
 and ipatt_se se =
   match ipatt_opt_se se with
@@ -596,13 +596,13 @@ and ctyp_ident_se loc s =
   loop 0 0 where rec loop ibeg i =
     if i = String.length s then
       if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "ctyp expected")
     else if s.[i] = '.' then
       if i > ibeg then
         let t1 = ctyp_id loc (String.sub s ibeg (i - ibeg)) in
         let t2 = loop (i + 1) (i + 1) in
         <:ctyp< $t1$ . $t2$ >>
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Istream.Error "ctyp expected")
     else loop ibeg (i + 1)
 and constructor_declaration_se =
   fun

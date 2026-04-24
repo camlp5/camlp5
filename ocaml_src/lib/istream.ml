@@ -137,7 +137,7 @@ let iter f strm =
   do_rec ()
 ;;
 
-(* Stream building functions *)
+(* Istream building functions *)
 
 let from f = {count = 0; data = Sgen {curr = None; func = f}};;
 
@@ -154,7 +154,7 @@ let of_channel ic =
    data = Sbuffio {ic = ic; buff = Bytes.create 4096; len = 0; ind = 0}}
 ;;
 
-(* Stream expressions builders *)
+(* Istream expressions builders *)
 
 let iapp i s = {count = 0; data = Sapp (i.data, s.data)};;
 let icons i s = {count = 0; data = Scons (i, s.data)};;

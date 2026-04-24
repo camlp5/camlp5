@@ -10,7 +10,7 @@ exception Error of string;
 
 type location = Ploc.t;
 type location_function = int -> location;
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
+type lexer_func 'te = Istream.t char -> (Istream.t 'te * location_function);
 
 type lexer 'te =
   { tok_func : lexer_func 'te;
@@ -57,7 +57,7 @@ value loct_add (loct, ov) i loc =
 value make_stream_and_location next_token_loc =
   let loct = loct_create () in
   let ts =
-    Stream.from
+    Istream.from
       (fun i -> do {
          let (tok, loc) = next_token_loc () in
          loct_add loct i loc;
@@ -77,8 +77,8 @@ value lexer_func_of_ocamllex lexfun cs =
   let lb =
     Lexing.from_function
       (fun s n ->
-         try do { string_set s 0 (Stream.next cs); 1 } with
-         [ Stream.Failure -> 0 ])
+         try do { string_set s 0 (Istream.next cs); 1 } with
+         [ Istream.Failure -> 0 ])
   in
   let next_token_loc _ =
     let tok = lexfun lb in
@@ -202,12 +202,12 @@ value default_match =
   fun
   [ ("ANY", "") -> fun (con, prm) -> prm
   | ("ANY", v) ->
-      fun (con, prm) -> if v = prm then v else raise Stream.Failure
+      fun (con, prm) -> if v = prm then v else raise Istream.Failure
   | (p_con, "") ->
-      fun (con, prm) -> if con = p_con then prm else raise Stream.Failure
+      fun (con, prm) -> if con = p_con then prm else raise Istream.Failure
   | (p_con, p_prm) ->
       fun (con, prm) ->
-        if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
+        if con = p_con && prm = p_prm then prm else raise Istream.Failure ]
 ;
 
 value input_file = ref "";

@@ -62,7 +62,7 @@ value print_location lb loc =
 value wrap f shfn lb =
   let cs =
     let shift = shfn lb in
-    Stream.from
+    Istream.from
       (fun i ->
          if i < shift then Some ' '
          else do {
@@ -90,7 +90,7 @@ value wrap f shfn lb =
         | x -> x ]
       in
       match x with
-      [ Stream.Failure | Stream.Error _ -> Pcaml.sync.val cs
+      [ Istream.Failure | Istream.Error _ -> Pcaml.sync.val cs
       | _ -> () ];
       Format.open_hovbox 0;
       Pcaml.report_error x;

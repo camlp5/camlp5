@@ -77,13 +77,13 @@ let from_file fname loc =
   let (bp, ep) = first_pos loc, last_pos loc in
   try
     let ic = open_in_bin fname in
-    let strm = Stream.of_channel ic in
+    let strm = Istream.of_channel ic in
     let rec loop fname lin =
-      let rec not_a_line_dir col (strm__ : _ Stream.t) =
-        let cnt = Stream.count strm__ in
-        match Stream.peek strm__ with
+      let rec not_a_line_dir col (strm__ : _ Istream.t) =
+        let cnt = Istream.count strm__ in
+        match Istream.peek strm__ with
           Some c ->
-            Stream.junk strm__;
+            Istream.junk strm__;
             let s = strm__ in
             if cnt < bp then
               if c = '\n' then loop fname (lin + 1)
@@ -91,50 +91,50 @@ let from_file fname loc =
             else let col = col - (cnt - bp) in fname, lin, col, col + ep - bp
         | _ -> fname, lin, col, col + 1
       in
-      let rec a_line_dir str n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '\n' -> Stream.junk strm__; loop str n
-        | Some _ -> Stream.junk strm__; a_line_dir str n (col + 1) strm__
-        | _ -> raise Stream.Failure
+      let rec a_line_dir str n col (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
+          Some '\n' -> Istream.junk strm__; loop str n
+        | Some _ -> Istream.junk strm__; a_line_dir str n (col + 1) strm__
+        | _ -> raise Istream.Failure
       in
-      let rec spaces col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some ' ' -> Stream.junk strm__; spaces (col + 1) strm__
+      let rec spaces col (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
+          Some ' ' -> Istream.junk strm__; spaces (col + 1) strm__
         | _ -> col
       in
-      let rec check_string str n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
+      let rec check_string str n col (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
           Some '"' ->
-            Stream.junk strm__;
+            Istream.junk strm__;
             let col =
               try spaces (col + 1) strm__ with
-                Stream.Failure -> raise (Stream.Error "")
+                Istream.Failure -> raise (Istream.Error "")
             in
             a_line_dir str n col strm__
         | Some c when c <> '\n' ->
-            Stream.junk strm__;
+            Istream.junk strm__;
             check_string (str ^ String.make 1 c) n (col + 1) strm__
         | _ -> not_a_line_dir col strm__
       in
-      let check_quote n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
+      let check_quote n col (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
+          Some '"' -> Istream.junk strm__; check_string "" n (col + 1) strm__
         | _ -> not_a_line_dir col strm__
       in
-      let rec check_num n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
+      let rec check_num n col (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
           Some ('0'..'9' as c) ->
-            Stream.junk strm__;
+            Istream.junk strm__;
             check_num (10 * n + Char.code c - Char.code '0') (col + 1) strm__
         | _ -> let col = spaces col strm__ in check_quote n col strm__
       in
-      let begin_line (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
+      let begin_line (strm__ : _ Istream.t) =
+        match Istream.peek strm__ with
           Some '#' ->
-            Stream.junk strm__;
+            Istream.junk strm__;
             let col =
               try spaces 1 strm__ with
-                Stream.Failure -> raise (Stream.Error "")
+                Istream.Failure -> raise (Istream.Error "")
             in
             check_num 0 col strm__
         | _ -> not_a_line_dir 0 strm__
@@ -143,7 +143,7 @@ let from_file fname loc =
     in
     let r =
       try loop fname 1 with
-        Stream.Failure ->
+        Istream.Failure ->
           let bol = bol_pos loc in fname, line_nb loc, bp - bol, ep - bol
     in
     close_in ic; r

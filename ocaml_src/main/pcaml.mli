@@ -16,9 +16,9 @@ val syntax_name : string ref;;
 type status = Ploc.t option;;
 
 val parse_interf :
-  (char Stream.t -> (MLast.sig_item * MLast.loc) list * status) ref;;
+  (char Istream.t -> (MLast.sig_item * MLast.loc) list * status) ref;;
 val parse_implem :
-  (char Stream.t -> (MLast.str_item * MLast.loc) list * status) ref;;
+  (char Istream.t -> (MLast.str_item * MLast.loc) list * status) ref;;
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -163,7 +163,7 @@ val expr_eoi : MLast.expr Grammar.Entry.e;;
 val patt_eoi : MLast.patt Grammar.Entry.e;;
 val arg_spec_list : unit -> (string * Arg.spec * string) list;;
 val report_error : exn -> unit;;
-val sync : (char Stream.t -> unit) ref;;
+val sync : (char Istream.t -> unit) ref;;
 val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
 val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val rename_id : (string -> string) ref;;

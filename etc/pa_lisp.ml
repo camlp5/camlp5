@@ -177,7 +177,7 @@
 
 (value error_loc
        (lambda (loc err)
-         (Ploc.raise loc (Stream.Error (^ err " expected")))))
+         (Ploc.raise loc (Istream.Error (^ err " expected")))))
 (value error
        (lambda (se err)
          (let ((loc (match se
@@ -206,8 +206,8 @@
                 (_ <:ctyp< $lid:s$ >>))))
 
 (value strm_n "strm__")
-(value peek_fun (lambda loc <:expr< Stream.peek >>))
-(value junk_fun (lambda loc <:expr< Stream.junk >>))
+(value peek_fun (lambda loc <:expr< Istream.peek >>))
+(value junk_fun (lambda loc <:expr< Istream.junk >>))
 
 (value rec
  module_expr_se
@@ -316,9 +316,9 @@
                    ((list (as (Satom _ _ _) se) :: sel)
                     (let* ((p (patt_se se))
                            (pc (parser_cases_se loc sel)))
-                      <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>))
+                      <:expr< let $p$ = Istream.count $lid:strm_n$ in $pc$ >>))
                    (_ (parser_cases_se loc sel)))))
-     <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>))
+     <:expr< fun ($lid:strm_n$ : Istream.t _) -> $e$ >>))
   ((Sexpr loc (list (Satom _ Alid "try") se :: sel))
    (let* ((e (expr_se se))
           (pel (List.map (match_case loc) sel)))
@@ -398,7 +398,7 @@
                  (if (> i ibeg)
                      (expr_id loc (String.sub s ibeg (- i ibeg)))
                    (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                   (Stream.Error "expr expected")))
+                                   (Istream.Error "expr expected")))
                (if (= ([] s i) '.')
                    (if (> i ibeg)
                        (let* ((e1 (expr_id
@@ -407,13 +407,13 @@
                               (e2 (loop (+ i 1) (+ i 1))))
                          <:expr< $e1$ . $e2$ >>)
                      (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                     (Stream.Error "expr expected")))
+                                     (Istream.Error "expr expected")))
                  (loop ibeg (+ i 1)))))))
          (loop 0 0))))
  parser_cases_se
  (lambda loc
    (lambda_match
-    ((list) <:expr< raise Stream.Failure >>)
+    ((list) <:expr< raise Istream.Failure >>)
     ((list (Sexpr loc (list (Sexpr _ spsel) :: act)) :: sel)
      (let* ((ekont (lambda _ (parser_cases_se loc sel)))
             (act (match act
@@ -421,7 +421,7 @@
                         ((list sep se)
                          (let* ((p (patt_se sep))
                                 (e (expr_se se)))
-                       <:expr< let $p$ = Stream.count $lid:strm_n$ in $e$ >>))
+                       <:expr< let $p$ = Istream.count $lid:strm_n$ in $e$ >>))
                         (_ (error_loc loc "parser_case")))))
        (stream_pattern_se loc act ekont spsel)))
     ((list se :: _)
@@ -431,7 +431,7 @@
    (lambda_match
     ((list) act)
     ((list se :: sel)
-     (let* ((ckont (lambda err <:expr< raise (Stream.Error $err$) >>))
+     (let* ((ckont (lambda err <:expr< raise (Istream.Error $err$) >>))
             (skont (stream_pattern_se loc act ckont sel)))
        (stream_pattern_component skont ekont <:expr< "" >> se)))))
  stream_pattern_component
@@ -452,7 +452,7 @@
      ((Sexpr loc (list se1 se2))
       (let* ((p (patt_se se1))
              (e (let ((e (expr_se se2)))
-     <:expr< try Some ($e$ $lid:strm_n$) with [ Stream.Failure -> None ] >>))
+     <:expr< try Some ($e$ $lid:strm_n$) with [ Istream.Failure -> None ] >>))
              (k (ekont err)))
         <:expr< match $e$ with [ Some $p$ -> $skont$ | _ -> $k$ ] >>))
     ((Sexpr loc (list (Satom _ Alid "?") se1 se2))
@@ -513,7 +513,7 @@
              (if (> i ibeg)
                  (patt_id loc (String.sub s ibeg (- i ibeg)))
                (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                               (Stream.Error "patt expected")))
+                               (Istream.Error "patt expected")))
            (if (= ([] s i) '.')
                (if (> i ibeg)
                    (let* ((p1 (patt_id
@@ -522,7 +522,7 @@
                           (p2 (loop (+ i 1) (+ i 1))))
                      <:patt< $p1$ . $p2$ >>)
                  (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                 (Stream.Error "patt expected")))
+                                 (Istream.Error "patt expected")))
              (loop ibeg (+ i 1)))))))
      (loop 0 0)))
  ipatt_se
@@ -588,7 +588,7 @@
                   (if (> i ibeg)
                       (ctyp_id loc (String.sub s ibeg (- i ibeg)))
                     (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                    (Stream.Error "ctyp expected")))
+                                    (Istream.Error "ctyp expected")))
                 (if (= ([] s i) '.')
                     (if (> i ibeg)
                         (let* ((t1 (ctyp_id
@@ -596,7 +596,7 @@
                                (t2 (loop (+ i 1) (+ i 1))))
                           <:ctyp< $t1$ . $t2$ >>)
                       (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                      (Stream.Error "ctyp expected")))
+                                      (Istream.Error "ctyp expected")))
                   (loop ibeg (+ i 1)))))))
      (loop 0 0)))
  constructor_declaration_se

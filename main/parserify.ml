@@ -39,9 +39,9 @@ value rec handle_failure e =
         pel
   | <:expr< raise $e$ >> ->
       match e with
-      [ <:expr< Stream.Failure >> -> False
+      [ <:expr< Istream.Failure >> -> False
       | _ -> True ]
-  | <:expr< try $te$ with [ Stream.Failure -> $e$] >> -> handle_failure e
+  | <:expr< try $te$ with [ Istream.Failure -> $e$] >> -> handle_failure e
   | <:expr< $f$ $e$ >> ->
       no_raising_failure_fun f && handle_failure f && handle_failure e
   | <:expr< $lid:_$ >> | <:expr< $uid:_$ >> -> True
@@ -72,9 +72,9 @@ value err =
 value rec simpl =
   fun
   [ <:expr<
-      match try Some $f$ with [ Stream.Failure -> None ] with
+      match try Some $f$ with [ Istream.Failure -> None ] with
       [ Some $lid:s1$ -> $lid:s2$
-      | _ -> raise Stream.Failure ]
+      | _ -> raise Istream.Failure ]
     >> as e ->
       if s1 = s2 then f else e
   | <:expr< match $e$ with [ Some $p1$ → $e1$ | _ → $e2$ ] >> →
@@ -87,40 +87,40 @@ value rec unstream_pattern_kont =
   fun
   [ <:expr<
       let $p$ =
-        try $f$ with [ Stream.Failure -> raise (Stream.Error $e2$) ]
+        try $f$ with [ Istream.Failure -> raise (Istream.Error $e2$) ]
       in
       $e$
     >> |
     <:expr<
-      match try Some $f$ with [ Stream.Failure -> None ] with
+      match try Some $f$ with [ Istream.Failure -> None ] with
       [ Some $p$ -> $e$
-      | _ -> raise (Stream.Error $e2$) ]
+      | _ -> raise (Istream.Error $e2$) ]
     >> ->
       let f =
         match f with
         [ <:expr< $f$ strm__ >> -> f
-        | _ -> <:expr< fun (strm__ : Stream.t _) -> $f$ >> ]
+        | _ -> <:expr< fun (strm__ : Istream.t _) -> $f$ >> ]
       in
       let (sp, epo, e) = unstream_pattern_kont e in
       ([(SpNtr loc p f, err e2) :: sp], epo, e)
-  | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
+  | <:expr< let $lid:p$ = Istream.count strm__ in $e$ >> ->
       ([], Some p, e)
   | <:expr< let $p$ = strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       ([(SpStr loc p, SpoNoth) :: sp], epo, e)
   | <:expr<
-      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      match try Some ($f$ strm__) with [ Istream.Failure → None ] with
       [ Some $lid:s1$ → $lid:s2$
-      | _ → raise Stream.Failure ]
+      | _ → raise Istream.Failure ]
     >> as e →
       if s1 = s2 then
         ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
       else
         ([], None, e)
   | <:expr<
-      match try Some $e1$ with [ Stream.Failure → None ] with
+      match try Some $e1$ with [ Istream.Failure → None ] with
       [ Some $lid:s$ → $e2$
-      | _ → raise Stream.Failure ]
+      | _ → raise Istream.Failure ]
     >> →
       let e = <:expr< let $lid:s$ = $e1$ in $e2$ >> in
       unstream_pattern_kont e
@@ -130,7 +130,7 @@ value rec unstream_pattern_kont =
           match e1 with
           [ <:expr< $f$ strm__ >> -> (f, SpoBang)
           | _ ->
-              let f = <:expr< fun (strm__ : Stream.t _) -> $e1$ >> in
+              let f = <:expr< fun (strm__ : Istream.t _) -> $e1$ >> in
               let err = if handle_failure e1 then SpoNoth else SpoBang in
               (f, err) ]
         in
@@ -141,28 +141,28 @@ value rec unstream_pattern_kont =
         if sp = [] then ([], None, ge)
         else ([(SpLet loc p e1, SpoNoth) :: sp], epo, e)
   | <:expr<
-      match Stream.peek strm__ with
-      [ Some $p$ -> do { Stream.junk strm__; $e$ }
-      | _ -> raise (Stream.Error $e2$) ]
+      match Istream.peek strm__ with
+      [ Some $p$ -> do { Istream.junk strm__; $e$ }
+      | _ -> raise (Istream.Error $e2$) ]
     >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       let sp = [(SpTrm loc p <:vala< None >>, err e2) :: sp] in
       (sp, epo, e)
-  | <:expr< match Stream.peek strm__ with [ $list:_$ ] >> |
+  | <:expr< match Istream.peek strm__ with [ $list:_$ ] >> |
     <:expr<
-      match try Some ($_$ strm__) with [ Stream.Failure -> None ] with
+      match try Some ($_$ strm__) with [ Istream.Failure -> None ] with
       [ Some $_$ -> $_$
       | _ -> $_$ ]
     >> as ge ->
-      let f = <:expr< fun (strm__ : Stream.t _) -> $ge$ >> in
+      let f = <:expr< fun (strm__ : Istream.t _) -> $ge$ >> in
       let err = if handle_failure ge then SpoNoth else SpoBang in
       ([(SpNtr loc <:patt< a >> f, err)], None, <:expr< a >>)
   | <:expr<
-      try $f$ strm__ with [ Stream.Failure -> raise (Stream.Error $e$) ]
+      try $f$ strm__ with [ Istream.Failure -> raise (Istream.Error $e$) ]
     >> ->
       ([(SpNtr loc <:patt< a >> f, err e)], None, <:expr< a >>)
-  | <:expr< try $f$ with [ Stream.Failure -> raise (Stream.Error $e$) ] >> ->
-      let f = <:expr< fun (strm__ : Stream.t _) -> $f$ >> in
+  | <:expr< try $f$ with [ Istream.Failure -> raise (Istream.Error $e$) ] >> ->
+      let f = <:expr< fun (strm__ : Istream.t _) -> $f$ >> in
       ([(SpNtr loc <:patt< a >> f, err e)], None, <:expr< a >>)
   | <:expr< $f$ strm__ >> ->
       ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
@@ -172,7 +172,7 @@ value rec unstream_pattern_kont =
 value rec unparser_cases_list =
   fun
   [ <:expr<
-      let $p$ = try $f$ strm__ with [ Stream.Failure -> raise $e2$ ] in $e1$
+      let $p$ = try $f$ strm__ with [ Istream.Failure -> raise $e2$ ] in $e1$
     >> ->
       let spe1 =
         let (sp, epo, e) = unstream_pattern_kont e1 in
@@ -180,7 +180,7 @@ value rec unparser_cases_list =
       in
       let spe2 = ([], None, <:expr< raise $e2$ >>) in
       [spe1; spe2]
-  | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
+  | <:expr< let $lid:p$ = Istream.count strm__ in $e$ >> ->
       [([], Some p, e)]
   | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
@@ -188,13 +188,13 @@ value rec unparser_cases_list =
   | <:expr< let $p$ = strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       [([(SpStr loc p, SpoNoth) :: sp], epo, e)]
-  | <:expr< match Stream.peek strm__ with [ $list:pel$ ] >> as ge ->
+  | <:expr< match Istream.peek strm__ with [ $list:pel$ ] >> as ge ->
       loop [] pel where rec loop rev_spel =
         fun
         [ [(<:patt< _ >>, <:vala< None >>, e)] ->
             list_rev_append rev_spel (unparser_cases_list e)
         | [(<:patt< Some $p$ >>, eo,
-            <:expr< do { Stream.junk strm__; $e$ } >>) ::
+            <:expr< do { Istream.junk strm__; $e$ } >>) ::
            pel] ->
             let spe =
               let (sp, epo, e) = unstream_pattern_kont e in
@@ -205,7 +205,7 @@ value rec unparser_cases_list =
         | _ ->
             [([], None, ge)] ]
   | <:expr<
-      match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
+      match try Some ($f$ strm__) with [ Istream.Failure -> None ] with
       [ Some $p1$ -> $e1$
       | _ -> $e2$ ]
     >> ->
@@ -217,37 +217,37 @@ value rec unparser_cases_list =
       let spel = unparser_cases_list e2 in
       [spe :: spel]
   | <:expr<
-      match try Some $f$ with [ Stream.Failure -> None ] with
+      match try Some $f$ with [ Istream.Failure -> None ] with
       [ Some $p1$ -> $e1$
       | _ -> $e2$ ]
     >> ->
       let e =
         <:expr<
-          match try Some $simpl f$ with [ Stream.Failure -> None ] with
+          match try Some $simpl f$ with [ Istream.Failure -> None ] with
           [ Some $p1$ -> $simpl e1$
           | _ -> $simpl e2$ ]
         >>
       in
       [([], None, e)]
-  | <:expr< try $f$ strm__ with [ Stream.Failure -> $e$ ] >> ->
+  | <:expr< try $f$ strm__ with [ Istream.Failure -> $e$ ] >> ->
       let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
       [spe :: spel]
-  | <:expr< try Some ($f$ strm__) with [ Stream.Failure -> $e$ ] >> ->
+  | <:expr< try Some ($f$ strm__) with [ Istream.Failure -> $e$ ] >> ->
       let spe =
         ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< Some a >>)
       in
       let spel = unparser_cases_list e in
       [spe :: spel]
-  | <:expr< try $f$ with [ Stream.Failure -> $e$ ] >> ->
-      let f = <:expr< fun (strm__ : Stream.t _) -> $f$ >> in
+  | <:expr< try $f$ with [ Istream.Failure -> $e$ ] >> ->
+      let f = <:expr< fun (strm__ : Istream.t _) -> $f$ >> in
       let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
       [spe :: spel]
   | <:expr< $f$ strm__ >> ->
       let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       [spe]
-  | <:expr< raise Stream.Failure >> ->
+  | <:expr< raise Istream.Failure >> ->
       []
   | e ->
       [([], None, e)] ]
@@ -256,7 +256,7 @@ value rec unparser_cases_list =
 value unparser_body e =
   let (po, e) =
     match e with
-    [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
+    [ <:expr< let $lid:bp$ = Istream.count $lid:strm_n$ in $e$ >> ->
         (Some bp, e)
     | _ -> (None, e) ]
   in

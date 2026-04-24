@@ -28,7 +28,7 @@ value glexer : g -> Plexing.lexer token;
    (** Return the lexer used by the grammar *)
 
 type parsable = 'abstract;
-value parsable : g -> Stream.t char -> parsable;
+value parsable : g -> Istream.t char -> parsable;
    (** Type and value allowing to keep the same token stream between
        several calls of entries of the same grammar, to prevent possible
        loss of tokens. To be used with [Entry.parse_parsable] below *)
@@ -37,17 +37,17 @@ module Entry :
   sig
     type e 'a = 'x;
     value create : g -> string -> e 'a;
-    value parse : e 'a -> Stream.t char -> 'a;
-    value parse_all : e 'a -> Stream.t char -> list 'a;
+    value parse : e 'a -> Istream.t char -> 'a;
+    value parse_all : e 'a -> Istream.t char -> list 'a;
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
-    value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
-    value parse_token_stream : e 'a -> Stream.t token -> 'a;
+    value of_parser : g -> string -> (Istream.t token -> 'a) -> e 'a;
+    value parse_token_stream : e 'a -> Istream.t token -> 'a;
     value print : Format.formatter -> e 'a -> unit;
     value find : e 'a -> string -> e Obj.t;
     external obj : e 'a -> Gramext.g_entry token = "%identity";
     (* deprecated since 2017-06-17 *)
-    value parse_token : e 'a -> Stream.t token -> 'a;
+    value parse_token : e 'a -> Istream.t token -> 'a;
   end
 ;
    (** Module to handle entries.
@@ -147,7 +147,7 @@ module type S =
   sig
     type te = 'x;
     type parsable = 'x;
-    value parsable : Stream.t char -> parsable;
+    value parsable : Istream.t char -> parsable;
     value tokens : string -> list (string * int);
     value glexer : Plexing.lexer te;
     value set_algorithm : parse_algorithm -> unit;
@@ -157,12 +157,12 @@ module type S =
         value create : string -> e 'a;
         value parse : e 'a -> parsable -> 'a;
         value name : e 'a -> string;
-        value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
-        value parse_token_stream : e 'a -> Stream.t te -> 'a;
+        value of_parser : string -> (Istream.t te -> 'a) -> e 'a;
+        value parse_token_stream : e 'a -> Istream.t te -> 'a;
         value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
 	(* deprecated since 2017-06-17 *)
-        value parse_token : e 'a -> Stream.t te -> 'a;
+        value parse_token : e 'a -> Istream.t te -> 'a;
       end
     ;
     module Unsafe :
@@ -249,7 +249,7 @@ value extend :
 value delete_rule : Entry.e 'a -> list (Gramext.g_symbol token) -> unit;
 
 value parse_top_symb :
-  Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Stream.t 'te -> Obj.t;
+  Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Istream.t 'te -> Obj.t;
 value symb_failed_txt :
   Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Gramext.g_symbol 'te ->
     string;

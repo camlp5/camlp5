@@ -18,8 +18,8 @@ type sexp_comp =
 ;
 
 value strm_n = "strm__";
-value peek_fun loc = <:expr< Stream.peek >>;
-value junk_fun loc = <:expr< Stream.junk >>;
+value peek_fun loc = <:expr< Istream.peek >>;
+value junk_fun loc = <:expr< Istream.junk >>;
 
 (* Parsers. *)
 
@@ -30,7 +30,7 @@ value stream_pattern_component skont =
        <:expr< do { $junk_fun loc$ $lid:strm_n$; $skont$ } >>)
   | SpNtr loc p e ->
       (<:expr< try Some ($e$ $lid:strm_n$) with
-               [ Stream.Failure -> None ] >>,
+               [ Istream.Failure -> None ] >>,
        p, None, skont)
   | SpStr loc p ->
       (<:expr< Some $lid:strm_n$ >>, p, None, skont) ]
@@ -40,7 +40,7 @@ value rec stream_pattern loc epo e ekont =
   fun
   [ [] ->
       match epo with
-      [ Some ep -> <:expr< let $ep$ = Stream.count $lid:strm_n$ in $e$ >>
+      [ Some ep -> <:expr< let $ep$ = Istream.count $lid:strm_n$ in $e$ >>
       | _ -> e ]
   | [(spc, err) :: spcl] ->
       let skont =
@@ -50,7 +50,7 @@ value rec stream_pattern loc epo e ekont =
             [ Some estr -> estr
             | _ -> <:expr< "" >> ]
           in
-          <:expr< raise (Stream.Error $str$) >>
+          <:expr< raise (Istream.Error $str$) >>
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -62,7 +62,7 @@ value rec stream_pattern loc epo e ekont =
 
 value rec parser_cases loc =
   fun
-  [ [] -> <:expr< raise Stream.Failure >>
+  [ [] -> <:expr< raise Istream.Failure >>
   | [(spcl, epo, e) :: spel] ->
       stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl ]
 ;
@@ -71,10 +71,10 @@ value cparser loc bpo pc =
   let e = parser_cases loc pc in
   let e =
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $e$ >>
+    [ Some bp -> <:expr< let $bp$ = Istream.count $lid:strm_n$ in $e$ >>
     | None -> e ]
   in
-  let p = <:patt< ($lid:strm_n$ : Stream.t _) >> in
+  let p = <:patt< ($lid:strm_n$ : Istream.t _) >> in
   <:expr< fun $p$ -> $e$ >>
 ;
 
@@ -82,7 +82,7 @@ value cparser_match loc me bpo pc =
   let pc = parser_cases loc pc in
   let e =
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
+    [ Some bp -> <:expr< let $bp$ = Istream.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
   in
   <:expr< let $lid:strm_n$ = $me$ in $e$ >>
@@ -94,11 +94,11 @@ value slazy loc e = <:expr< fun _ -> $e$ >>;
 
 value rec cstream gloc =
   fun
-  [ [] -> let loc = gloc in <:expr< Stream.sempty >>
+  [ [] -> let loc = gloc in <:expr< Istream.sempty >>
   | [SeTrm loc e :: secl] ->
-      <:expr< Stream.lcons $slazy loc e$ $cstream gloc secl$ >>
+      <:expr< Istream.lcons $slazy loc e$ $cstream gloc secl$ >>
   | [SeNtr loc e :: secl] ->
-      <:expr< Stream.lapp $slazy loc e$ $cstream gloc secl$ >> ]
+      <:expr< Istream.lapp $slazy loc e$ $cstream gloc secl$ >> ]
 ;
 
 (* Syntax extensions in Ocaml grammar *)
