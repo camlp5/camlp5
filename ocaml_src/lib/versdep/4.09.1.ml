@@ -460,7 +460,7 @@ let ocaml_psig_modtype loc s mto =
 
 let ocaml_psig_open loc li =
   Psig_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+    {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
      popen_attributes = []}
 ;;
 
@@ -488,18 +488,27 @@ let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
 let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
-let ocaml_pstr_exception loc s ed =
+let ocaml_pstr_exception loc s (ed, rto) =
+  let ec =
+    match ed with
+      Left (tyvars, x) -> ocaml_ec_tuple loc s tyvars (x, rto)
+    | Right x -> ocaml_ec_record loc s (x, rto)
+  in
   Pstr_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {ptyexn_constructor = ec; ptyexn_attributes = []; ptyexn_loc = loc}
+;;
+
+let ocaml_ec_rebind loc s li =
+  {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
+   pext_loc = loc; pext_attributes = []}
 ;;
 
 let ocaml_pstr_exn_rebind =
   Some
     (fun loc s li ->
        Pstr_exception
-         {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
-          pext_loc = loc; pext_attributes = []})
+         {ptyexn_constructor = ocaml_ec_rebind loc s li;
+          ptyexn_attributes = []; ptyexn_loc = loc})
 ;;
 
 let ocaml_pstr_include =
@@ -524,9 +533,9 @@ let ocaml_pstr_module loc s me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open loc li =
+let ocaml_pstr_open loc me =
   Pstr_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+    {popen_expr = me; popen_override = Fresh; popen_loc = loc;
      popen_attributes = []}
 ;;
 
@@ -740,7 +749,7 @@ let list_rev_map = List.rev_map;;
 
 let list_sort = List.sort;;
 
-let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
+let pervasives_set_binary_mode_out = set_binary_mode_out;;
 
 let printf_ksprintf = Printf.ksprintf;;
 

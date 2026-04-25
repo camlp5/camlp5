@@ -7,8 +7,6 @@
 open Gramext;;
 open Format;;
 
-let stderr = Pervasives.stderr;;
-
 let rec flatten_tree =
   function
     DeadEnd -> []
@@ -98,7 +96,7 @@ and print_symbol1 ppf =
       fprintf ppf "(%a)" print_symbol s
 and print_rule ppf symbols =
   fprintf ppf "@[<hov 0>";
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep symbol ->
          fprintf ppf "%t%a" sep print_symbol symbol;
@@ -108,7 +106,7 @@ and print_rule ppf symbols =
   fprintf ppf "@]"
 and print_level ppf pp_print_space rules =
   fprintf ppf "@[<hov 0>[ ";
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep rule ->
          fprintf ppf "%t%a" sep print_rule rule;
@@ -119,7 +117,7 @@ and print_level ppf pp_print_space rules =
 ;;
 
 let print_levels ppf elev =
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep lev ->
          let rules =
