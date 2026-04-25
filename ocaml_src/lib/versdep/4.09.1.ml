@@ -414,10 +414,30 @@ let ocaml_ppat_variant =
 
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
-let ocaml_psig_exception loc s ed =
+let ocaml_ec_tuple loc s tyvars (x, rto) =
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl (Pcstr_tuple x, rto); pext_loc = loc;
+   pext_attributes = []}
+;;
+
+let ocaml_ec_record loc s (x, rto) =
+  let x =
+    match x with
+      Ptype_record x -> Pcstr_record x
+    | _ -> assert false
+  in
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto);
+   pext_loc = loc; pext_attributes = []}
+;;
+
+let ocaml_psig_exception loc s (ed, rto) =
+  let ec =
+    match ed with
+      Left (tyvars, x) -> ocaml_ec_tuple loc s tyvars (x, rto)
+    | Right x -> ocaml_ec_record loc s (x, rto)
+  in
   Psig_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {ptyexn_constructor = ec; ptyexn_attributes = []; ptyexn_loc = loc}
 ;;
 
 let ocaml_psig_include loc mt =
