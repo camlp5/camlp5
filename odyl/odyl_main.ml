@@ -50,7 +50,7 @@ value loadfile file =
   ELSE do {
     if not initialized.val then do {
       IFDEF OPT THEN ()
-      ELSE do { Dynlink.init (); Dynlink.allow_unsafe_modules True }
+      ELSE do { Dynlink.allow_unsafe_modules True }
       END;
       initialized.val := True
     }
