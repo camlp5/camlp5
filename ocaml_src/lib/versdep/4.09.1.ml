@@ -210,12 +210,12 @@ let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
       (fun c ->
-         let (d, attrs) =
+         let d =
            match c with
-             Left (c, a, tl, attrs) -> Rtag (mkloc loc c, a, tl), attrs
-           | Right t -> Rinherit t, []
+             Left (c, a, tl) -> Rtag (mkloc loc c, a, tl)
+           | Right t -> Rinherit t
          in
-	 {prf_desc = d; prf_loc = loc; prf_attributes = attrs})
+	 {prf_desc = d; prf_loc = loc; prf_attributes = []})
       catl
   in
   let clos = if clos then Closed else Open in
