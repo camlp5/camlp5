@@ -298,7 +298,9 @@ echo >> config/Makefile
 cat config/Makefile.cnf >> config/Makefile
 
 cd ocaml_src/lib
+rm -f versdep.ml
 cp "versdep$verspfx/$OVERSION.ml" versdep.ml
+chmod -w versdep.ml
 cd ../..
 
 echo
