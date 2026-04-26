@@ -449,8 +449,10 @@ value ocaml_ptyp_object loc ml is_open =
   ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
     let ml = List.map (fun (s, t) -> (mkloc loc s, [], t)) ml in
     Ptyp_object ml (if is_open then Open else Closed)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     let ml = List.map (fun (s, t) -> Otag (mkloc loc s) [] t) ml in
+    Ptyp_object ml (if is_open then Open else Closed)
+  ELSE
     Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
@@ -515,11 +517,23 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     Some (Ptyp_variant catl clos sl_opt)
   ELSE
     let catl =
-      List.map
-        (fun
-         [ Left (c, a, tl) -> Rtag (mkloc loc c) [] a tl
-         | Right t -> Rinherit t ])
-        catl
+      IFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+        List.map
+          (fun
+           [ Left (c, a, tl) -> Rtag (mkloc loc c) [] a tl
+           | Right t -> Rinherit t ])
+          catl
+      ELSE
+        List.map
+          (fun c ->
+             let d =
+               match c with
+               [ Left (c, a, tl) -> Rtag (mkloc loc c, a, tl)
+               | Right t -> Rinherit t ]
+             in
+             {prf_desc = d; prf_loc = loc; prf_attributes = []})
+          catl
+      END
     in
     let clos = if clos then Closed else Open in
     Some (Ptyp_variant catl clos sl_opt)
