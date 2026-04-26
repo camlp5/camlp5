@@ -1372,6 +1372,8 @@ value ocaml_pdir_int i s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pdir_int s
   ELSE Pdir_int i None END
 ;
+value ocaml_pdir_none = Pdir_none;
+value ocaml_ptop_dir loc (s, da) = Ptop_dir s da;
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
