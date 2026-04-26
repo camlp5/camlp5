@@ -192,7 +192,12 @@ value ocaml_mkmod loc x =
 value ocaml_mkfield loc (lab, x) fl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
-  ELSE [(lab, x) :: fl] END
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN [(lab, x) :: fl]
+  ELSE
+    let pd = Otag (mkloc loc lab, x) in
+    let f = {pof_desc = pd; pof_loc = loc; pof_attributes = []} in
+    [f :: fl]
+  END
 ;
 value ocaml_mkfield_var loc =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN

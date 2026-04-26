@@ -109,8 +109,7 @@ let ocaml_mkmod loc x =
 ;;
 let ocaml_mkfield loc (lab, x) fl =
   let pd = Otag (mkloc loc lab, x) in
-  let f = {pof_desc = pd; pof_loc = loc; pof_attributes = []} in
-  f:: fl
+  let f = {pof_desc = pd; pof_loc = loc; pof_attributes = []} in f :: fl
 ;;
 let ocaml_mkfield_var loc = [];;
 
