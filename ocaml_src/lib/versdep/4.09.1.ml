@@ -107,11 +107,11 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-(*
-let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
-*)
-let ocaml_mkfield loc lab_x fl = lab_x :: fl;;
-(**)
+let ocaml_mkfield loc (lab, x) fl =
+  let pd = Otag (mkloc loc lab, x) in
+  let f = {pof_desc = pd; pof_loc = loc; pof_attributes = []} in
+  f:: fl
+;;
 let ocaml_mkfield_var loc = [];;
 
 let variance_of_bool_bool =
