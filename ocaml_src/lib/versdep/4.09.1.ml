@@ -439,14 +439,15 @@ let ocaml_ec_record loc s (x, rto) =
    pext_loc = loc; pext_attributes = []}
 ;;
 
-let ocaml_psig_exception loc s (ed, rto) =
+let ocaml_psig_exception loc s (ctl : core_type list) =
   let ec =
-    match ed with
-      Left (tyvars, x) -> ocaml_ec_tuple loc s tyvars (x, rto)
-    | Right x -> ocaml_ec_record loc s (x, rto)
+    {pext_name = mkloc loc s;
+     pext_kind = Pext_decl (Pcstr_tuple ctl, None);
+     pext_loc = loc;
+     pext_attributes = []}
   in
   Psig_exception
-    {ptyexn_constructor = ec; ptyexn_attributes = []; ptyexn_loc = loc}
+    {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
 ;;
 
 let ocaml_psig_include loc mt =
