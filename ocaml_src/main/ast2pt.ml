@@ -1806,7 +1806,7 @@ let directive_args loc d =
 let phrase =
   function
     StDir (loc, d, dp) ->
-      ocaml_ptop_dir loc (uv d, directive_args loc (uv dp))
+      ocaml_ptop_dir (mkloc loc) (uv d, directive_args loc (uv dp))
   | si ->
       glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
 ;;

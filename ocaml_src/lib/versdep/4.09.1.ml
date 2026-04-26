@@ -680,10 +680,11 @@ let ocaml_pcty_signature =
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int (i, None);;
 let ocaml_pdir_none = Pdir_string "";;
-let ocaml_ptop_dir loc (s, da) =
+let ocaml_ptop_dir loc (s, (dad : directive_argument_desc)) =
+  let da = {pdira_desc = dad; pdira_loc = loc} in
   let td =
     {pdir_name = mkloc loc s;
-     pdir_arg = da;
+     pdir_arg = Some da;
      pdir_loc = loc_none}
   in
   Ptop_dir td
