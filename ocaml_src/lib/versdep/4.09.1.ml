@@ -330,13 +330,13 @@ let ocaml_pexp_open =
     (fun (li : Longident.t) e ->
        let me =
          {pmod_desc = Pmod_ident (mkloc e.pexp_loc li);
-	  pmod_loc = e.pexp_loc;
-	  pmod_attributes = []}
+          pmod_loc = e.pexp_loc;
+          pmod_attributes = []}
        in
        Pexp_open
          ({popen_expr = me; popen_override = Fresh;
-	   popen_loc = e.pexp_loc; popen_attributes = []},
-	  e))
+           popen_loc = e.pexp_loc; popen_attributes = []},
+          e))
 ;;
 
 let ocaml_pexp_override sel =
