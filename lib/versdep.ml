@@ -974,10 +974,19 @@ value ocaml_psig_exception loc s ed =
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
+  ELSE
+    let ec =
+      {pext_name = mkloc loc s;
+       pext_kind = Pext_decl (Pcstr_tuple ed, None);
+       pext_loc = loc;
+       pext_attributes = []}
+    in
+    Psig_exception
+      {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
   END
 ;
 
