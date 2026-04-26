@@ -544,7 +544,11 @@ let ocaml_pstr_module loc s me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open loc me =
+let ocaml_pstr_open loc (li : Longident.t) =
+  let me =
+    {pmod_desc = Pmod_ident (mkloc loc li);
+     pmod_loc = loc; pmod_attributes = []}
+  in
   Pstr_open
     {popen_expr = me; popen_override = Fresh; popen_loc = loc;
      popen_attributes = []}
