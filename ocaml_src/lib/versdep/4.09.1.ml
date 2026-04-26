@@ -328,10 +328,10 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open =
   Some
-    (fun li e ->
+    (fun (li : Longident.t) e ->
        let me =
-         {pmod_desc = Pmod_ident li;
-	  pmod_loc = li.loc;
+         {pmod_desc = Pmod_ident (mkloc e.pexp_loc li);
+	  pmod_loc = e.pexp_loc;
 	  pmod_attributes = []}
        in
        Pexp_open
@@ -339,17 +339,6 @@ let ocaml_pexp_open =
 	   popen_loc = e.pexp_loc; popen_attributes = []},
 	  e))
 ;;
-(*
-let ocaml_pexp_open = Some (fun li e -> Pexp_open (Fresh, mknoloc li, e));;
-let ocaml_pexp_open =
-  Some
-    (fun ovf me e ->
-       Pexp_open
-         ({popen_expr = me; popen_override = ovf; popen_loc = loc_none;
-           popen_attributes = []},
-          e))
-;;
-*)
 
 let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
