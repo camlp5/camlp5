@@ -706,10 +706,16 @@ value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) True)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
      pexp_loc = loc;
      pexp_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
+  ELSE
+    {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true;
+     pexp_loc = loc; pexp_loc_stack = [];
+     pexp_attributes =
+       [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+         attr_loc = loc}]}
   END
 ;
 
@@ -778,8 +784,20 @@ value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_01 THEN
     Some (fun li e -> Pexp_open (mknoloc li) e)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     Some (fun li e -> Pexp_open Fresh (mknoloc li) e)
+  ELSE
+    Some
+      (fun (li : Longident.t) e ->
+         let me =
+           {pmod_desc = Pmod_ident (mkloc e.pexp_loc li);
+            pmod_loc = e.pexp_loc;
+            pmod_attributes = []}
+         in
+         Pexp_open
+           ({popen_expr = me; popen_override = Fresh;
+             popen_loc = e.pexp_loc; popen_attributes = []},
+            e))
   END
 ;
 
