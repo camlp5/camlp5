@@ -387,8 +387,8 @@ let ocaml_ppat_construct_args =
 
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
-  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
-   ppat_loc = loc; ppat_loc_stack = [];
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
+   ppat_loc_stack = [];
    ppat_attributes =
      [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
        attr_loc = loc}]}
@@ -422,9 +422,8 @@ let ocaml_ppat_variant =
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_ec_tuple loc s tyvars (x, rto) =
-  {pext_name = mkloc loc s;
-   pext_kind = Pext_decl (Pcstr_tuple x, rto); pext_loc = loc;
-   pext_attributes = []}
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
+   pext_loc = loc; pext_attributes = []}
 ;;
 
 let ocaml_ec_record loc s (x, rto) =
@@ -433,8 +432,8 @@ let ocaml_ec_record loc s (x, rto) =
       Ptype_record x -> Pcstr_record x
     | _ -> assert false
   in
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto);
-   pext_loc = loc; pext_attributes = []}
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto); pext_loc = loc;
+   pext_attributes = []}
 ;;
 
 let ocaml_psig_exception loc s (ctl : core_type list) =

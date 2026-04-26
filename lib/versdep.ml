@@ -889,14 +889,19 @@ value ocaml_ppat_construct_args =
 ;
 
 value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+  let a = ocaml_mkpat loc (Ppat_tuple al) in
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    let a = ocaml_mkpat loc (Ppat_tuple al) in
     ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
-  ELSE
-    let a = ocaml_mkpat loc (Ppat_tuple al) in
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
      ppat_loc = loc;
      ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
+  ELSE
+    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
+     ppat_loc = loc; ppat_loc_stack = [];
+     ppat_attributes =
+       [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+         attr_loc = loc}]}
   END
 ;
 
@@ -942,6 +947,26 @@ value ocaml_psig_class_type =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
+
+IFDEF OCAML_VERSION >= OCAML_4_09_1 THEN
+value ocaml_ec_tuple loc s tyvars (x, rto) =
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl (Pcstr_tuple x, rto); pext_loc = loc;
+   pext_attributes = []}
+;
+END;
+
+IFDEF OCAML_VERSION >= OCAML_4_09_1 THEN
+value ocaml_ec_record loc s (x, rto) =
+  let x =
+    match x with
+    [ Ptype_record x -> Pcstr_record x
+    | _ -> assert false ]
+  in
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto);
+   pext_loc = loc; pext_attributes = []}
+;
+END;
 
 value ocaml_psig_exception loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
