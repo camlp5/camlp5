@@ -1800,7 +1800,7 @@ let directive loc =
 let directive_args loc d =
   match d with
     Some d -> directive loc d
-  | None -> Pdir_none
+  | None -> ocaml_pdir_none
 ;;
 
 let phrase =
