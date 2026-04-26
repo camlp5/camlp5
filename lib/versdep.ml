@@ -159,15 +159,27 @@ value ocaml_class_field loc cfd =
 
 value ocaml_mktyp loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ptyp_desc = x; ptyp_loc = loc}
-  ELSE {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+    {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+  ELSE
+    {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = []}
+  END
 ;
 value ocaml_mkpat loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ppat_desc = x; ppat_loc = loc}
-  ELSE {ppat_desc = x; ppat_loc = loc; ppat_attributes = []} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+    {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
+  ELSE
+    {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
+  END
 ;
 value ocaml_mkexp loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
-  ELSE {pexp_desc = x; pexp_loc = loc; pexp_attributes = []} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+    {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
+  ELSE
+    {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
+  END
 ;
 value ocaml_mkmty loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmty_desc = x; pmty_loc = loc}
