@@ -130,13 +130,14 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
       let params =
         List.map2
           (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+             ocaml_mktyp loc (Ptyp_var os),
+	     (variance_of_bool_bool va, NoInjectivity))
           params variance
       in
       Right
-        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-         ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-         ptype_name = mkloc loc tn; ptype_attributes = []}
+        {ptype_params = params; ptype_cstrs = cl;
+	 ptype_kind = tk; ptype_private = pf; ptype_manifest = tm;
+	 ptype_loc = loc; ptype_name = mkloc loc tn; ptype_attributes = []}
   | None -> Left "no '_' type param in this ocaml version"
 ;;
 
@@ -153,7 +154,7 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (mkloc sloc s, Some mt1, mt2)
+  Pmty_functor (Named (mkloc sloc s, mt1), mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
