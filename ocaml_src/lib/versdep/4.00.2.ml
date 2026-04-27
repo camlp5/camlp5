@@ -474,6 +474,8 @@ let ocaml_pcty_signature =
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int s;;
+let ocaml_pdir_none = Pdir_none;;
+let ocaml_ptop_dir loc (s, da) = Ptop_dir (s, da);;
 
 let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc me))
