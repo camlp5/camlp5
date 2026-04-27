@@ -1059,7 +1059,7 @@ EXTEND
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          let e = expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs in
+        let e = expr_to_inline (<:expr< let module $_uidopt:m$ = $mb$ in $e$ >>) ext attrs in
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
@@ -1260,7 +1260,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
+        let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
+          expr_to_inline e ext attrs
 
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
           expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs

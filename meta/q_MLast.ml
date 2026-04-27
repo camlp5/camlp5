@@ -751,9 +751,11 @@ EXTEND
       | check_let_not_exception ; "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
-      | check_let_not_exception ; "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | check_let_not_exception ; "let"; "module"; mb = mod_binding; "in";
         e = SELF →
-          Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
+        let si = Qast.Node "StMod" [Qast.Loc; Qast.VaVal (Qast.Bool False); Qast.VaVal (Qast.List [mb])] in
+            Qast.Node "ExLSI" [Qast.Loc ; si ; e]
+
       | check_let_not_exception ; "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr; "in"; e = SELF →
           Qast.Node "ExLop" [Qast.Loc; ovf; m; e]
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
@@ -1109,10 +1111,10 @@ EXTEND
         "in"; el = SELF →
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; rf; l; mksequence Qast.Loc el]]
-      | "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | "let"; "module"; mb = mod_binding; "in";
         el = SELF →
-          Qast.List
-            [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
+        let si = Qast.Node "StMod" [Qast.Loc; Qast.VaVal (Qast.Bool False); Qast.VaVal (Qast.List [mb])] in
+            Qast.Node "ExLSI" [Qast.Loc ; si ; mksequence Qast.Loc el]
       | "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr; "in"; el = SELF →
           Qast.List [Qast.Node "ExLop" [Qast.Loc; ovf; m; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF → Qast.Cons e el

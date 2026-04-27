@@ -1367,7 +1367,7 @@ EXTEND_PRINTER
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body
 
-      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+      | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
           let s = uidopt_to_maybe_blank s in
           if pc.dang = ";" then
             pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me

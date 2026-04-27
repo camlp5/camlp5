@@ -1103,11 +1103,6 @@ and expr =
      let si = List.hd (str_item si []) in
      mkexp loc (ocaml_pexp_let_str_item loc si (expr body))
   | ExLid loc s → mkexp loc (ocaml_pexp_ident (mkloc loc) (ocaml_longident_lident (mkloc loc) (uv s)))
-  | ExLmd loc i me e →
-      match ocaml_pexp_letmodule with
-      [ Some pexp_letmodule →
-          mkexp loc (pexp_letmodule (option_map uv (uv i)) (module_expr me) (expr e))
-      | None → error loc "no 'let module' in this ocaml version" ]
   | ExLop loc ovf me e →
       match ocaml_pexp_open with
       | Some pexp_open →

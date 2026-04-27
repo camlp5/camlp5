@@ -965,7 +965,9 @@ EXTEND
           build_letop_binder loc letop b l x
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
-          expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
+        let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
+        let e = MLast.ExLSI loc si e in
+          expr_to_inline e ext attrs
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
           expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →

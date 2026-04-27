@@ -250,6 +250,8 @@ let ocaml_pexp_let_str_item loc si body =
           ptyexn_loc = loc};
      pstr_loc = _} ->
       Pexp_letexception (exdef, body)
+  | {pstr_desc = Pstr_module {pmb_name = name; pmb_expr = mexpr}} ->
+      Pexp_letmodule (name, mexpr, body)
 ;;
 
 let ocaml_mkexp loc x =

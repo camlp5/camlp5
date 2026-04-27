@@ -380,16 +380,6 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $lid:s$ >>;
 <:expr< $_lid:s$ >>;
 
-(* let module *)
-#ifdef OCAML_4_10_0
-  <:expr< let module _ = $me$ in $e$ >>;
-#else
-  MLast.ExLmd loc (Ploc.VaVal None) me e;
-#endif
-  <:expr< let module $uid:s$ = $me$ in $e$ >>;
-<:expr< let module $_uid:s$ = $me$ in $e$ >>;
-<:expr< let module $uidopt:os$ = $me$ in $e$ >>;
-<:expr< let module $_uidopt:os$ = $me$ in $e$ >>;
 (* let open *)
 <:expr< let open! $me$ in $e$ >>;
 <:expr< let open $me$ in $e$ >>;

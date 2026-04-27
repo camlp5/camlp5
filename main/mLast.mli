@@ -120,7 +120,6 @@ and expr =
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr * attributes)) and expr
   | ExLid of loc and V string
-  | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and V bool and module_expr and expr
   | ExMat of loc and expr and V (list case_branch)
   | ExNew of loc and V longid_lident

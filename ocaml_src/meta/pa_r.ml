@@ -2625,7 +2625,9 @@ Grammar.safe_extend
            "194fe98d",
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ _ (loc : Ploc.t) ->
-              (expr_to_inline (MLast.ExLmd (loc, m, mb, e)) ext attrs :
+              (let si = MLast.StMod (loc, false, [m, mb, []]) in
+               let e = MLast.ExLSI (loc, si, e) in
+               expr_to_inline e ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -3763,7 +3765,10 @@ Grammar.safe_extend
            "194fe98d",
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ (loc : Ploc.t) ->
-              ([expr_to_inline (MLast.ExLmd (loc, m, mb, mksequence loc el))
+              ([expr_to_inline
+                  (MLast.ExLSI
+                     (loc, MLast.StMod (loc, false, [m, mb, []]),
+                      mksequence loc el))
                   ext attrs] :
                'sequence)));
         Grammar.production

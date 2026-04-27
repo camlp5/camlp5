@@ -198,10 +198,6 @@ module Meta_make (C : MetaSig) =
                lpe;
              expr e]
       | ExLid (_, s) -> C.node "ExLid" [C.vala C.string s]
-      | ExLmd (_, s, me, e) ->
-          let c_vala x = C.vala C.string x in
-          let c_vala_opt sopt = C.option c_vala sopt in
-          C.node "ExLmd" [C.vala c_vala_opt s; module_expr me; expr e]
       | ExLop (_, b, me, e) ->
           C.node "ExLop" [C.vala C.bool b; module_expr me; expr e]
       | ExMat (_, e, lpoee) ->
