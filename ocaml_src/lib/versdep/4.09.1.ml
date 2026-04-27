@@ -493,25 +493,22 @@ let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
 let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
-let ocaml_pstr_exception loc s (ctl : core_type list) =
+let ocaml_pstr_exception loc s ed =
   let ec =
-    {pext_name = mkloc loc s;
-     pext_kind = Pext_decl (Pcstr_tuple ctl, None);
-     pext_loc = loc;
-     pext_attributes = []}
+    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+     pext_loc = loc; pext_attributes = []}
   in
   Pstr_exception
     {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
 ;;
 
-let ocaml_ec_rebind loc s li =
-  {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
-   pext_loc = loc; pext_attributes = []}
-;;
-
 let ocaml_pstr_exn_rebind =
   Some
     (fun loc s li ->
+       let pc =
+         {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
+          pext_loc = loc; pext_attributes = []}
+       in
        Pstr_exception
          {ptyexn_constructor = ocaml_ec_rebind loc s li;
           ptyexn_attributes = []; ptyexn_loc = loc})
