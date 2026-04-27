@@ -948,26 +948,6 @@ value ocaml_psig_class_type =
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
-IFDEF OCAML_VERSION >= OCAML_4_09_1 THEN
-value ocaml_ec_tuple loc s tyvars (x, rto) =
-  {pext_name = mkloc loc s;
-   pext_kind = Pext_decl (Pcstr_tuple x, rto); pext_loc = loc;
-   pext_attributes = []}
-;
-END;
-
-IFDEF OCAML_VERSION >= OCAML_4_09_1 THEN
-value ocaml_ec_record loc s (x, rto) =
-  let x =
-    match x with
-    [ Ptype_record x -> Pcstr_record x
-    | _ -> assert false ]
-  in
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto);
-   pext_loc = loc; pext_attributes = []}
-;
-END;
-
 value ocaml_psig_exception loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
@@ -1169,9 +1149,17 @@ value ocaml_pstr_module loc s me =
 value ocaml_pstr_open loc li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_open Fresh (mknoloc li)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
     Pstr_open
       {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+       popen_attributes = []}
+  ELSE
+    let me =
+      {pmod_desc = Pmod_ident (mkloc loc li);
+       pmod_loc = loc; pmod_attributes = []}
+    in
+    Pstr_open
+      {popen_expr = me; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
   END
 ;
@@ -1478,8 +1466,20 @@ value ocaml_pdir_int i s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pdir_int s
   ELSE Pdir_int i None END
 ;
-value ocaml_pdir_none = Pdir_none;
-value ocaml_ptop_dir loc (s, da) = Ptop_dir s da;
+value ocaml_pdir_none =
+  IFDEF OCAML_VERSION < OCAML_4_09_1 THEN Pdir_none
+  ELSE Pdir_string "" END
+;
+value ocaml_ptop_dir loc (s, da) =
+  IFDEF OCAML_VERSION < OCAML_4_09_1 THEN Ptop_dir s da
+  ELSE
+    let da = {pdira_desc = da; pdira_loc = loc} in
+    let td =
+      {pdir_name = mkloc loc s; pdir_arg = Some da; pdir_loc = loc_none}
+    in
+    Ptop_dir td
+  END
+;
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
@@ -1662,7 +1662,11 @@ value list_sort =
 
 value pervasives_set_binary_mode_out =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN fun _ _ -> ()
-  ELSE Pervasives.set_binary_mode_out END
+  ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+    Pervasives.set_binary_mode_out
+  ELSE
+    set_binary_mode_out
+  END
 ;
 
 IFDEF OCAML_VERSION <= OCAML_3_04 THEN

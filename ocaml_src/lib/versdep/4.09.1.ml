@@ -421,21 +421,6 @@ let ocaml_ppat_variant =
 
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
-let ocaml_ec_tuple loc s tyvars (x, rto) =
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
-   pext_loc = loc; pext_attributes = []}
-;;
-
-let ocaml_ec_record loc s (x, rto) =
-  let x =
-    match x with
-      Ptype_record x -> Pcstr_record x
-    | _ -> assert false
-  in
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (x, rto); pext_loc = loc;
-   pext_attributes = []}
-;;
-
 let ocaml_psig_exception loc s ed =
   let ec =
     {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
@@ -536,10 +521,10 @@ let ocaml_pstr_module loc s me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open loc (li : Longident.t) =
+let ocaml_pstr_open loc li =
   let me =
-    {pmod_desc = Pmod_ident (mkloc loc li);
-     pmod_loc = loc; pmod_attributes = []}
+    {pmod_desc = Pmod_ident (mkloc loc li); pmod_loc = loc;
+     pmod_attributes = []}
   in
   Pstr_open
     {popen_expr = me; popen_override = Fresh; popen_loc = loc;
@@ -672,12 +657,10 @@ let ocaml_pcty_signature =
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int (i, None);;
 let ocaml_pdir_none = Pdir_string "";;
-let ocaml_ptop_dir loc (s, (dad : directive_argument_desc)) =
-  let da = {pdira_desc = dad; pdira_loc = loc} in
+let ocaml_ptop_dir loc (s, da) =
+  let da = {pdira_desc = da; pdira_loc = loc} in
   let td =
-    {pdir_name = mkloc loc s;
-     pdir_arg = Some da;
-     pdir_loc = loc_none}
+    {pdir_name = mkloc loc s; pdir_arg = Some da; pdir_loc = loc_none}
   in
   Ptop_dir td
 ;;
