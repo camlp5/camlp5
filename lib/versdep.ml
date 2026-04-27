@@ -194,7 +194,7 @@ value ocaml_mkfield loc (lab, x) fl =
     [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
   ELSIFDEF OCAML_VERSION < OCAML_4_09_1 THEN [(lab, x) :: fl]
   ELSE
-    let pd = Otag (mkloc loc lab, x) in
+    let pd = Otag (mkloc loc lab) x in
     let f = {pof_desc = pd; pof_loc = loc; pof_attributes = []} in
     [f :: fl]
   END
@@ -528,7 +528,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
           (fun c ->
              let d =
                match c with
-               [ Left (c, a, tl) -> Rtag (mkloc loc c, a, tl)
+               [ Left (c, a, tl) -> Rtag (mkloc loc c) a tl
                | Right t -> Rinherit t ]
              in
              {prf_desc = d; prf_loc = loc; prf_attributes = []})
@@ -711,7 +711,7 @@ value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
      pexp_loc = loc;
      pexp_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
   ELSE
-    {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true;
+    {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
      pexp_loc = loc; pexp_loc_stack = [];
      pexp_attributes =
        [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
@@ -795,9 +795,9 @@ value ocaml_pexp_open =
             pmod_attributes = []}
          in
          Pexp_open
-           ({popen_expr = me; popen_override = Fresh;
-             popen_loc = e.pexp_loc; popen_attributes = []},
-            e))
+           {popen_expr = me; popen_override = Fresh;
+             popen_loc = e.pexp_loc; popen_attributes = []}
+           e)
   END
 ;
 
@@ -897,7 +897,7 @@ value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
      ppat_loc = loc;
      ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
   ELSE
-    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
+    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
      ppat_loc = loc; ppat_loc_stack = [];
      ppat_attributes =
        [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
@@ -961,7 +961,7 @@ value ocaml_psig_exception loc s ed =
   ELSE
     let ec =
       {pext_name = mkloc loc s;
-       pext_kind = Pext_decl (Pcstr_tuple ed, None);
+       pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc;
        pext_attributes = []}
     in
@@ -1080,7 +1080,7 @@ value ocaml_pstr_exception loc s ed =
   ELSE
     let ec =
       {pext_name = mkloc loc s;
-       pext_kind = Pext_decl (Pcstr_tuple ed, None);
+       pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc;
        pext_attributes = []}
     in
@@ -1107,8 +1107,8 @@ value ocaml_pstr_exn_rebind =
             pext_loc = loc; pext_attributes = []}
          in
          Pstr_exception
-           {ptyexn_constructor = ocaml_ec_rebind loc s li;
-            ptyexn_attributes = []; ptyexn_loc = loc})
+           {ptyexn_constructor = pc; ptyexn_attributes = [];
+	    ptyexn_loc = loc})
   END
 ;
 
