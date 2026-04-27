@@ -246,11 +246,6 @@ and expr floc sh =
                    patt floc sh x1, self x2, attributes floc sh x3))
              x2,
            self x3)
-    | ExLEx (loc, x1, x2, x3, x4) ->
-        let loc = floc loc in
-        ExLEx
-          (loc, x1, vala_map (List.map (ctyp floc sh)) x2, self x3,
-           attributes floc sh x4)
     | ExLid (loc, x1) -> let loc = floc loc in ExLid (loc, x1)
     | ExLmd (loc, x1, x2, x3) ->
         let loc = floc loc in ExLmd (loc, x1, module_expr floc sh x2, self x3)
@@ -318,6 +313,8 @@ and expr floc sh =
         let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
     | ExExten (loc, exten) ->
         let loc = floc loc in ExExten (loc, attribute_body floc sh exten)
+    | ExLSI (loc, si, e) ->
+        let loc = floc loc in ExLSI (loc, str_item floc sh si, expr floc sh e)
     | ExUnr loc -> let loc = floc loc in ExUnr loc
   in
   self

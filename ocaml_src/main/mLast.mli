@@ -110,7 +110,6 @@ and expr =
   | ExLab of loc * patt * expr option
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr * attributes) list * expr
-  | ExLEx of loc * string * ctyp list * expr * attributes
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * bool * module_expr * expr
@@ -133,6 +132,7 @@ and expr =
   | ExXtr of loc * string * expr option
   | ExAtt of loc * expr * attribute
   | ExExten of loc * attribute
+  | ExLSI of loc * str_item * expr
   | ExUnr of loc
 and case_branch = patt * expr option * expr
 and module_type =

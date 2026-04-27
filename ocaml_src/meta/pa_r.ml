@@ -2691,7 +2691,14 @@ Grammar.safe_extend
            "194fe98d",
            (fun (x : 'expr) _ (alg_attrs : 'alg_attributes) (id : string) _ _
                 _ (loc : Ploc.t) ->
-              (MLast.ExLEx (loc, id, [], x, alg_attrs) : 'expr)));
+              (MLast.ExLSI
+                 (loc,
+                  MLast.StExc
+                    (loc,
+                     MLast.EcTuple (loc, (loc, id, [], [], None, alg_attrs)),
+                     []),
+                  x) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2722,7 +2729,14 @@ Grammar.safe_extend
            (fun (x : 'expr) _ (alg_attrs : 'alg_attributes)
                 (tyl : 'ctyp_below_alg_attribute list) _ (id : string) _ _ _
                 (loc : Ploc.t) ->
-              (MLast.ExLEx (loc, id, tyl, x, alg_attrs) : 'expr)))];
+              (MLast.ExLSI
+                 (loc,
+                  MLast.StExc
+                    (loc,
+                     MLast.EcTuple (loc, (loc, id, [], tyl, None, alg_attrs)),
+                     []),
+                  x) :
+               'expr)))];
        Some "where", None,
        [Grammar.production
           (Grammar.r_next

@@ -1335,12 +1335,9 @@ and expr =
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
-  | ExLEx (loc, exnname, exntyl, body, alg_attrs) ->
-      let exdef =
-        ocaml_extension_exception (mkloc loc) (uv exnname)
-          (List.map ctyp (uv exntyl)) (uv_alg_attributes alg_attrs)
-      in
-      mkexp loc (ocaml_pexp_letexception exdef (expr body))
+  | ExLSI (loc, si, body) ->
+      let si = List.hd (str_item si []) in
+      mkexp loc (ocaml_pexp_let_str_item loc si (expr body))
   | ExLid (loc, s) ->
       mkexp loc
         (ocaml_pexp_ident (mkloc loc)

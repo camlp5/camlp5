@@ -376,16 +376,6 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< let $_flag:b$ $list:lpex$ in $e$ >>;
 <:expr< let $_flag:b$ $_list:lpex$ in $e$ >>;
 
-(* let exception *)
-<:expr< let exception $uid:s$ of $list:lt$ $algattrs:x$ in $e$ >> ;
-<:expr< let exception $uid:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $uid:s$ of $_list:lt$ $algattrs:x$ in $e$ >> ;
-<:expr< let exception $uid:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $_uid:s$ of $list:lt$ $algattrs:x$ in $e$ >> ;
-<:expr< let exception $_uid:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $_uid:s$ of $_list:lt$ $algattrs:x$ in $e$ >> ;
-<:expr< let exception $_uid:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
-
 (* lowercase identifier *)
 <:expr< $lid:s$ >>;
 <:expr< $_lid:s$ >>;
@@ -491,6 +481,9 @@ MLast.ExRec loc lpe oe;
 
 <:expr< $e$ [@ $_attribute:x$ ] >> ;
 <:expr< [% $_extension:x$ ] >> ;
+
+(* expr str_item *)
+MLast.ExLSI loc si e;
 
 (* unreachable *)
 <:expr< . >> ;

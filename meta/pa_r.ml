@@ -951,6 +951,7 @@ EXTEND
       [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp_below_alg_attribute) ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
         <:expr< let exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
         <:expr< let exception $_uid:id$ $_algattrs:alg_attrs$ in $x$ >>

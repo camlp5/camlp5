@@ -393,6 +393,17 @@ value ocaml_pexp_letexception exdef body =
   Pexp_letexception exdef body ;
 value ocaml_ppat_exception p =
   Ppat_exception p;
+value ocaml_pexp_let_str_item loc si body =
+  match si with [
+      {pstr_desc=Pstr_exception
+                   {ptyexn_constructor = exdef;
+                    ptyexn_attributes = item_attributes;
+                    ptyexn_loc = loc}
+      ; pstr_loc = _
+      } ->
+      Pexp_letexception exdef body
+    ]
+;
 END
 ;
 

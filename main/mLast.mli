@@ -119,7 +119,6 @@ and expr =
   | ExLab of loc and patt and V (option expr)
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr * attributes)) and expr
-  | ExLEx of loc and V string and V (list ctyp) and expr and attributes
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and V bool and module_expr and expr
@@ -142,6 +141,7 @@ and expr =
   | ExXtr of loc and string and option (V expr)
   | ExAtt of loc and expr and attribute
   | ExExten of loc and attribute
+  | ExLSI of loc and str_item and expr
   | ExUnr of loc
   ]
 and case_branch = (patt * V (option expr) * expr)

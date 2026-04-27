@@ -745,13 +745,9 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ check_let_exception ; "let" ; "exception" ; id = SV UIDENT "uid" ;
-        "of"; tyl = SV (LIST1 ctyp LEVEL "below_alg_attribute") ; alg_attrs = alg_attributes ;
-        "in" ; x = SELF ->
-          Qast.Node "ExLEx" [Qast.Loc ; id ; tyl ; x; alg_attrs]
-      | check_let_exception ; "let" ; "exception" ; id = SV UIDENT "uid"; alg_attrs = alg_attributes ;
-        "in" ; x = SELF ->
-          Qast.Node "ExLEx" [Qast.Loc ; id ; Qast.VaVal(Qast.List[]) ; x; alg_attrs]
+      [ check_let_exception ; "let" ; "exception" ; ec = SV extension_constructor "excon" ; item_attrs = item_attributes ; "in" ; x = SELF →
+        let si = Qast.Node "StExc" [Qast.Loc; ec; item_attrs] in
+        Qast.Node "ExLSI" [Qast.Loc ; si ; x]
       | check_let_not_exception ; "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
