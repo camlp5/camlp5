@@ -1807,6 +1807,5 @@ let phrase =
   function
     StDir (loc, d, dp) ->
       ocaml_ptop_dir (mkloc loc) (uv d, directive_args loc (uv dp))
-  | si ->
-      glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
+  | si -> glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
 ;;

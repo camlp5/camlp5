@@ -100,7 +100,7 @@ and print_rule ppf symbols =
     List.fold_left
       (fun sep symbol ->
          fprintf ppf "%t%a" sep print_symbol symbol;
-         fun ppf -> Format.fprintf ppf ";@ ")
+         fun ppf -> fprintf ppf ";@ ")
       (fun ppf -> ()) symbols
   in
   fprintf ppf "@]"

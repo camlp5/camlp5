@@ -348,6 +348,7 @@ value let_binding pc (p, e) =
   let (e, tyo) =
     match (p, e) with
     [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
+    | (<:patt< _ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
     | _ -> (e, None) ]
   in
   let simple_patt = Eprinter.apply_level pr_patt "simple" in
