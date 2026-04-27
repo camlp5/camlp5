@@ -495,8 +495,7 @@ let ocaml_pstr_exn_rebind =
           pext_loc = loc; pext_attributes = []}
        in
        Pstr_exception
-         {ptyexn_constructor = ocaml_ec_rebind loc s li;
-          ptyexn_attributes = []; ptyexn_loc = loc})
+         {ptyexn_constructor = pc; ptyexn_attributes = []; ptyexn_loc = loc})
 ;;
 
 let ocaml_pstr_include =
