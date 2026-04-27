@@ -206,7 +206,7 @@ let make_lookahd loc pll sl cl errk =
 let gcl = ref [];;
 
 Grammar.extend
-  (let _ = (expr : 'expr Grammar.Entry.e) in
+  (let _ : 'expr Grammar.Entry.e = expr in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in

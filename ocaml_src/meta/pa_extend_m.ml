@@ -8,7 +8,7 @@
 open Pa_extend;;
 
 Grammar.extend
-  (let _ = (symbol : 'symbol Grammar.Entry.e) in
+  (let _ : 'symbol Grammar.Entry.e = symbol in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry symbol) s
    in

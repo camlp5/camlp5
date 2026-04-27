@@ -1956,8 +1956,8 @@ let semi_sep =
 ;;
 
 Grammar.extend
-  (let _ = (expr : 'expr Grammar.Entry.e)
-   and _ = (symbol : 'symbol Grammar.Entry.e) in
+  (let _ : 'expr Grammar.Entry.e = expr
+   and _ : 'symbol Grammar.Entry.e = symbol in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in

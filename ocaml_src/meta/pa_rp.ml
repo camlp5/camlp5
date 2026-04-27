@@ -11,8 +11,8 @@ open Pcaml;;
 (* Syntax extensions in Revised Syntax grammar *)
 
 Grammar.extend
-  (let _ = (expr : 'expr Grammar.Entry.e)
-   and _ = (ipatt : 'ipatt Grammar.Entry.e) in
+  (let _ : 'expr Grammar.Entry.e = expr
+   and _ : 'ipatt Grammar.Entry.e = ipatt in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in

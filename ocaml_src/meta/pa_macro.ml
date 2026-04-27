@@ -425,14 +425,13 @@ let apply_directive loc n dp =
 ;;
 
 Grammar.extend
-  (let _ = (expr : 'expr Grammar.Entry.e)
-   and _ = (patt : 'patt Grammar.Entry.e)
-   and _ = (str_item : 'str_item Grammar.Entry.e)
-   and _ = (sig_item : 'sig_item Grammar.Entry.e)
-   and _ =
-     (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
-   and _ = (match_case : 'match_case Grammar.Entry.e)
-   and _ = (label_declaration : 'label_declaration Grammar.Entry.e) in
+  (let _ : 'expr Grammar.Entry.e = expr
+   and _ : 'patt Grammar.Entry.e = patt
+   and _ : 'str_item Grammar.Entry.e = str_item
+   and _ : 'sig_item Grammar.Entry.e = sig_item
+   and _ : 'constructor_declaration Grammar.Entry.e = constructor_declaration
+   and _ : 'match_case Grammar.Entry.e = match_case
+   and _ : 'label_declaration Grammar.Entry.e = label_declaration in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in

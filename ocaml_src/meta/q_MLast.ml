@@ -325,28 +325,27 @@ let warning_deprecated_since_6_00 loc =
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.extend
-  (let _ = (sig_item : 'sig_item Grammar.Entry.e)
-   and _ = (str_item : 'str_item Grammar.Entry.e)
-   and _ = (ctyp : 'ctyp Grammar.Entry.e)
-   and _ = (patt : 'patt Grammar.Entry.e)
-   and _ = (expr : 'expr Grammar.Entry.e)
-   and _ = (module_type : 'module_type Grammar.Entry.e)
-   and _ = (module_expr : 'module_expr Grammar.Entry.e)
-   and _ = (signature : 'signature Grammar.Entry.e)
-   and _ = (structure : 'structure Grammar.Entry.e)
-   and _ = (class_type : 'class_type Grammar.Entry.e)
-   and _ = (class_expr : 'class_expr Grammar.Entry.e)
-   and _ = (class_sig_item : 'class_sig_item Grammar.Entry.e)
-   and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
-   and _ = (let_binding : 'let_binding Grammar.Entry.e)
-   and _ = (type_decl : 'type_decl Grammar.Entry.e)
-   and _ =
-     (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
-   and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
-   and _ = (match_case : 'match_case Grammar.Entry.e)
-   and _ = (ipatt : 'ipatt Grammar.Entry.e)
-   and _ = (with_constr : 'with_constr Grammar.Entry.e)
-   and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
+  (let _ : 'sig_item Grammar.Entry.e = sig_item
+   and _ : 'str_item Grammar.Entry.e = str_item
+   and _ : 'ctyp Grammar.Entry.e = ctyp
+   and _ : 'patt Grammar.Entry.e = patt
+   and _ : 'expr Grammar.Entry.e = expr
+   and _ : 'module_type Grammar.Entry.e = module_type
+   and _ : 'module_expr Grammar.Entry.e = module_expr
+   and _ : 'signature Grammar.Entry.e = signature
+   and _ : 'structure Grammar.Entry.e = structure
+   and _ : 'class_type Grammar.Entry.e = class_type
+   and _ : 'class_expr Grammar.Entry.e = class_expr
+   and _ : 'class_sig_item Grammar.Entry.e = class_sig_item
+   and _ : 'class_str_item Grammar.Entry.e = class_str_item
+   and _ : 'let_binding Grammar.Entry.e = let_binding
+   and _ : 'type_decl Grammar.Entry.e = type_decl
+   and _ : 'constructor_declaration Grammar.Entry.e = constructor_declaration
+   and _ : 'label_declaration Grammar.Entry.e = label_declaration
+   and _ : 'match_case Grammar.Entry.e = match_case
+   and _ : 'ipatt Grammar.Entry.e = ipatt
+   and _ : 'with_constr Grammar.Entry.e = with_constr
+   and _ : 'poly_variant Grammar.Entry.e = poly_variant in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
