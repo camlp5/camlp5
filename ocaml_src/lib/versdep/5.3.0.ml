@@ -154,7 +154,7 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (Named (mkloc sloc s, mt1), mt2)
+  Pmty_functor (Named (mkloc sloc (Some s), mt1), mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
@@ -233,13 +233,13 @@ let ocaml_package_type li ltl =
 let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
-let ocaml_pconst_string loc s so = Pconst_string (loc, s, so);;
+let ocaml_pconst_string loc s so = Pconst_string (s, loc, so);;
 
 let pconst_of_const loc =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c
-  | Const_string (loc, s, so) -> ocaml_pconst_string loc s so
+  | Const_string (s, loc, so) -> ocaml_pconst_string loc s so
   | Const_float s -> ocaml_pconst_float s
   | Const_int32 i32 -> Pconst_integer (Int32.to_string i32, Some 'l')
   | Const_int64 i64 -> Pconst_integer (Int64.to_string i64, Some 'L')
@@ -315,7 +315,7 @@ let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 let ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);;
 
 let ocaml_pexp_letmodule =
-  Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))
+  Some (fun i me e -> Pexp_letmodule (mknoloc (Some i), me, e))
 ;;
 
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
@@ -375,6 +375,11 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
+  let po =
+    match po with
+      Some p -> Some ([], p)
+    | None -> None
+  in
   Ppat_construct (mkloc loc li, po)
 ;;
 
@@ -403,7 +408,9 @@ let ocaml_ppat_record lpl is_closed =
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
 let ocaml_ppat_unpack =
-  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
+  Some
+    ((fun loc s -> Ppat_unpack (mkloc loc (Some s))),
+     (fun pt -> Ptyp_package pt))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;
@@ -422,8 +429,9 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed =
   let ec =
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {pext_name = mkloc loc s;
+     pext_kind = Pext_decl ([], Pcstr_tuple ed, None); pext_loc = loc;
+     pext_attributes = []}
   in
   Psig_exception
     {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
@@ -570,7 +578,7 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor sloc s mt me = Pmod_functor (mknoloc s, Some mt, me);;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))

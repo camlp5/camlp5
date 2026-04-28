@@ -569,7 +569,7 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor sloc s mt me = Pmod_functor (mknoloc s, Some mt, me);;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))

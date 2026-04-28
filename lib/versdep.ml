@@ -318,7 +318,7 @@ value ocaml_pmty_functor sloc s mt1 mt2 =
   ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
     Pmty_functor (mkloc sloc s) (Some mt1) mt2
   ELSE
-    Pmty_functor (Named (mkloc sloc s) mt1) mt2
+    Pmty_functor (Named (mkloc sloc (Some s)) mt1) mt2
   END
 ;
 
@@ -575,7 +575,7 @@ value ocaml_pconst_string loc s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
   ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN Pconst_string s so
-  ELSE Pconst_string loc s so END
+  ELSE Pconst_string s loc so END
 ;
 
 value pconst_of_const loc =
@@ -605,7 +605,7 @@ value pconst_of_const loc =
     | IFDEF OCAML_VERSION < OCAML_4_14_2 THEN
         Const_string s so -> ocaml_pconst_string loc s so
       ELSE
-        Const_string loc s so -> ocaml_pconst_string loc s so
+        Const_string s loc so -> ocaml_pconst_string loc s so
       END
     | Const_float s -> ocaml_pconst_float s
     | Const_int32 i32 -> Pconst_integer (Int32.to_string i32) (Some 'l')
@@ -776,7 +776,11 @@ value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc i) me e) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+    Some (fun i me e -> Pexp_letmodule (mknoloc i) me e)
+  ELSE
+    Some (fun i me e -> Pexp_letmodule (mknoloc (Some i)) me e)
+  END
 ;
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
@@ -884,7 +888,14 @@ value ocaml_ppat_construct loc li po chk_arity  =
     Ppat_construct li po chk_arity
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Ppat_construct (mkloc loc li) po chk_arity
+  ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+    Ppat_construct (mkloc loc li) po
   ELSE
+    let po =
+      match po with
+      [ Some p -> Some ([], p)
+      | None -> None ]
+    in
     Ppat_construct (mkloc loc li) po
   END
 ;
@@ -938,8 +949,12 @@ value ocaml_ppat_type =
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
     Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
+  ELSE
+    Some
+      ((fun loc s -> Ppat_unpack (mkloc loc (Some s))),
+       (fun pt -> Ptyp_package pt))
   END
 ;
 
@@ -976,7 +991,12 @@ value ocaml_psig_exception loc s ed =
   ELSE
     let ec =
       {pext_name = mkloc loc s;
-       pext_kind = Pext_decl (Pcstr_tuple ed) None;
+       pext_kind =
+         IFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+           Pext_decl (Pcstr_tuple ed) None
+	 ELSE
+           Pext_decl [] (Pcstr_tuple ed) None
+         END;
        pext_loc = loc;
        pext_attributes = []}
     in
@@ -1257,7 +1277,7 @@ value ocaml_pmod_constraint loc me mt =
 
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
-value ocaml_pmod_functor s mt me =
+value ocaml_pmod_functor sloc s mt me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmod_functor (mknoloc s) mt me
   ELSE Pmod_functor (mknoloc s) (Some mt) me END
 ;

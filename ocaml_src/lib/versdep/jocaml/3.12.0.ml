@@ -377,7 +377,7 @@ let ocaml_pmod_constraint loc me mt = me;;
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, mt, me);;
+let ocaml_pmod_functor sloc s mt me = Pmod_functor (mknoloc s, mt, me);;
 
 let ocaml_pmod_unpack = Some (Left (fun e pt -> Pmod_unpack (e, pt)));;
 

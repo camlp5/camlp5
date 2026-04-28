@@ -614,7 +614,8 @@ value rec patt =
   | PaStr loc s →
       mkpat loc
         (Ppat_constant
-           (ocaml_pconst_string loc (string_of_string_token loc (uv s)) None))
+           (ocaml_pconst_string (mkloc loc)
+              (string_of_string_token loc (uv s)) None))
   | PaTup loc pl → mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc sl →
@@ -854,7 +855,7 @@ value rec expr =
             (ocaml_pexp_apply
                (mkexp loc
                   (ocaml_pexp_ident cloc
-		     (array_function bytes_modname "set")))
+                     (array_function bytes_modname "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | _ → error loc "bad left part of assignment" ]
   | ExAsr loc <:expr< False >> →
@@ -1053,7 +1054,8 @@ value rec expr =
   | ExStr loc s →
       mkexp loc
         (Pexp_constant
-           (ocaml_pconst_string loc (string_of_string_token loc (uv s)) None))
+           (ocaml_pconst_string (mkloc loc)
+              (string_of_string_token loc (uv s)) None))
   | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
   | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t →
@@ -1246,7 +1248,8 @@ and module_expr =
   | MeApp loc me1 me2 →
       mkmod loc (Pmod_apply (module_expr me1) (module_expr me2))
   | MeFun loc n mt me →
-      mkmod loc (ocaml_pmod_functor (uv n) (module_type mt) (module_expr me))
+      mkmod loc (ocaml_pmod_functor (mkloc loc) (uv n) (module_type mt)
+        (module_expr me))
   | MeStr loc sl →
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc loc me mt →
