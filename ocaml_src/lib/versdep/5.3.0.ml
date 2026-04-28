@@ -308,6 +308,39 @@ let ocaml_pexp_function lab eo pel =
   | pel ->
       if lab = "" && eo = None then Pexp_function pel
       else failwith "internal error: bad ast in ocaml_pexp_function"
+(* 4.14.2
+  | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
+  | Pexp_fun of arg_label * expression option * pattern * expression
+      (** [Pexp_fun(lbl, exp0, P, E1)] represents:
+            - [fun P -> E1]
+                      when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
+                       and [exp0] is [None]
+            - [fun ~l:P -> E1]
+                      when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
+                       and [exp0] is [None]
+            - [fun ?l:P -> E1]
+                      when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+                       and [exp0] is [None]
+            - [fun ?l:(P = E0) -> E1]
+                      when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+                       and [exp0] is [Some E0]
+*)
+(* 5.3.0
+  | Pexp_function of
+      function_param list * type_constraint option * function_body
+  (** [Pexp_function ([P1; ...; Pn], C, body)] represents any construct
+      involving [fun] or [function], including:
+      - [fun P1 ... Pn -> E]
+        when [body = Pfunction_body E]
+      - [fun P1 ... Pn -> function p1 -> e1 | ... | pm -> em]
+        when [body = Pfunction_cases [ p1 -> e1; ...; pm -> em ]]
+
+      [C] represents a type constraint or coercion placed immediately before the
+      arrow, e.g. [fun P1 ... Pn : ty -> ...] when [C = Some (Pconstraint ty)].
+
+      A function must have parameters. [Pexp_function (params, _, body)] must
+      have non-empty [params] or a [Pfunction_cases _] body.
+*)
 ;;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
