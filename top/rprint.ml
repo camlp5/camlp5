@@ -570,8 +570,9 @@ and print_out_type_decl kwd ppf x =
     ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
       x
     ELSE
-      (x.otype_name, x.otype_params, x.otype_type, x.otype_private,
-       x.otype_cstrs)
+      (x.otype_name,
+       List.map (fun x -> (fst x, (False, False))) x.otype_params,
+       x.otype_type, x.otype_private, x.otype_cstrs)
     END
   in
   let constrain ppf (ty, ty') =
