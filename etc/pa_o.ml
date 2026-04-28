@@ -1063,7 +1063,8 @@ EXTEND
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
-          let e = expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs in
+         let si = <:str_item< open $_!:ovf$ $m$ >> in
+          let e = expr_to_inline (ExLSI loc si e) ext attrs in
           <:str_item< $exp:e$ >>
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
@@ -1264,7 +1265,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline e ext attrs
 
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
-          expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
+         let si = <:str_item< open $_!:ovf$ $m$ >> in
+          expr_to_inline (ExLSI loc si e) ext attrs
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->

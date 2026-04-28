@@ -380,12 +380,6 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $lid:s$ >>;
 <:expr< $_lid:s$ >>;
 
-(* let open *)
-<:expr< let open! $me$ in $e$ >>;
-<:expr< let open $me$ in $e$ >>;
-<:expr< let open $!:b$ $me$ in $e$ >>;
-<:expr< let open $_!:b$ $me$ in $e$ >>;
-
 (* match <a href="#expr_2">(2)</a> *)
 <:expr< match $e$ with [ $list:lx$ ] >>;
 <:expr< match $e$ with [ $_list:lx$ ] >>;

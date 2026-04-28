@@ -396,7 +396,6 @@ value ocaml_pexp_let_str_item loc si body =
                    {ptyexn_constructor = exdef;
                     ptyexn_attributes = item_attributes;
                     ptyexn_loc = loc}
-      ; pstr_loc = _
       } ->
       Pexp_letexception exdef body
     | {pstr_desc=Pstr_module
@@ -404,6 +403,8 @@ value ocaml_pexp_let_str_item loc si body =
                     pmb_expr=mexpr}
       } ->
       Pexp_letmodule name mexpr body
+    | {pstr_desc=Pstr_open od} ->
+       Pexp_open od body
     | _ -> 
        failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
     ]

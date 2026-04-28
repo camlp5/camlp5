@@ -800,7 +800,7 @@
    ((Sexpr loc [(Slid _ "letopen") se1 se3])
     (let*
      ((s (anti_uid_or_error se1)) (e (expr_se se3)))
-     <:expr< let open $_uid:s$ in $e$ >>))
+     (ExLSI loc <:str_item< open $_uid:s$ >> e)))
    ((Sexpr loc [(Slid _ "match") se . sel])
     (let*
      ((e (expr_se se))

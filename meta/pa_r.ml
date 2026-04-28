@@ -969,7 +969,8 @@ EXTEND
         let e = MLast.ExLSI loc si e in
           expr_to_inline e ext attrs
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
-          expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
+        let si = <:str_item< open $_!:ovf$ $m$ >> in
+          expr_to_inline (ExLSI loc si e) ext attrs
       | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →
           expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; p = ipatt; e = fun_def →
@@ -1178,7 +1179,8 @@ EXTEND
         el = SELF →
           [expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >> ext attrs]
       | "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; el = SELF →
-          [expr_to_inline <:expr< let open $_!:ovf$ $m$ in $mksequence loc el$ >> ext attrs]
+        let si = <:str_item< open $_!:ovf$ $m$ >> in
+          [expr_to_inline (ExLSI loc si (mksequence loc el)) ext attrs]
       | e = expr; ";"; el = SELF → [e :: el]
       | e = expr; ";" → [e]
       | e = expr → [e] ] ]

@@ -246,11 +246,11 @@ let ocaml_pexp_let_str_item loc si body =
     {pstr_desc =
        Pstr_exception
          {ptyexn_constructor = exdef; ptyexn_attributes = item_attributes;
-          ptyexn_loc = loc};
-     pstr_loc = _} ->
+          ptyexn_loc = loc}} ->
       Pexp_letexception (exdef, body)
   | {pstr_desc = Pstr_module {pmb_name = name; pmb_expr = mexpr}} ->
       Pexp_letmodule (name, mexpr, body)
+  | {pstr_desc = Pstr_open od} -> Pexp_open (od, body)
   | _ ->
       failwith
         (Format.asprintf

@@ -1375,7 +1375,7 @@ EXTEND_PRINTER
           else
             pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
               curr e
-      | <:expr< let open $!:ovf$ $m$ in $e$ >> ->
+      | ExLSI _ <:str_item< open $!:ovf$ $m$ >> e ->
           if pc.dang = ";" then
             pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" (if ovf then "!" else "") module_expr m curr e
           else
