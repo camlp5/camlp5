@@ -4286,7 +4286,7 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (attrs : 'item_attributes) (m : 'module_expr)
                 (ovf : 'e__94) _ _ _ (loc : Ploc.t) ->
               (let si = Qast.Node ("StOpn", [Qast.Loc; ovf; m; attrs]) in
-               Qast.Node ("ExlSI", [Qast.Loc; si; e]) :
+               Qast.Node ("ExLSI", [Qast.Loc; si; e]) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -6107,7 +6107,7 @@ Grammar.safe_extend
               (let si = Qast.Node ("StOpn", [Qast.Loc; ovf; m; attrs]) in
                Qast.List
                  [Qast.Node
-                    ("ExLop", [Qast.Loc; si; mksequence Qast.Loc el])] :
+                    ("ExLSI", [Qast.Loc; si; mksequence Qast.Loc el])] :
                'sequence)));
         Grammar.production
           (Grammar.r_next

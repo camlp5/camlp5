@@ -247,8 +247,6 @@ and expr floc sh =
              x2,
            self x3)
     | ExLid (loc, x1) -> let loc = floc loc in ExLid (loc, x1)
-    | ExLop (loc, b, x1, x2) ->
-        let loc = floc loc in ExLop (loc, b, module_expr floc sh x1, self x2)
     | ExMat (loc, x1, x2) ->
         let loc = floc loc in
         ExMat

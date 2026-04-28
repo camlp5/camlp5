@@ -1342,13 +1342,6 @@ and expr =
       mkexp loc
         (ocaml_pexp_ident (mkloc loc)
            (ocaml_longident_lident (mkloc loc) (uv s)))
-  | ExLop (loc, ovf, me, e) ->
-      begin match ocaml_pexp_open with
-        Some pexp_open ->
-          let me = module_expr me in
-          mkexp loc (pexp_open (mkoverride (uv ovf)) me (expr e))
-      | None -> error loc "no expression open in this ocaml version"
-      end
   | ExMat (loc, e, pel) ->
       let pel = uv pel in
       let pel =

@@ -2597,8 +2597,8 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _ _
                 (loc : Ploc.t) ->
-              (let si = MLast.StOpn (loc, ovf, m, []) in
-               expr_to_inline (ExLSI (loc, si, e)) ext attrs :
+              (let e = MLast.ExLSI (loc, MLast.StOpn (loc, ovf, m, []), e) in
+               expr_to_inline e ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2626,8 +2626,9 @@ Grammar.safe_extend
            "194fe98d",
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ _ (loc : Ploc.t) ->
-              (let si = MLast.StMod (loc, false, [m, mb, []]) in
-               let e = MLast.ExLSI (loc, si, e) in
+              (let e =
+                 MLast.ExLSI (loc, MLast.StMod (loc, false, [m, mb, []]), e)
+               in
                expr_to_inline e ext attrs :
                'expr)));
         Grammar.production
@@ -3742,9 +3743,11 @@ Grammar.safe_extend
            (fun (el : 'sequence) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _
                 (loc : Ploc.t) ->
-              (let si = MLast.StOpn (loc, ovf, m, []) in
-               [expr_to_inline (ExLSI (loc, si, mksequence loc el)) ext
-                  attrs] :
+              (let e =
+                 MLast.ExLSI
+                   (loc, MLast.StOpn (loc, ovf, m, []), mksequence loc el)
+               in
+               [expr_to_inline e ext attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next

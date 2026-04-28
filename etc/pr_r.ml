@@ -440,7 +440,7 @@ value rec seq_of_expr e =
       SE_let loc rf pel (seq_of_expr e)
   | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       SE_let_module loc s me (seq_of_expr e)
-  | ExLSI loc <:str_item< open $!:ovf$ $m$ >> e ->
+  | <:expr:< let open $!:ovf$ $m$ in $e$ >> ->
       SE_let_open loc ovf m (seq_of_expr e)
   | e ->
       SE_other e None ]
@@ -456,7 +456,7 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let_module loc s me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | ExLSI loc <:str_item< open $!:ovf$ $m$ >> e ->
+  | <:expr:< let open $!:ovf$ $m$ in $e$ >> ->
       match el with
       [ [] -> SE_let_open loc ovf m (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
@@ -1561,7 +1561,7 @@ EXTEND_PRINTER
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None -> pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
-      | (ExLSI loc <:str_item< open $!:ovf$ $m$ >> e) as ge ->
+      | <:expr:< let open $!:ovf$ $m$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None -> pprintf pc "%p@ %p" let_open_up_to_in (ovf, m) curr e ]
@@ -1801,7 +1801,7 @@ EXTEND_PRINTER
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
-        ExLSI _ <:str_item< open $_!:_$ $_$ >> _ |
+        <:expr< let open $_!:_$ $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< $_$ [@ $_attribute:_$] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->

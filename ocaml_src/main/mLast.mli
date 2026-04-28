@@ -111,7 +111,6 @@ and expr =
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr * attributes) list * expr
   | ExLid of loc * string
-  | ExLop of loc * bool * module_expr * expr
   | ExMat of loc * expr * case_branch list
   | ExNew of loc * longid_lident
   | ExObj of loc * patt option * class_str_item list

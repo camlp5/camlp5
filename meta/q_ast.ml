@@ -190,7 +190,6 @@ module Meta_make (C : MetaSig) =
                C.tuple [patt p; expr e; attrs])) lpe;
              expr e]
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
-      | ExLop _ b me e → C.node "ExLop" [C.vala C.bool b; module_expr me; expr e]
       | ExMat _ e lpoee →
           C.node "ExMat"
             [expr e;

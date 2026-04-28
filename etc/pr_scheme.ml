@@ -686,7 +686,7 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
              (fun pc -> curr pc e, "")]
-      | ExLSI _ <:str_item< open $uid:s$ >> e ->
+      | <:expr< let open $uid:s$ in $e$ >> ->
           plistbf 0 (paren pc "letopen")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
