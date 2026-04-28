@@ -238,7 +238,6 @@ let ocaml_pexp_unreachable () = Pexp_unreachable;;
 let ocaml_ptype_open () = Ptype_open;;
 let ocaml_pstr_typext ext = Pstr_typext ext;;
 let ocaml_psig_typext ext = Psig_typext ext;;
-let ocaml_pexp_letexception exdef body = Pexp_letexception (exdef, body);;
 let ocaml_ppat_exception p = Ppat_exception p;;
 let ocaml_pexp_let_str_item loc si body =
   match si with

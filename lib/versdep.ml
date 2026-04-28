@@ -388,8 +388,6 @@ value ocaml_ptype_open () = Ptype_open ;
 
 value ocaml_pstr_typext ext = Pstr_typext ext ;
 value ocaml_psig_typext ext = Psig_typext ext ;
-value ocaml_pexp_letexception exdef body =
-  Pexp_letexception exdef body ;
 value ocaml_ppat_exception p =
   Ppat_exception p;
 value ocaml_pexp_let_str_item loc si body =
