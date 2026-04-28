@@ -184,6 +184,24 @@ value longid_to_longident_gen ~{extended} =
 value longid_to_longident = longid_to_longident_gen ~{extended=False} ;
 value extended_longid_to_longident = longid_to_longident_gen ~{extended=True} ;
 
+value longid_to_module_expr_gen ~{extended} =
+  let rec lrec = fun
+  [ <:extended_longident:< $longid:me1$ ( $longid:me2$ ) >> when extended ->
+      <:module_expr< $lrec me1$ $lrec me2$ >>
+  | <:extended_longident:< $longid:_$ ( $longid:_$ ) >>  ->
+      Ploc.raise loc (Failure "longid_long_id: extended longid forbidden here (application not allowed)")
+  | <:extended_longident:< $longid:me1$ . $_uid:uid$ >> →
+    <:module_expr< $lrec me1$ . $_uid:uid$ >>
+  | <:extended_longident:< $_uid:s$ >> →
+    <:module_expr< $_uid:s$ >>
+  | LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_to_module_expr_gen: LiXtr forbidden here")
+  ]
+  in lrec
+;
+value longid_to_module_expr = longid_to_module_expr_gen ~{extended=False} ;
+value extended_longid_to_module_expr = longid_to_module_expr_gen ~{extended=True} ;
+
+
 value rec ctyp_fa al =
   fun
   [ TyApp _ f a → ctyp_fa [a :: al] f
@@ -870,13 +888,8 @@ and expr =
     expr (ExFle loc (ExLong loc li) <:vala< (None, vid) >>)
 
   | ExOpen loc li e ->
-    let li = longid_to_longident li in
-    let me = mkmod loc (ocaml_pmod_ident li) in
-    match ocaml_pexp_open with [
-        Some pexp_open ->
-        mkexp loc (pexp_open (mkoverride False) me (expr e))
-      | None -> error loc "no expression open in this ocaml version"
-    ]
+     let si = <:str_item< open $longid_to_module_expr li$ >> in
+     expr (ExLSI loc si e)
 
   | ExFle loc e <:vala< (None, s) >> when uv s = "val" ->
       mkexp loc

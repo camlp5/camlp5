@@ -998,23 +998,6 @@ value ocaml_pexp_object =
   Some (fun cs -> Pexp_object cs)
 ;
 
-value ocaml_pexp_open =
-  IFDEF OCAML_VERSION < OCAML_4_08 THEN
-    Some (fun ovf me e ->
-          let li = match me with [ {pmod_desc=Pmod_ident li} -> li | _ -> assert False ] in
-          do { assert (ovf = Fresh); Pexp_open Fresh li e})
-  ELSE
-    Some (fun ovf me e ->
-      Pexp_open
-        { popen_expr = me
-          ; popen_override = ovf
-          ; popen_loc = loc_none
-          ; popen_attributes = []
-        }
-        e)
-  END
-;
-
 value ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) → (mknoloc s, e)) sel in
   Pexp_override sel

@@ -615,15 +615,6 @@ let ocaml_pexp_newtype loc s e =
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
-let ocaml_pexp_open =
-  Some
-    (fun ovf me e ->
-       Pexp_open
-         ({popen_expr = me; popen_override = ovf; popen_loc = loc_none;
-           popen_attributes = []},
-          e))
-;;
-
 let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
