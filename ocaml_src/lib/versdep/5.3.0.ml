@@ -117,7 +117,7 @@ let variance_of_bool_bool =
   function
     false, true -> Contravariant
   | true, false -> Covariant
-  | _ -> Invariant
+  | _ -> NoVariance
 ;;
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -130,7 +130,8 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
       let params =
         List.map2
           (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+             ocaml_mktyp loc (Ptyp_var os),
+             (variance_of_bool_bool va, NoInjectivity))
           params variance
       in
       Right
@@ -153,7 +154,7 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (mkloc sloc s, Some mt1, mt2)
+  Pmty_functor (Named (mkloc sloc s, mt1), mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
@@ -181,8 +182,8 @@ let ocaml_ptype_variant ctl priv =
            if rto <> None then raise Exit
            else
              let tl = Pcstr_tuple tl in
-             {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-              pcd_loc = loc; pcd_attributes = []})
+             {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl;
+              pcd_res = None; pcd_loc = loc; pcd_attributes = []})
         ctl
     in
     Some (Ptype_variant ctl)
@@ -233,7 +234,6 @@ let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
 
-let ocaml_const_string s = Const_string (s, None);;
 let ocaml_pconst_string s so = Pconst_string (s, so);;
 
 let pconst_of_const =

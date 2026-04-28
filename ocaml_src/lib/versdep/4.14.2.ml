@@ -131,13 +131,13 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
         List.map2
           (fun os va ->
              ocaml_mktyp loc (Ptyp_var os),
-	     (variance_of_bool_bool va, NoInjectivity))
+             (variance_of_bool_bool va, NoInjectivity))
           params variance
       in
       Right
-        {ptype_params = params; ptype_cstrs = cl;
-	 ptype_kind = tk; ptype_private = pf; ptype_manifest = tm;
-	 ptype_loc = loc; ptype_name = mkloc loc tn; ptype_attributes = []}
+        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+         ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+         ptype_name = mkloc loc tn; ptype_attributes = []}
   | None -> Left "no '_' type param in this ocaml version"
 ;;
 
@@ -182,8 +182,8 @@ let ocaml_ptype_variant ctl priv =
            if rto <> None then raise Exit
            else
              let tl = Pcstr_tuple tl in
-             {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-              pcd_loc = loc; pcd_attributes = []})
+             {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl;
+              pcd_res = None; pcd_loc = loc; pcd_attributes = []})
         ctl
     in
     Some (Ptype_variant ctl)
@@ -234,7 +234,6 @@ let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
 
-let ocaml_const_string s = Const_string (s, None);;
 let ocaml_pconst_string s so = Pconst_string (s, so);;
 
 let pconst_of_const =

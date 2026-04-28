@@ -210,7 +210,9 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
     fun
     [ (False, True) -> Contravariant
     | (True, False) -> Covariant
-    | _ -> Invariant ]
+    | _ ->
+        IFDEF OCAML_VERSION < OCAML_4_14_2 THEN Invariant
+	ELSE NoVariance END ]
   ;
 END;
 
@@ -267,7 +269,12 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           let params =
             List.map2
               (fun os va ->
-                 (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+                 (ocaml_mktyp loc (Ptyp_var os),
+                  IFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+                    variance_of_bool_bool va
+                  ELSE
+		    (variance_of_bool_bool va, NoInjectivity)
+                  END))
               params variance
           in
           Right
@@ -308,7 +315,11 @@ value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
 value ocaml_pmty_functor sloc s mt1 mt2 =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmty_functor (mkloc sloc s) mt1 mt2
-  ELSE Pmty_functor (mkloc sloc s) (Some mt1) mt2 END
+  ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+    Pmty_functor (mkloc sloc s) (Some mt1) mt2
+  ELSE
+    Pmty_functor (Named (mkloc sloc s) mt1) mt2
+  END
 ;
 
 value ocaml_pmty_typeof =
@@ -412,10 +423,14 @@ value ocaml_ptype_variant ctl priv =
                  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
                     pcd_loc = loc; pcd_attributes = []}
-                 ELSE
+                 ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN
                    let tl = Pcstr_tuple tl in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
                     pcd_loc = loc; pcd_attributes = []}
+                 ELSE
+                   let tl = Pcstr_tuple tl in
+                   {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl;
+                    pcd_res = None; pcd_loc = loc; pcd_attributes = []}
                  END)
             ctl
         in
@@ -557,10 +572,6 @@ value ocaml_pconst_float s =
   ELSE Pconst_float s None END
 ;
 
-value ocaml_const_string s =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
-  ELSE Const_string s None END
-;
 value ocaml_pconst_string s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
