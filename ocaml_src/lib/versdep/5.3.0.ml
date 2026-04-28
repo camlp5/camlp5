@@ -238,6 +238,22 @@ let ocaml_pstr_typext ext = Pstr_typext ext;;
 let ocaml_psig_typext ext = Psig_typext ext;;
 let ocaml_pexp_letexception exdef body = Pexp_letexception (exdef, body);;
 let ocaml_ppat_exception p = Ppat_exception p;;
+let ocaml_pexp_let_str_item loc si body =
+  match si with
+    {pstr_desc =
+       Pstr_exception
+         {ptyexn_constructor = exdef; ptyexn_attributes = item_attributes;
+          ptyexn_loc = loc};
+     pstr_loc = _} ->
+      Pexp_letexception (exdef, body)
+  | {pstr_desc = Pstr_module {pmb_name = name; pmb_expr = mexpr}} ->
+      Pexp_letmodule (name, mexpr, body)
+  | _ ->
+      failwith
+        (Format.asprintf
+           "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a"
+           Pprintast.structure [si])
+;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}

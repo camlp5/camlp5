@@ -252,6 +252,11 @@ let ocaml_pexp_let_str_item loc si body =
       Pexp_letexception (exdef, body)
   | {pstr_desc = Pstr_module {pmb_name = name; pmb_expr = mexpr}} ->
       Pexp_letmodule (name, mexpr, body)
+  | _ ->
+      failwith
+        (Format.asprintf
+           "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a"
+           Pprintast.structure [si])
 ;;
 
 let ocaml_mkexp loc x =

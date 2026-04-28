@@ -407,6 +407,8 @@ value ocaml_pexp_let_str_item loc si body =
                     pmb_expr=mexpr}
       } ->
       Pexp_letmodule name mexpr body
+    | _ -> 
+       failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
     ]
 ;
 END
