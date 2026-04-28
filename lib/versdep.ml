@@ -212,7 +212,7 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
     | (True, False) -> Covariant
     | _ ->
         IFDEF OCAML_VERSION < OCAML_4_14_2 THEN Invariant
-	ELSE NoVariance END ]
+        ELSE NoVariance END ]
   ;
 END;
 
@@ -273,7 +273,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
                   IFDEF OCAML_VERSION < OCAML_4_14_2 THEN
                     variance_of_bool_bool va
                   ELSE
-		    (variance_of_bool_bool va, NoInjectivity)
+                    (variance_of_bool_bool va, NoInjectivity)
                   END))
               params variance
           in
@@ -571,10 +571,11 @@ value ocaml_pconst_float s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_float s
   ELSE Pconst_float s None END
 ;
-value ocaml_pconst_string s so =
+value ocaml_pconst_string loc s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
-  ELSE Pconst_string s so END
+  ELSIFDEF OCAML_VERSION < OCAML_4_14_2 THEN Pconst_string s so
+  ELSE Pconst_string loc s so END
 ;
 
 value pconst_of_const loc =
@@ -582,16 +583,16 @@ value pconst_of_const loc =
     fun
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
-    | Const_string s -> ocaml_pconst_string s None
+    | Const_string s -> ocaml_pconst_string loc s None
     | Const_float s -> ocaml_pconst_float s ]
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     fun
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
     | IFDEF OCAML_VERSION < OCAML_4_02 THEN
-        Const_string s -> ocaml_pconst_string s None
+        Const_string s -> ocaml_pconst_string loc s None
       ELSE
-        Const_string s so -> ocaml_pconst_string s so
+        Const_string s so -> ocaml_pconst_string loc s so
       END
     | Const_float s -> ocaml_pconst_float s
     | Const_int32 i32 -> Const_int32 i32
@@ -601,7 +602,11 @@ value pconst_of_const loc =
     fun
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
-    | Const_string s so -> ocaml_pconst_string s so
+    | IFDEF OCAML_VERSION < OCAML_4_14_2 THEN
+        Const_string s so -> ocaml_pconst_string loc s so
+      ELSE
+        Const_string loc s so -> ocaml_pconst_string loc s so
+      END
     | Const_float s -> ocaml_pconst_float s
     | Const_int32 i32 -> Pconst_integer (Int32.to_string i32) (Some 'l')
     | Const_int64 i64 -> Pconst_integer (Int64.to_string i64) (Some 'L')
@@ -1118,7 +1123,7 @@ value ocaml_pstr_exn_rebind =
          in
          Pstr_exception
            {ptyexn_constructor = pc; ptyexn_attributes = [];
-	    ptyexn_loc = loc})
+            ptyexn_loc = loc})
   END
 ;
 

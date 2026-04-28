@@ -166,13 +166,13 @@ let ocaml_package_type li ltl =
 let ocaml_pconst_char c = Const_char c;;
 let ocaml_pconst_int i = Const_int i;;
 let ocaml_pconst_float s = Const_float s;;
-let ocaml_pconst_string s so = Const_string s;;
+let ocaml_pconst_string loc s so = Const_string s;;
 
 let pconst_of_const loc =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c
-  | Const_string s -> ocaml_pconst_string s None
+  | Const_string s -> ocaml_pconst_string loc s None
   | Const_float s -> ocaml_pconst_float s
   | Const_int32 i32 -> Const_int32 i32
   | Const_int64 i64 -> Const_int64 i64
