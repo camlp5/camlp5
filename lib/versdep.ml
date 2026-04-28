@@ -225,7 +225,6 @@ value ocaml_ptype_open () = failwith "Only available in OCaml versions >= 4.10.0
 value ocaml_psig_typext _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 value ocaml_pstr_typext _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 
-value ocaml_pexp_letexception exdef body = failwith "Only available in OCaml versions >= 4.10.0" ;
 value ocaml_ppat_exception _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_attribute_implem loc (nameloc, name) sl =
@@ -982,14 +981,6 @@ value ocaml_pexp_lazy =
 ;
 
 value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
-
-value ocaml_pexp_letmodule =
-  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    Some (fun i me e -> Pexp_letmodule (mknoloc (mustSome "ocaml_pexp_letmodule" i)) me e)
-  ELSE
-    Some (fun i me e -> Pexp_letmodule (mknoloc i) me e)
-  END
-;
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
 

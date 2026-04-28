@@ -575,10 +575,6 @@ let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
 let ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);;
 
-let ocaml_pexp_letmodule =
-  Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))
-;;
-
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
 
 let ocaml_pexp_newtype loc s e = Pexp_newtype (mkloc loc s, e);;
