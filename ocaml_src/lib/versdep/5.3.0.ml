@@ -443,7 +443,7 @@ let ocaml_psig_include loc mt =
 
 let ocaml_psig_module loc s mt =
   Psig_module
-    {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+    {pmd_name = mkloc loc (Some s); pmd_type = mt; pmd_attributes = [];
      pmd_loc = loc}
 ;;
 
@@ -466,7 +466,7 @@ let ocaml_psig_recmodule =
     let ntl =
       List.map
         (fun (s, mt) ->
-           {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+           {pmd_name = mknoloc (Some s); pmd_type = mt; pmd_attributes = [];
             pmd_loc = loc_none})
         ntl
     in
@@ -487,8 +487,9 @@ let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
 let ocaml_pstr_exception loc s ed =
   let ec =
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {pext_name = mkloc loc s;
+     pext_kind = Pext_decl ([], Pcstr_tuple ed, None); pext_loc = loc;
+     pext_attributes = []}
   in
   Pstr_exception
     {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
@@ -521,7 +522,7 @@ let ocaml_pstr_modtype loc s mt =
 
 let ocaml_pstr_module loc s me =
   let mb =
-    {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+    {pmb_name = mkloc loc (Some s); pmb_expr = me; pmb_attributes = [];
      pmb_loc = loc}
   in
   Pstr_module mb
@@ -544,7 +545,7 @@ let ocaml_pstr_recmodule =
     Pstr_recmodule
       (List.map
          (fun (s, mt, me) ->
-            {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+            {pmb_name = mknoloc (Some s); pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
   in
@@ -565,7 +566,8 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os),
+              (variance_of_bool_bool va, NoInjectivity))
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
@@ -578,7 +580,9 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor sloc s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor sloc s mt me =
+  Pmod_functor (Named (mkloc sloc (Some s), mt), me)
+;;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))
