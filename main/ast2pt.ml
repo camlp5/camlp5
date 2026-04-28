@@ -582,7 +582,8 @@ value rec patt =
       mkpat loc
         (Ppat_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
   | PaInt loc s c →
-      mkpat loc (Ppat_constant (pconst_of_const (mkintconst loc (uv s) c)))
+      mkpat loc
+         (Ppat_constant (pconst_of_const loc (mkintconst loc (uv s) c)))
   | PaFlo loc s → mkpat loc (Ppat_constant (ocaml_pconst_float (uv s)))
   | PaLab loc _ → error loc "labeled pattern not allowed here"
   | PaLaz loc p →
@@ -766,7 +767,7 @@ value rec expr =
   | ExAnt _ e → expr e
   | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) →
       let s = neg_string (uv s) in
-      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc s c)))
+      mkexp loc (Pexp_constant (pconst_of_const loc (mkintconst loc s c)))
   | ExApp loc (ExLid _ <:vala< "-" | "-." >>) (ExFlo _ s) →
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (ocaml_pconst_float s))
@@ -917,7 +918,8 @@ value rec expr =
       in
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
   | ExInt loc s c →
-      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc (uv s) c)))
+      mkexp loc
+        (Pexp_constant (pconst_of_const loc (mkintconst loc (uv s) c)))
   | ExJdf loc jl e →
       match jocaml_pexp_def with
       [ Some pexp_def →

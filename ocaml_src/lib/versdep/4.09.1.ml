@@ -232,10 +232,9 @@ let ocaml_package_type li ltl =
 let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
-
 let ocaml_pconst_string s so = Pconst_string (s, so);;
 
-let pconst_of_const =
+let pconst_of_const loc =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c

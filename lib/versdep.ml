@@ -571,14 +571,13 @@ value ocaml_pconst_float s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_float s
   ELSE Pconst_float s None END
 ;
-
 value ocaml_pconst_string s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
   ELSE Pconst_string s so END
 ;
 
-value pconst_of_const =
+value pconst_of_const loc =
   IFDEF OCAML_VERSION <= OCAML_3_07 THEN
     fun
     [ Const_int i -> ocaml_pconst_int i
