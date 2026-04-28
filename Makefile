@@ -309,7 +309,7 @@ compare_source:
 
 bootstrap_all_versdep: oprinter
 	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
-	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
+	  $(MAKE) NOVERBOSE=$(NOVERBOSE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
 	done
 
 bootstrap_versdep:
@@ -319,11 +319,12 @@ bootstrap_versdep:
 	j=$$(echo $$(basename $$i) | \
 	     sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
+	l=$$(echo OCAML_$(OCAMLINSTVERSION) | sed -e 's/[.-]/_/g'); \
 	m=$$(echo $(OCAMLN) | tr a-z A-Z); \
 	n=$$(echo $$n | tr a-z A-Z); \
-	opt="-U$$k -U$$m -D$$j -D$$n"; \
-	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt \
-	  versdep.ml > ../$$i
+	opt="-U$$k -U$$l -U$$m -D$$j -D$$n"; \
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt versdep.ml > ../$$i ; \
+
 
 compare_all_versdep: oprinter
 	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
@@ -341,9 +342,10 @@ compare_versdep:
 	j=$$(echo $$(basename $$i) | \
 	  sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
+	l=$$(echo OCAML_$(OCAMLINSTVERSION) | sed -e 's/[.-]/_/g'); \
 	m=$$(echo $(OCAMLN) | tr a-z A-Z); \
 	n=$$(echo $$n | tr a-z A-Z); \
-	opt="-U$$k -U$$m -D$$j -D$$n"; \
+	opt="-U$$k -U$$l -U$$m -D$$j -D$$n"; \
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	diff $(DIFF_OPT) ../$$i -
