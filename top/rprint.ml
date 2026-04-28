@@ -106,9 +106,9 @@ value print_out_value ppf tree =
           match name with
           [ IFDEF OCAML_VERSION < OCAML_4_09_1 THEN
               Oide_ident "contents" -> Oide_ident "val"
-	    ELSE
+            ELSE
               Oide_ident {printed_name = "contents"} ->
-	        Oide_ident {printed_name = "val"}
+                Oide_ident {printed_name = "val"}
             END
           | x -> x ]
         in
@@ -256,25 +256,43 @@ and print_simple_out_type ppf =
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
     END
   | IFDEF OCAML_VERSION >= OCAML_3_12_0 THEN
-      Otyp_module p n tyl -> do {
-        IFDEF OCAML_VERSION < OCAML_4_09_1 THEN
-          fprintf ppf "@[<1>(module %s" p
-	ELSE
+      IFDEF OCAML_VERSION < OCAML_4_12_2 THEN
+        Otyp_module p n tyl -> do {
+          IFDEF OCAML_VERSION < OCAML_4_09_1 THEN
+            fprintf ppf "@[<1>(module %s" p
+          ELSE
+            fprintf ppf "@[<1>(module %s"
+              (match p with
+               [ Oide_ident {printed_name = s} -> s
+               | _ -> failwith "Rprint Otyp_module case not implemented" ])
+          END;
+          let first = ref True in
+          List.iter2
+            (fun s t ->
+               let sep =
+                 if first.val then do { first.val := False; "with" } else "and"
+               in
+               fprintf ppf " %s type %s = %a" sep s print_out_type t)
+            n tyl;
+          fprintf ppf ")@]"
+        }
+      ELSE
+        Otyp_module p tnyl -> do {
           fprintf ppf "@[<1>(module %s"
-	    (match p with
-	     [ Oide_ident {printed_name = s} -> s
-	     | _ -> failwith "Rprint Otyp_module case not implemented" ])
-	END;
-        let first = ref True in
-        List.iter2
-          (fun s t ->
-             let sep =
-               if first.val then do { first.val := False; "with" } else "and"
-             in
-             fprintf ppf " %s type %s = %a" sep s print_out_type t)
-          n tyl;
-        fprintf ppf ")@]"
-      }
+            (match p with
+             [ Oide_ident {printed_name = s} -> s
+             | _ -> failwith "Rprint Otyp_module case not implemented" ]);
+          let first = ref True in
+          List.iter
+            (fun (s, t) ->
+               let sep =
+                 if first.val then do { first.val := False; "with" } else "and"
+               in
+               fprintf ppf " %s type %s = %a" sep s print_out_type t)
+            tnyl;
+          fprintf ppf ")@]"
+        }
+      END
     END
   | IFDEF OCAML_VERSION >= OCAML_3_13_0 AND NOT JOCAML THEN
       Otyp_sum constrs ->
@@ -315,7 +333,11 @@ and print_out_constr ppf (name, tyl) =
   | _ ->
       fprintf ppf "@[<2>%s of@ %a@]" name
         (print_typlist print_out_type " and") tyl ]
-and print_out_constr_gadt_opt ppf (name, tyl, rto) =
+and print_out_constr_gadt_opt ppf ntr =
+  let (name, tyl, rto) =
+    IFDEF OCAML_VERSION < OCAML_4_14_2 THEN ntr
+    ELSE (ntr.ocstr_name, ntr.ocstr_args, ntr. ocstr_return_type) END
+  in
   match rto with
   [ Some rt ->
       let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in

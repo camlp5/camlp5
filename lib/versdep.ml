@@ -1306,7 +1306,7 @@ value ocaml_pmod_functor sloc s mt me =
   ELSIFDEF OCAML_VERSION < OCAML_4_12_2 THEN
     Pmod_functor (mknoloc s) (Some mt) me
   ELSE
-    Pmod_functor (Named (mkloc sloc (Some s), mt)) me
+    Pmod_functor (Named (mkloc sloc (Some s)) mt) me
   END
 ;
 
