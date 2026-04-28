@@ -522,7 +522,7 @@ let ocaml_pstr_modtype loc s mt =
 
 let ocaml_pstr_module loc s me =
   let mb =
-    {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+    {pmb_name = mkloc loc (Some s); pmb_expr = me; pmb_attributes = [];
      pmb_loc = loc}
   in
   Pstr_module mb
@@ -545,7 +545,7 @@ let ocaml_pstr_recmodule =
     Pstr_recmodule
       (List.map
          (fun (s, mt, me) ->
-            {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+            {pmb_name = mknoloc (Some s); pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
   in
