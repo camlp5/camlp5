@@ -375,6 +375,11 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
+  let po =
+    match po with
+    | Some p -> Some ([], p)
+    | None -> None
+  in
   Ppat_construct (mkloc loc li, po)
 ;;
 
@@ -386,8 +391,8 @@ let ocaml_ppat_construct_args =
 
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
-  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
-   ppat_loc_stack = [];
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
+   ppat_loc = loc; ppat_loc_stack = [];
    ppat_attributes =
      [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
        attr_loc = loc}]}
@@ -422,8 +427,9 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed =
   let ec =
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {pext_name = mkloc loc s;
+     pext_kind = Pext_decl ([], Pcstr_tuple ed, None); pext_loc = loc;
+     pext_attributes = []}
   in
   Psig_exception
     {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
@@ -479,8 +485,9 @@ let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
 let ocaml_pstr_exception loc s ed =
   let ec =
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {pext_name = mkloc loc s;
+     pext_kind = Pext_decl ([], Pcstr_tuple ed, None); pext_loc = loc;
+     pext_attributes = []}
   in
   Pstr_exception
     {ptyexn_constructor = ec; ptyexn_loc = loc; ptyexn_attributes = []}
@@ -557,7 +564,8 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os),
+              (variance_of_bool_bool va, NoInjectivity))
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
@@ -570,7 +578,9 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor s mt me =
+  Pmod_functor (Named (s, mt), me)
+;;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))
