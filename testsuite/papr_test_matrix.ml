@@ -1111,6 +1111,7 @@ and t2 = bool[@@"foo"];
      r_output = OK {foo|value () = (f[@"inlined" never;]) ();
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="anon-module-argument"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f (module _ : A.B.S) = ()|foo} ;
@@ -1121,7 +1122,22 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|let f ((module _)  : (module A.B.S)) = ()|foo} ;
      r_output = OK {foo|value f (module _ : A.B.S) = ();
 |foo}
-    };
+    }
+    ELSE
+    {name="anon-module-argument"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f (module _ : A.B.S) = ()|foo} ;
+     official_input = OK {foo|let f (module _ : A.B.S) = ()|foo} ;
+     r_input = OK {foo|value f (module _ : A.B.S) = ();|foo} ;
+     o_output = OK {foo|let f (module _ : A.B.S) = ();;
+|foo};
+     official_output = OK {foo|let f (module _ : A.B.S) = ()|foo} ;
+     r_output = OK {foo|value f (module _ : A.B.S) = ();
+|foo}
+    }
+    END
+;
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="named-module-argumet"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
@@ -1132,7 +1148,21 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|let f ((module M)  : (module A.B.S)) = ()|foo} ;
      r_output = OK {foo|value f (module M : A.B.S) = ();
 |foo}
-    };
+    }
+    ELSE
+    {name="named-module-argumet"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
+     official_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
+     r_input = OK {foo|value f (module M : A.B.S) = ();|foo} ;
+     o_output = OK {foo|let f (module M : A.B.S) = ();;
+|foo};
+     official_output = OK {foo|let f (module M : A.B.S) = ()|foo} ;
+     r_output = OK {foo|value f (module M : A.B.S) = ();
+|foo}
+    }
+    END
+;
     {name="abstract-module-type-str-item"; implem = True ;
      exclude=[];
      o_input = OK {foo|module type S|foo} ;
@@ -1958,6 +1988,7 @@ END ;
 ();];
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="inline-extensions3"; implem = True ;
      exclude=[];
      o_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
@@ -1968,7 +1999,22 @@ END ;
      official_output = OK {foo|;;[%foo ((let module M = M in ())[@foo ])]|foo} ;
      r_output = OK {foo|[%"foo" (let module M = M in ())[@"foo"];];
 |foo}
-    };
+    }
+    ELSE
+    {name="inline-extensions3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
+     official_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
+     r_input = OK {foo|let module%foo [@foo] M = M in ();|foo} ;
+     o_output = OK {foo|let _ = [%foo (let module M = M in ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;let [%%foo module M = M[@@foo ]] in ()|foo} ;
+     r_output = OK {foo|[%"foo" (let module M = M in ())[@"foo"];];
+|foo}
+    }
+    END
+;
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="inline-attributes-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let module [@foo] M = M in ()|foo} ;
@@ -1979,7 +2025,22 @@ END ;
      official_output = OK {foo|;;((let module M = M in ())[@foo ])|foo} ;
      r_output = OK {foo|(let module M = M in ())[@"foo"];
 |foo}
-    };
+    }
+    ELSE
+    {name="inline-attributes-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let module [@foo] M = M in ()|foo} ;
+     official_input = OK {foo|let module [@foo] M = M in ()|foo} ;
+     r_input = OK {foo|let module [@foo] M = M in ();|foo} ;
+     o_output = OK {foo|let _ = (let module M = M in ())[@foo];;
+|foo};
+     official_output = OK {foo|;;let module M = M[@@foo ] in ()|foo} ;
+     r_output = OK {foo|(let module M = M in ())[@"foo"];
+|foo}
+    }
+    END
+;
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="inline-extensions4"; implem = True ;
      exclude=[];
      o_input = OK {foo|let open%foo [@foo] M in ()|foo} ;
@@ -1990,7 +2051,21 @@ END ;
      official_output = OK {foo|;;[%foo ((let open M in ())[@foo ])]|foo} ;
      r_output = OK {foo|[%"foo" (let open M in ())[@"foo"];];
 |foo}
-    };
+    }
+    ELSE
+    {name="inline-extensions4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let open%foo [@foo] M in ()|foo} ;
+     official_input = OK {foo|let open%foo [@foo] M in ()|foo} ;
+     r_input = OK {foo|let open%foo [@foo] M in ();|foo} ;
+     o_output = OK {foo|let _ = [%foo (let open M in ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;let [%%foo open M[@@foo ]] in ()|foo} ;
+     r_output = OK {foo|[%"foo" (let open M in ())[@"foo"];];
+|foo}
+    }
+    END
+;
     {name="inline-extensions5"; implem = True ;
      exclude=[];
      o_input = OK {foo|(fun%foo[@foo] x -> ())|foo} ;
@@ -3393,6 +3468,7 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     {name="expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;
@@ -3403,7 +3479,21 @@ type nat _ =
      official_output = OK {foo|let x = ((let open! ((M)[@bar ]) in ())[@foo ])|foo} ;
      r_output = OK {foo|value x = (let open! M[@"bar"] in ())[@"foo"];
 |foo}
-    };
+    }
+    ELSE
+    {name="expr-local-open-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;
+     official_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;
+     r_input = OK {foo|value x = (let open! (M[@bar]) in ()) [@foo];|foo} ;
+     o_output = OK {foo|let x = (let open! M[@bar] in ())[@foo];;
+|foo};
+     official_output = OK {foo|let x = let open! ((M)[@bar ])[@@foo ] in ()|foo} ;
+     r_output = OK {foo|value x = (let open! M[@"bar"] in ())[@"foo"];
+|foo}
+    }
+    END
+;
     {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|class c = let open! [@foo] M in object end|foo} ;

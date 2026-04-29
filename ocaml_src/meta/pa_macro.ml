@@ -450,6 +450,28 @@ let apply_directive loc n dp =
       Ploc.raise loc (Stream.Error msg)
 ;;
 
+let twodigit s = if String.length s = 1 then "0" ^ s else s;;
+let normalize_version v =
+  (v |>
+     Pcre2.
+     (substitute_substrings ~pat:"^OCAML_(\\d+)_(\\d+)$"
+       ~subst:(fun ss ->
+          Printf.sprintf "OCAML_%s_%s_00" (get_substring ss 1)
+            (get_substring ss 2)))) |>
+    Pcre2.
+    (substitute_substrings ~pat:"^OCAML_(\\d+)_(\\d+)_(\\d+)$"
+      ~subst:(fun ss ->
+         Printf.sprintf "OCAML_%s_%s_%s" (twodigit (get_substring ss 1))
+           (twodigit (get_substring ss 2)) (twodigit (get_substring ss 3))))
+;;
+
+let cmp_le (a : string) b = a <= b;;
+let cmp_lt (a : string) b = a < b;;
+let cmp_eq (a : string) b = a = b;;
+let cmp_ne (a : string) b = a <> b;;
+let cmp_ge (a : string) b = a >= b;;
+let cmp_gt (a : string) b = a > b;;
+
 let dexpr = Grammar.Entry.create gram "dexpr";;
 Grammar.safe_extend
   (let _ = (dexpr : 'dexpr Grammar.Entry.e)
@@ -1342,7 +1364,9 @@ Grammar.safe_extend
              (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
            "194fe98d",
            (fun (y : 'uident) (f : 'op) _ (loc : Ploc.t) ->
-              (f (defined_version loc) y : 'dexpr)))];
+              (f (normalize_version (defined_version loc))
+                 (normalize_version y) :
+               'dexpr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -1367,22 +1391,22 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">=")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((>=) : 'op)));
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_ge : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((>) : 'op)));
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_gt : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<>")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((<>) : 'op)));
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_ne : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((=) : 'op)));
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_eq : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((<) : 'op)));
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_lt : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<=")),
-           "194fe98d", (fun _ (loc : Ploc.t) -> ((<=) : 'op)))]];
+           "194fe98d", (fun _ (loc : Ploc.t) -> (cmp_le : 'op)))]];
     Grammar.extension (uident : 'uident Grammar.Entry.e) None
       [None, None,
        [Grammar.production

@@ -364,8 +364,11 @@ and print_simple_out_type ppf =
   | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
     Otyp_object fields rest ->
       fprintf ppf "@[<2>< %a >@]" (print_fields rest) fields
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     Otyp_object {fields=fields; open_row=open_row} ->
+      fprintf ppf "@[<2>< %a >@]" (print_fields open_row) fields
+    ELSE
+    Otyp_object {fields=fields; row=open_row} ->
       fprintf ppf "@[<2>< %a >@]" (print_fields open_row) fields
     END
   | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
@@ -398,8 +401,11 @@ and print_simple_out_type ppf =
     ELSIFDEF OCAML_VERSION < OCAML_5_4_0 THEN
     Otyp_module p l ->
       print_module_out_type ppf p (List.map fst l) (List.map snd l)
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     Otyp_module {opack_path=p; opack_cstrs=l} ->
+      print_module_out_type ppf p (List.map fst l) (List.map snd l)
+    ELSE
+    Otyp_module {opack_path=p; opack_constraints=l} ->
       print_module_out_type ppf p (List.map fst l) (List.map snd l)
     END
   | Otyp_sum constrs ->
@@ -460,8 +466,14 @@ and print_fields rest ppf =
       match rest with
       [ Some non_gen -> fprintf ppf "%s.." (if non_gen then "_" else "")
       | None -> () ]
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
       fprintf ppf "%s.." (if rest then "_" else "")
+    ELSE
+    match rest with [
+        Orow_closed -> ()
+      | Orow_open_anonymous ->  fprintf ppf ".."
+      | Orow_open oty -> fprintf ppf ".. as %a" print_out_type oty
+      ]
     END
 
   | [(s, t)] ->
@@ -596,6 +608,31 @@ and print_out_signature ppf =
   | [item :: items] ->
       fprintf ppf "%a;@ %a" print_out_sig_item item
         print_out_signature items ]
+
+and print_type_parameter =
+  IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
+  fun ppf s ->
+  let pr_var = tyvar in
+  if s = "_" then fprintf ppf "_" else pr_var ppf s
+  ELSE
+  fun ppf {ot_non_gen=non_gen; ot_name=ty; ot_variance=(var,inj)} ->
+  let pr_var = tyvar in
+  let ty_var ~{non_gen} ppf s =
+    pr_var ppf (if non_gen then "_" ^ s else s) in
+  let print_type_parameter0 ?{non_gen=False} ppf s =
+    if s = "_" then fprintf ppf "_" else ty_var ~{non_gen} ppf s in
+  
+  let open Asttypes in
+  fprintf ppf "%s%s%a"
+    (match var with [
+         Covariant -> "+"
+       | Contravariant -> "-"
+       | NoVariance ->  ""
+       | Bivariant -> "+-"
+    ])
+    (match inj with [ Injective -> "!" | NoInjectivity -> "" ])
+    (print_type_parameter0 ~{non_gen}) ty
+  END
 and print_out_sig_item ppf =
   fun
   [ Osig_typext ext _es ->
@@ -610,9 +647,6 @@ and print_out_sig_item ppf =
             END)
       | _ ->
         let print_out_extension_constructor ppf ext =
-          let pr_var = tyvar in
-          let print_type_parameter ppf s =
-            if s = "_" then fprintf ppf "_" else pr_var ppf s in
           let print_extended_type ppf =
             match ext.oext_type_params with [
               [] -> fprintf ppf "%s" ext.oext_type_name
@@ -681,7 +715,12 @@ and print_out_sig_item ppf =
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
       (x.otype_name, x.otype_params, x.otype_type, x.otype_private,
-       x.otype_cstrs)
+  IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
+       x.otype_cstrs
+  ELSE
+       x.otype_constraints
+  END
+      )
   in
   let constrain ppf (ty, ty') =
     fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type ty

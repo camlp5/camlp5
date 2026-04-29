@@ -13,6 +13,7 @@ while test "" != "$1"; do
   case $1 in
   -I) INCL="$INCL -I $2"; shift;;
   -D*) OPTS="$OPTS $1";;
+  -defined) OPTS="$OPTS $1";;
   -U*) OPTS="$OPTS $1";;
   *) FILE=$1;;
   esac
@@ -29,6 +30,7 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   esac
   shift; shift
   ARGS=`echo $* | sed -e "s/[()*]//g"`
+  echo $COMM $ARGS $OPTS -flag M $FILE >&2
   $COMM $ARGS $OPTS -flag M $FILE
 else
   cat $FILE

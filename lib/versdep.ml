@@ -390,6 +390,7 @@ value ocaml_pstr_typext ext = Pstr_typext ext ;
 value ocaml_psig_typext ext = Psig_typext ext ;
 value ocaml_ppat_exception p =
   Ppat_exception p;
+IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
 value ocaml_pexp_let_str_item loc si body =
   match si with [
       {pstr_desc=Pstr_exception
@@ -409,6 +410,18 @@ value ocaml_pexp_let_str_item loc si body =
        failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
     ]
 ;
+ELSE
+value ocaml_pexp_let_str_item loc si body =
+  match si with [
+      {pstr_desc=Pstr_exception _}
+    | {pstr_desc=Pstr_module _}
+    | {pstr_desc=Pstr_open _} ->
+       Pexp_struct_item si body
+    | _ -> 
+       failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
+    ]
+;
+END ;
 END
 ;
 
@@ -602,10 +615,17 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
       ])
       params variance
   in
+IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
   Right
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
      ptype_name = mkloc loc tn; ptype_attributes = attrs}
+ELSE
+  Right
+    {ptype_params = params; ptype_constraints = cl; ptype_kind = tk;
+     ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+     ptype_name = mkloc loc tn; ptype_attributes = attrs}
+END
 ;
 
 value ocaml_class_type =
@@ -779,10 +799,17 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
 value ocaml_package_type loc li ltl : package_type =
 IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
-ELSE
+ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
   {
     ppt_path = mkloc loc li
   ; ppt_cstrs = List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl
+  ; ppt_loc = loc
+  ; ppt_attrs = []
+  }
+ELSE
+  {
+    ppt_path = mkloc loc li
+  ; ppt_constraints = List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl
   ; ppt_loc = loc
   ; ppt_attrs = []
   }
@@ -1185,8 +1212,10 @@ value ocaml_ppat_type =
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     Some (fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s)), fun pt -> Ptyp_package pt)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
+  ELSE
+    Some (fun loc s -> Ppat_unpack (mkloc loc s) None, fun pt -> Ptyp_package pt)
   END
 ;
 

@@ -406,6 +406,24 @@ value apply_directive loc n dp =
       Ploc.raise loc (Stream.Error msg) ]
 ;
 
+value twodigit s = if String.length s = 1 then "0"^s else s ;
+value normalize_version v =
+  v
+  |> Pcre2.(substitute_substrings ~{pat={r|^OCAML_(\d+)_(\d+)$|r}}
+           ~{subst=(fun ss -> Printf.sprintf "OCAML_%s_%s_00" (get_substring ss 1) (get_substring ss 2))}
+	 )
+  |> Pcre2.(substitute_substrings ~{pat={r|^OCAML_(\d+)_(\d+)_(\d+)$|r}}
+           ~{subst=(fun ss -> Printf.sprintf "OCAML_%s_%s_%s" (twodigit (get_substring ss 1)) (twodigit (get_substring ss 2)) (twodigit (get_substring ss 3)))}
+	 )
+;
+
+value cmp_le (a: string) b = a <= b ;
+value cmp_lt (a: string) b = a < b ;
+value cmp_eq (a: string) b = a = b ;
+value cmp_ne (a: string) b = a <> b ;
+value cmp_ge (a: string) b = a >= b ;
+value cmp_gt (a: string) b = a > b ;
+
 value dexpr = Grammar.Entry.create gram "dexpr";
 EXTEND
   GLOBAL: dexpr expr patt str_item sig_item constructor_declaration match_case
@@ -584,18 +602,20 @@ EXTEND
   dexpr:
     [ [ x = SELF; "OR"; y = SELF -> x || y ]
     | [ x = SELF; "AND"; y = SELF -> x && y ]
-    | [ "OCAML_VERSION"; f = op; y = uident -> f (defined_version loc) y ]
+    | [ "OCAML_VERSION"; f = op; y = uident ->
+        f (normalize_version (defined_version loc))
+          (normalize_version y) ]
     | [ "NOT"; x = SELF -> not x ]
     | [ i = uident -> is_defined i
       | "("; x = SELF; ")" -> x ] ]
   ;
   op:
-    [ [ "<=" -> \<=
-      | "<" -> \<
-      | "=" -> \=
-      | "<>" -> \<>
-      | ">" -> \>
-      | ">=" -> \>= ] ]
+    [ [ "<=" -> cmp_le
+      | "<" -> cmp_lt
+      | "=" -> cmp_eq
+      | "<>" -> cmp_ne
+      | ">" -> cmp_gt
+      | ">=" -> cmp_ge ] ]
   ;
   uident:
     [ [ i = UIDENT -> i ] ]

@@ -309,6 +309,7 @@ compare_source:
 
 bootstrap_all_versdep: oprinter
 	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
+	  echo $(MAKE) NOVERBOSE=$(NOVERBOSE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
 	  $(MAKE) NOVERBOSE=$(NOVERBOSE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
 	done
 
@@ -323,6 +324,7 @@ bootstrap_versdep:
 	m=$$(echo $(OCAMLN) | tr a-z A-Z); \
 	n=$$(echo $$n | tr a-z A-Z); \
 	opt="-U$$k -U$$l -U$$m -D$$j -D$$n"; \
+	echo OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt versdep.ml ">" ../$$i ; \
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt versdep.ml > ../$$i ; \
 
 
