@@ -3463,6 +3463,44 @@ type nat _ =
      official_output = OK {foo|let x = [%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo||foo}
     };
+    {name="str_item-let-exception-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let exception E in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;let exception E  in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-exception-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let exception E in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = let exception E  in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+
+    {name="str_item-let-exception-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;[%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-exception-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = [%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo||foo}
+    };
+
     {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|class c = let open! [@foo] M in object end|foo} ;
