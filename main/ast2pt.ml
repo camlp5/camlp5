@@ -889,7 +889,7 @@ and expr =
 
   | ExOpen loc li e ->
      let si = <:str_item< open $longid_to_module_expr li$ >> in
-     expr (ExLSI loc si e)
+     expr (ExLSI loc <:vala< si >> e)
 
   | ExFle loc e <:vala< (None, s) >> when uv s = "val" ->
       mkexp loc
@@ -1113,7 +1113,7 @@ and expr =
   | ExLet loc rf pel e →
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLSI loc si body ->
-     let si = List.hd (str_item si []) in
+     let si = List.hd (str_item (uv si) []) in
      mkexp loc (ocaml_pexp_let_str_item loc si (expr body))
   | ExLid loc s → mkexp loc (ocaml_pexp_ident (mkloc loc) (ocaml_longident_lident (mkloc loc) (uv s)))
   | ExMat loc e pel →

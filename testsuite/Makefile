@@ -54,6 +54,15 @@ all: roundtrippers \
 	r_lexer_test \
 	quotedext_test \
 
+matrix-test::
+	./o2r_test.byte -only-test $(ONLYTEST) || true
+	./r2r_test.byte -only-test $(ONLYTEST) || true
+	./r2o_test.byte -only-test $(ONLYTEST) || true
+	./o2o_test.byte -only-test $(ONLYTEST) || true
+	./o2official_test.byte -only-test $(ONLYTEST) || true
+	./r2official_test.byte -only-test $(ONLYTEST) || true
+	./official2official_test.byte -only-test $(ONLYTEST) || true
+
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.opt \

@@ -680,13 +680,13 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
-      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+      | MLast.ExLSI _ (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e ->
         let s = match s with [ None -> "_" | Some uid -> Pcaml.unvala uid ] in
           plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
              (fun pc -> curr pc e, "")]
-      | <:expr< let open $uid:s$ in $e$ >> ->
+      | MLast.ExLSI _ (Ploc.VaVal <:str_item< open $uid:s$ >>) e ->
           plistbf 0 (paren pc "letopen")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]

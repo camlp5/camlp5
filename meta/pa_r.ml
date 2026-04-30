@@ -950,11 +950,13 @@ EXTEND
     [ "top" RIGHTA
       [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp_below_alg_attribute) ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
-        <:expr< let exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+        let si = <:str_item< exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ >> in
+        MLast.ExLSI loc <:vala< si >> x
 
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
-        <:expr< let exception $_uid:id$ $_algattrs:alg_attrs$ in $x$ >>
+        let si = <:str_item< exception $_uid:id$ $_algattrs:alg_attrs$ >> in
+        MLast.ExLSI loc <:vala< si >> x
 
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
@@ -965,10 +967,12 @@ EXTEND
           build_letop_binder loc letop b l x
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
-        let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
+        let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
+        let e = MLast.ExLSI loc <:vala< si >> e in
           expr_to_inline e ext attrs
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
-        let e = <:expr< let open $_!:ovf$ $m$ in $e$ >> in
+        let si = <:str_item< open $_!:ovf$ $m$ >> in
+        let e = MLast.ExLSI loc <:vala< si >> e in
           expr_to_inline e ext attrs
       | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →
           expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
@@ -1176,9 +1180,12 @@ EXTEND
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
       | "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
-          [expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >> ext attrs]
+          let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
+          let e = MLast.ExLSI loc <:vala< si >> (mksequence loc el) in
+          [expr_to_inline e ext attrs]
       | "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; el = SELF →
-        let e = <:expr< let open $_!:ovf$ $m$ in $mksequence loc el$ >> in
+        let si = <:str_item< open $_!:ovf$ $m$ >> in
+        let e =  MLast.ExLSI loc <:vala< si >> (mksequence loc el) in
           [expr_to_inline e ext attrs]
       | e = expr; ";"; el = SELF → [e :: el]
       | e = expr; ";" → [e]

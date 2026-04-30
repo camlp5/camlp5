@@ -137,7 +137,7 @@ and expr =
       expr e
     }
   | ExLid _ _ -> ()
-  | <:expr< let module $uidopt:_$ = $me$ in $e$ >> -> do {
+  | MLast.ExLSI _ (Ploc.VaVal <:str_item< module $uidopt:_$ = $me$ >>) e -> do {
       module_expr me;
       expr e
     }

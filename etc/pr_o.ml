@@ -1353,7 +1353,7 @@ EXTEND_PRINTER
         let loc = MLast.loc_of_expr e0 in
           pr_letlike "let" pc loc rf pel e
 
-      | <:expr:< let exception $uid:e$ of $list:tl$ $algattrs:attrs$ in $x$ >> ->
+      | MLast.ExLSI loc (Ploc.VaVal <:str_item< exception $uid:e$ of $list:tl$ $algattrs:attrs$ >>) x ->
           pprintf pc "@[<a>let %p@ in@] %p" exception_decl (loc, e, tl, [], attrs, []) curr x
 
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
@@ -1367,7 +1367,7 @@ EXTEND_PRINTER
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body
 
-      | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
+      | MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e ->
           let s = uidopt_to_maybe_blank s in
           if pc.dang = ";" then
             pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me
@@ -1375,7 +1375,7 @@ EXTEND_PRINTER
           else
             pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
               curr e
-      | <:expr< let open $!:ovf$ $m$ in $e$ >> ->
+      | MLast.ExLSI _ (Ploc.VaVal <:str_item< open $!:ovf$ $m$ >>) e ->
           if pc.dang = ";" then
             pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" (if ovf then "!" else "") module_expr m curr e
           else

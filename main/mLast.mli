@@ -139,7 +139,7 @@ and expr =
   | ExXtr of loc and string and option (V expr)
   | ExAtt of loc and expr and attribute
   | ExExten of loc and attribute
-  | ExLSI of loc and str_item and expr
+  | ExLSI of loc and V str_item and expr
   | ExUnr of loc
   ]
 and case_branch = (patt * V (option expr) * expr)

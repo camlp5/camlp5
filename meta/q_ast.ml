@@ -235,7 +235,7 @@ module Meta_make (C : MetaSig) =
           let exten = conv_extension exten in
           C.node "ExExten" [exten]
       | ExLSI loc si e ->
-          C.node "ExLSI" [str_item si; expr e]
+          C.node "ExLSI" [C.vala str_item si; expr e]
       | ExUnr loc -> C.node "ExUnr" []
       ]
     and module_type =
