@@ -2047,7 +2047,7 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
       | <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "open%s %p%p" (if (Pcaml.unvala ovf) then "!" else "")
-            (hlist (pr_attribute "@")) (Pcaml.unvala attrs) module_expr me
+            module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
