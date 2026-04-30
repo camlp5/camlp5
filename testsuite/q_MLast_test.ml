@@ -463,7 +463,7 @@ value tests = "test pa_r+quotations-to-pr_r" >::: (List.map mktest
         name = "let-open-2";
         code = {foo| <:expr< let open $_uid:s$ in $e$ >> ; |foo};
         expect = {foo|MLast.ExLSI loc
-  (MLast.StOpn loc (Ploc.VaVal False) (MLast.MeUid loc s) (Ploc.VaVal [])) e;
+  (Ploc.VaVal (MLast.StOpn loc (Ploc.VaVal False) (MLast.MeUid loc s) (Ploc.VaVal []))) e;
 |foo}
       }
     ])
