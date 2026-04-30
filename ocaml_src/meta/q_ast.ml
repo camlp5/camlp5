@@ -242,7 +242,7 @@ module Meta_make (C : MetaSig) =
       | ExXtr (loc, s, _) -> C.xtr_or_anti loc (fun r -> C.node "ExAnt" [r]) s
       | ExExten (loc, exten) ->
           let exten = conv_extension exten in C.node "ExExten" [exten]
-      | ExLSI (loc, si, e) -> C.node "ExLSI" [str_item si; expr e]
+      | ExLSI (loc, si, e) -> C.node "ExLSI" [C.vala str_item si; expr e]
       | ExUnr loc -> C.node "ExUnr" []
     and module_type =
       function

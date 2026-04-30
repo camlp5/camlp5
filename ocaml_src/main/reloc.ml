@@ -310,7 +310,8 @@ and expr floc sh =
     | ExExten (loc, exten) ->
         let loc = floc loc in ExExten (loc, attribute_body floc sh exten)
     | ExLSI (loc, si, e) ->
-        let loc = floc loc in ExLSI (loc, str_item floc sh si, expr floc sh e)
+        let loc = floc loc in
+        ExLSI (loc, vala_map (str_item floc sh) si, expr floc sh e)
     | ExUnr loc -> let loc = floc loc in ExUnr loc
   in
   self

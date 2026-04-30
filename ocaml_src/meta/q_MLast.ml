@@ -562,6 +562,12 @@ let check_lident_colon =
   Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
 ;;
 
+let (pa_fails : 'a Stream.t -> string) =
+  fun (strm__ : _ Stream.t) -> raise Stream.Failure
+;;
+
+let fails = Grammar.Entry.of_parser gram "fails" pa_fails;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -4286,7 +4292,7 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (attrs : 'item_attributes) (m : 'module_expr)
                 (ovf : 'e__94) _ _ _ (loc : Ploc.t) ->
               (let si = Qast.Node ("StOpn", [Qast.Loc; ovf; m; attrs]) in
-               Qast.Node ("ExLSI", [Qast.Loc; si; e]) :
+               Qast.Node ("ExLSI", [Qast.Loc; Qast.VaVal si; e]) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -4312,7 +4318,7 @@ Grammar.safe_extend
                     [Qast.Loc; Qast.VaVal (Qast.Bool false);
                      Qast.VaVal (Qast.List [mb])])
                in
-               Qast.Node ("ExLSI", [Qast.Loc; si; e]) :
+               Qast.Node ("ExLSI", [Qast.Loc; Qast.VaVal si; e]) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -4437,7 +4443,7 @@ Grammar.safe_extend
            (fun (x : 'expr) _ (item_attrs : 'item_attributes) (ec : 'e__91) _
                 _ _ (loc : Ploc.t) ->
               (let si = Qast.Node ("StExc", [Qast.Loc; ec; item_attrs]) in
-               Qast.Node ("ExLSI", [Qast.Loc; si; x]) :
+               Qast.Node ("ExLSI", [Qast.Loc; Qast.VaVal si; x]) :
                'expr)))];
        Some "where", None,
        [Grammar.production
@@ -6107,7 +6113,8 @@ Grammar.safe_extend
               (let si = Qast.Node ("StOpn", [Qast.Loc; ovf; m; attrs]) in
                Qast.List
                  [Qast.Node
-                    ("ExLSI", [Qast.Loc; si; mksequence Qast.Loc el])] :
+                    ("ExLSI",
+                     [Qast.Loc; Qast.VaVal si; mksequence Qast.Loc el])] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
@@ -6129,7 +6136,9 @@ Grammar.safe_extend
                     [Qast.Loc; Qast.VaVal (Qast.Bool false);
                      Qast.VaVal (Qast.List [mb])])
                in
-               Qast.Node ("ExLSI", [Qast.Loc; si; mksequence Qast.Loc el]) :
+               Qast.Node
+                 ("ExLSI",
+                  [Qast.Loc; Qast.VaVal si; mksequence Qast.Loc el]) :
                'sequence)));
         Grammar.production
           (Grammar.r_next

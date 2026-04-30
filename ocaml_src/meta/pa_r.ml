@@ -2597,7 +2597,8 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _ _
                 (loc : Ploc.t) ->
-              (let e = MLast.ExLSI (loc, MLast.StOpn (loc, ovf, m, []), e) in
+              (let si = MLast.StOpn (loc, ovf, m, []) in
+               let e = MLast.ExLSI (loc, si, e) in
                expr_to_inline e ext attrs :
                'expr)));
         Grammar.production
@@ -2626,9 +2627,8 @@ Grammar.safe_extend
            "194fe98d",
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ _ (loc : Ploc.t) ->
-              (let e =
-                 MLast.ExLSI (loc, MLast.StMod (loc, false, [m, mb, []]), e)
-               in
+              (let si = MLast.StMod (loc, false, [m, mb, []]) in
+               let e = MLast.ExLSI (loc, si, e) in
                expr_to_inline e ext attrs :
                'expr)));
         Grammar.production
@@ -2695,13 +2695,13 @@ Grammar.safe_extend
            "194fe98d",
            (fun (x : 'expr) _ (alg_attrs : 'alg_attributes) (id : string) _ _
                 _ (loc : Ploc.t) ->
-              (MLast.ExLSI
-                 (loc,
-                  MLast.StExc
-                    (loc,
-                     MLast.EcTuple (loc, (loc, id, [], [], None, alg_attrs)),
-                     []),
-                  x) :
+              (let si =
+                 MLast.StExc
+                   (loc,
+                    MLast.EcTuple (loc, (loc, id, [], [], None, alg_attrs)),
+                    [])
+               in
+               MLast.ExLSI (loc, si, x) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2733,13 +2733,13 @@ Grammar.safe_extend
            (fun (x : 'expr) _ (alg_attrs : 'alg_attributes)
                 (tyl : 'ctyp_below_alg_attribute list) _ (id : string) _ _ _
                 (loc : Ploc.t) ->
-              (MLast.ExLSI
-                 (loc,
-                  MLast.StExc
-                    (loc,
-                     MLast.EcTuple (loc, (loc, id, [], tyl, None, alg_attrs)),
-                     []),
-                  x) :
+              (let si =
+                 MLast.StExc
+                   (loc,
+                    MLast.EcTuple (loc, (loc, id, [], tyl, None, alg_attrs)),
+                    [])
+               in
+               MLast.ExLSI (loc, si, x) :
                'expr)))];
        Some "where", None,
        [Grammar.production
@@ -3743,10 +3743,8 @@ Grammar.safe_extend
            (fun (el : 'sequence) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _
                 (loc : Ploc.t) ->
-              (let e =
-                 MLast.ExLSI
-                   (loc, MLast.StOpn (loc, ovf, m, []), mksequence loc el)
-               in
+              (let si = MLast.StOpn (loc, ovf, m, []) in
+               let e = MLast.ExLSI (loc, si, mksequence loc el) in
                [expr_to_inline e ext attrs] :
                'sequence)));
         Grammar.production
@@ -3770,11 +3768,9 @@ Grammar.safe_extend
            "194fe98d",
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ (loc : Ploc.t) ->
-              ([expr_to_inline
-                  (MLast.ExLSI
-                     (loc, MLast.StMod (loc, false, [m, mb, []]),
-                      mksequence loc el))
-                  ext attrs] :
+              (let si = MLast.StMod (loc, false, [m, mb, []]) in
+               let e = MLast.ExLSI (loc, si, mksequence loc el) in
+               [expr_to_inline e ext attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
