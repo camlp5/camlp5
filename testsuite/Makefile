@@ -20,13 +20,13 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 	extfun_test reloc_test o_top_test2 o_top_test r_top_test grammar_bug_test \
 	little_lang_test o_lexer_test r_lexer_test quotedext_test
 
+MATRIXTESTS=official2official_test.byte o2official_test.byte r2official_test.byte o2r_test.byte r2r_test.byte r2o_test.byte o2o_test.byte
+
 export LC_ALL=C
 
 all-tests: all $(TESTS)
 matrix-tests: $(MATRIXTESTS)
 	for t in $(MATRIXTESTS); do echo "==== $$t ====" ; ./$$t || true; done
-
-MATRIXTESTS=o2r_test.byte r2r_test.byte r2o_test.byte o2o_test.byte o2official_test.byte r2official_test.byte official2official_test.byte
 
 all: roundtrippers \
 	o2r_test.byte \

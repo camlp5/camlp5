@@ -3390,6 +3390,33 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    {name="str_item-let-open-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let open! M in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;let open! M in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-open-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let open! M in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|let x = let open! M in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="str_item-let-open-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;[%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="expr-let-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
@@ -3397,6 +3424,43 @@ type nat _ =
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
      official_output = OK {foo|let x = [%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="str_item-let-module-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let module A = M in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;let module A = M in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-module-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let module A = M in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = let module A = M in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+
+    {name="str_item-let-module-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;[%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-module-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|let x = [%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo||foo}
     };
     {name="class-expr-local-open-1"; implem = True ;
