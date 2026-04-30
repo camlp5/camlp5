@@ -42,6 +42,16 @@ value check_fsm : fsm 'a -> Stream.t (string * string) -> bool ;
 value type_binder_fsm : fsm string ;
 value expr_wrap_attrs :
   loc → expr → list attribute → expr;
+value merge_left_auxiliary_attrs :
+            ~nonterm_name:string ->
+            ~left_name:string ->
+            ~right_name:string ->
+            list attribute -> Ploc.vala (list attribute) -> Ploc.vala (list attribute) ;
+value merge_right_auxiliary_attrs :
+            ~nonterm_name:string ->
+            ~left_name:string ->
+            ~right_name:string ->
+            Ploc.vala (list attribute) -> list attribute -> Ploc.vala (list attribute) ;
 value expr_to_inline :
   expr → option (loc * string) → list attribute → expr;
 value ctyp_wrap_attrs : ctyp → list attribute → ctyp;

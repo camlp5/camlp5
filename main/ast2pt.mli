@@ -24,3 +24,4 @@ value expr : MLast.expr -> Parsetree.expression ;
 value patt : MLast.patt -> Parsetree.pattern ;
 value module_expr : MLast.module_expr -> Parsetree.module_expr ;
 value module_type : MLast.module_type -> Parsetree.module_type ;
+value str_item : MLast.str_item -> Parsetree.structure -> Parsetree.structure ;

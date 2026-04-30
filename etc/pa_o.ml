@@ -632,22 +632,6 @@ value check_module_not_alias =
     check_module_not_alias_f
 ;
 
-value merge_left_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
-  match (left_attrs, right_attrs) with [
-    (l1, Ploc.VaVal l2) -> Ploc.VaVal (l1@l2)
-  | ([], (Ploc.VaAnt _)) -> right_attrs
-  | _ -> failwith (Printf.sprintf "%s: cannot specify both %s AND %s antiquotation" nonterm_name left_name right_name)
-  ]
-;
-
-value merge_right_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
-  match (left_attrs, right_attrs) with [
-    (Ploc.VaVal l1, l2) -> Ploc.VaVal (l1@l2)
-  | ((Ploc.VaAnt _), []) -> left_attrs
-  | _ -> failwith (Printf.sprintf "%s: cannot specify both %s antiquotation AND %s" nonterm_name left_name right_name)
-  ]
-;
-
 value check_dot_uid_f strm =
   let rec crec n =
     match stream_npeek n strm with [

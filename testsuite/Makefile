@@ -24,6 +24,8 @@ export LC_ALL=C
 
 all-tests: all $(TESTS)
 
+MATRIXTESTS=o2r_test.byte r2r_test.byte r2o_test.byte o2o_test.byte o2official_test.byte r2official_test.byte official2official_test.byte
+
 all: roundtrippers \
 	o2r_test.byte \
 	r2r_test.byte \
@@ -54,14 +56,14 @@ all: roundtrippers \
 	r_lexer_test \
 	quotedext_test \
 
-matrix-test::
+matrix-test:: $(MATRIXTESTS)
+	./official2official_test.byte -only-test $(ONLYTEST) || true
+	./o2official_test.byte -only-test $(ONLYTEST) || true
+	./r2official_test.byte -only-test $(ONLYTEST) || true
 	./o2r_test.byte -only-test $(ONLYTEST) || true
 	./r2r_test.byte -only-test $(ONLYTEST) || true
 	./r2o_test.byte -only-test $(ONLYTEST) || true
 	./o2o_test.byte -only-test $(ONLYTEST) || true
-	./o2official_test.byte -only-test $(ONLYTEST) || true
-	./r2official_test.byte -only-test $(ONLYTEST) || true
-	./official2official_test.byte -only-test $(ONLYTEST) || true
 
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \

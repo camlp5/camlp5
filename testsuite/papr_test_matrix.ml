@@ -1967,13 +1967,13 @@ END ;
     };
     {name="inline-extensions1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let%foo x = 42|foo} ;
-     official_input = OK {foo|let%foo x = 42|foo} ;
-     r_input = OK {foo|value%foo x = 42;|foo} ;
-     o_output = OK {foo|[%%foo let x = 42;;];;
+     o_input = OK {foo|let%foo [@bar] x = 42|foo} ;
+     official_input = OK {foo|let%foo [@bar] x = 42|foo} ;
+     r_input = OK {foo|value%foo x = 42[@@bar];|foo} ;
+     o_output = OK {foo|[%%foo let x = 42[@@bar];;];;
 |foo};
-     official_output = OK {foo|[%%foo let x = 42]|foo} ;
-     r_output = OK {foo|[%%"foo" value x = 42;];
+     official_output = OK {foo|[%%foo let x = 42[@@bar]]|foo} ;
+     r_output = OK {foo|[%%"foo" value x = 42[@@"bar"];];
 |foo}
     };
     {name="inline-extensions2"; implem = True ;
@@ -3483,13 +3483,13 @@ type nat _ =
     ELSE
     {name="expr-local-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;
-     official_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;
-     r_input = OK {foo|value x = (let open! (M[@bar]) in ()) [@foo];|foo} ;
-     o_output = OK {foo|let x = (let open! M[@bar] in ())[@foo];;
+     o_input = OK {foo|let x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
+     official_input = OK {foo|let x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in () ;|foo} ;
+     o_output = OK {foo|let x = (let open! (M[@bar])[@foo] in ());;
 |foo};
-     official_output = OK {foo|let x = let open! ((M)[@bar ])[@@foo ] in ()|foo} ;
-     r_output = OK {foo|value x = (let open! M[@"bar"] in ())[@"foo"];
+     official_output = OK {foo|let x = [%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     r_output = OK {foo|value x = let open! M[@"bar"][@@"foo"] in ();
 |foo}
     }
     END

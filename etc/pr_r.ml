@@ -426,8 +426,7 @@ pr_expr_fun_args.val :=
 
 type seq =
   [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr * MLast.attributes) and seq
-  | SE_let_module of Ploc.t and option (Ploc.vala string) and MLast.module_expr and seq
-  | SE_let_open of Ploc.t and bool and MLast.module_expr and seq
+  | SE_let_str_item of MLast.str_item and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
 ;
@@ -438,10 +437,8 @@ value rec seq_of_expr e =
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
-  | MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e ->
-      SE_let_module loc s me (seq_of_expr e)
-  | MLast.ExLSI loc (Ploc.VaVal <:str_item< open $!:ovf$ $m$ >>) e ->
-      SE_let_open loc ovf m (seq_of_expr e)
+  | MLast.ExLSI loc (Ploc.VaVal si) e ->
+      SE_let_str_item si (seq_of_expr e)
   | e ->
       SE_other e None ]
 and seq_of_expr_ne_list e1 el =
@@ -452,13 +449,9 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e ->
+  | MLast.ExLSI loc (Ploc.VaVal si) e ->
       match el with
-      [ [] -> SE_let_module loc s me (seq_of_expr e)
-      | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | MLast.ExLSI loc (Ploc.VaVal <:str_item< open $!:ovf$ $m$ >>) e ->
-      match el with
-      [ [] -> SE_let_open loc ovf m (seq_of_expr e)
+      [ [] -> SE_let_str_item si (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
   | e1 ->
       let seo =
@@ -472,8 +465,7 @@ and seq_of_expr_ne_list e1 el =
 value rec true_sequence =
   fun
   [ SE_let _ _ _ s -> true_sequence s
-  | SE_let_module _ _ _ s -> true_sequence s
-  | SE_let_open _ _ _ s -> true_sequence s
+  | SE_let_str_item _ s -> true_sequence s
   | SE_closed _ _ -> True
   | SE_other _ (Some _) -> True
   | SE_other _ None  -> False ]
@@ -621,14 +613,10 @@ and hvseq pc se =
         sprintf "%s%s" (comm_bef pc loc)
           (pprintf pc "@[<i>%p@ %p@]" force_vertic (letop_up_to_in "let") (rf, pel)
             loop se)
-    | SE_let_module loc s me se ->
+    | SE_let_str_item si se ->
+       let loc = MLast.loc_of_str_item si in
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_module_up_to_in
-            (s, me) loop se)
-    | SE_let_open loc ovf m se ->
-        sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_open_up_to_in (ovf, m)
-             loop se)
+          (pprintf pc "@[<i>let %p@ %p@]" force_vertic str_item si loop se)
     | SE_closed e se ->
         pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
           e loop se
@@ -658,6 +646,8 @@ and let_module_up_to_in pc (s, me) =
     pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
 and let_open_up_to_in pc (ovf, m) =
   pprintf pc "@[<a>let open%s %p@ in@]" (if ovf then "!" else "") module_expr m
+and let_str_item_up_to_in pc si =
+  pprintf pc "@[<a>let %p@ in@]" str_item si
 
 (* Pretty printing improvement (optional):
    - display a "let" binding with the "where" construct
@@ -1557,14 +1547,10 @@ EXTEND_PRINTER
         pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)
           curr body
 
-      | (MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e) as ge ->
+      | (MLast.ExLSI loc (Ploc.VaVal si) e) as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
-      | (MLast.ExLSI loc (Ploc.VaVal <:str_item< open $!:ovf$ $m$ >>) e) as ge ->
-          match flatten_sequence ge with
-          [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_open_up_to_in (ovf, m) curr e ]
+          | None -> pprintf pc "%p@ %p" let_str_item_up_to_in si curr e ]
       | <:expr< do { $list:el$ } >> ->
           match el with
           [ [] -> pprintf pc "do {}"
@@ -2061,7 +2047,7 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
       | <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "open%s %p%p" (if (Pcaml.unvala ovf) then "!" else "")
-            module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+            (hlist (pr_attribute "@")) (Pcaml.unvala attrs) module_expr me
       | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl

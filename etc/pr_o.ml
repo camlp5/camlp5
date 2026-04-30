@@ -1367,19 +1367,11 @@ EXTEND_PRINTER
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body
 
-      | MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uidopt:s$ = $me$ >>) e ->
-          let s = uidopt_to_maybe_blank s in
+      | MLast.ExLSI _ (Ploc.VaVal si) e ->
           if pc.dang = ";" then
-            pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me
-              curr e
+            pprintf pc "(@[<a>let %p@ in@]@ %p)" str_item si curr e
           else
-            pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
-              curr e
-      | MLast.ExLSI _ (Ploc.VaVal <:str_item< open $!:ovf$ $m$ >>) e ->
-          if pc.dang = ";" then
-            pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" (if ovf then "!" else "") module_expr m curr e
-          else
-            pprintf pc "@[<a>let open%s %p@ in@]@ %p" (if ovf then "!" else "") module_expr m curr e
+            pprintf pc "@[<a>let %p@ in@]@ %p" str_item si curr e
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
             (hvlistl (semi_after expr) curr) el

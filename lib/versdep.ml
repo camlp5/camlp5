@@ -411,15 +411,19 @@ value ocaml_pexp_let_str_item loc si body =
     ]
 ;
 ELSE
+value rec ok_let_str_item = fun [
+  {pstr_desc=Pstr_exception _}
+| {pstr_desc=Pstr_module _}
+| {pstr_desc=Pstr_open _} -> True
+| {pstr_desc=Pstr_extension (_, PStr[si]) _} -> ok_let_str_item si
+| _ -> False
+]
+;
 value ocaml_pexp_let_str_item loc si body =
-  match si with [
-      {pstr_desc=Pstr_exception _}
-    | {pstr_desc=Pstr_module _}
-    | {pstr_desc=Pstr_open _} ->
-       Pexp_struct_item si body
-    | _ -> 
-       failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
-    ]
+  if ok_let_str_item si then
+    Pexp_struct_item si body
+  else
+    failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
 ;
 END ;
 END
