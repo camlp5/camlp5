@@ -3390,6 +3390,44 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    {name="str_item-let-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = y in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;let x = y in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let x = y in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = let x = y in ()|foo} ;
+     r_output = OK {foo||foo}
+    };
+
+    {name="str_item-let-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;[%e1 let x = y[@@a1 ][@@a3 ] in ()]|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="expr-let-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo|let x = let%e1 [@a1] x = y [@@a3] in ()|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = [%e1 let x = y[@@a1 ][@@a3 ] in ()]|foo} ;
+     r_output = OK {foo||foo}
+    };
+
     {name="str_item-let-open-0"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
@@ -3500,7 +3538,6 @@ type nat _ =
      official_output = OK {foo|let x = [%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo||foo}
     };
-
     {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|class c = let open! [@foo] M in object end|foo} ;
