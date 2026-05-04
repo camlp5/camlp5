@@ -1012,6 +1012,7 @@ EXTEND
           let te = { (te) with MLast.teAttributes = attrs } in
           str_item_to_inline <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
 
+(*
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
         let si = <:str_item< exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ >> in
@@ -1056,6 +1057,55 @@ EXTEND
          let e = MLast.ExLSI loc <:vala< si >> e in
          let e = expr_to_inline e ext attrs in
           <:str_item< $exp:e$ >>
+
+ *)
+
+      | "let"; (ext0,attrs0) = ext_attributes ;
+        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs1 = item_attributes ; "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
+          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs1$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = expr_to_inline e ext0 attrs0 in
+          <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
+
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
+        e = expr LEVEL "top" ->
+          let (i,me,attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
+          let h = (i,me,attrs) in
+          let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = expr_to_inline e ext0 attrs0 in
+          <:str_item< $exp:e$ >>
+
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
+          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = expr_to_inline e ext0 attrs0 in
+          <:str_item< $exp:e$ >>
+
+      | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
+        x = expr LEVEL "top" ->
+          let (a, b, item_attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs0 item_attrs in
+          let h = (a, b, attrs) in
+          let l = [h::t] in
+          let e = expr_to_inline <:expr< let $_flag:o$ $list:l$ in $x$ >> ext0 [] in
+          <:str_item< $exp:e$ >>
+
+      | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding ->
+          let (a, b, item_attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs0 item_attrs in
+          let h = (a, b, attrs) in
+          let l = [h::t] in
+          let si = match l with
+          [ [(p, e, attrs)] ->
+              match p with
+              [ <:patt< _ >> -> <:str_item< $exp:e$ $_itemattrs:attrs$ >> (* TODO FIX THIS CHET *)
+              | _ -> <:str_item< value $_flag:o$ $list:l$ >> ]
+          | _ -> <:str_item< value $_flag:o$ $list:l$ >> ] in
+          str_item_to_inline si ext0
+
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>

@@ -3411,7 +3411,7 @@ type nat _ =
 
     {name="str_item-let-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()|foo} ;
      official_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3430,7 +3430,7 @@ type nat _ =
 
     {name="str_item-let-open-0"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let open! M in ()|foo} ;
      official_input = OK {foo|let open! M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3459,7 +3459,7 @@ type nat _ =
     ELSE
     {name="str_item-let-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
      official_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3492,7 +3492,7 @@ type nat _ =
 ;
     {name="str_item-let-module-0"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let module A = M in ()|foo} ;
      official_input = OK {foo|let module A = M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3521,7 +3521,7 @@ type nat _ =
     ELSE
     {name="str_item-let-module-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
      official_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3554,7 +3554,7 @@ type nat _ =
 ;
     {name="str_item-let-exception-0"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let exception E in ()|foo} ;
      official_input = OK {foo|let exception E in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3583,7 +3583,7 @@ type nat _ =
     ELSE
     {name="str_item-let-exception-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
      official_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
