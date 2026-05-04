@@ -33,9 +33,9 @@ all: roundtrippers \
 	r2r_test.byte \
 	r2o_test.byte \
 	o2o_test.byte \
+	official2official_test.byte \
 	o2official_test.byte \
 	r2official_test.byte \
-	official2official_test.byte \
 	r2sch_test.byte \
 	q_MLast_test.byte \
 	revised_q_ast_test.byte \
