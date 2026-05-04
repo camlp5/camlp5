@@ -516,6 +516,7 @@ value build_letop_binder loc letop b l e = do {
   }
 ;
 
+
 value is_let_exception_f strm =
   Stream.npeek 1 strm = [("","let")] &&
   match Stream.npeek 2 strm with
@@ -992,7 +993,7 @@ EXTEND
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< module type $_:i$ = 'abstract $_itemattrs:attrs$ >> ext
-      | "open"; (ext,alg_attrs) = ext_attributes; ovf = V (FLAG "!") "!"; me = module_expr ; item_attrs = item_attributes ->
+      | "open"; ovf = V (FLAG "!") "!"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = FLAG "nonrec";
@@ -1234,33 +1235,34 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | e1 = SELF; ";" -> e1
       | el = V e_phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
-      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
-        "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
-        let si = <:str_item< exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ >> in
-        MLast.ExLSI loc <:vala< si >> x
+      [ "let"; (ext0,attrs0) = ext_attributes ;
+        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
+          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          expr_to_inline e ext0 attrs0
 
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
-        "in" ; x = SELF ->
-        let si = <:str_item< exception $_uid:id$ $_algattrs:alg_attrs$ >> in
-        MLast.ExLSI loc <:vala< si >> x
-      | check_let_not_exception ; "let"; (ext,alg_attrs) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
+        e = expr LEVEL "top" ->
+          let (i,me,attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
+          let h = (i,me,attrs) in
+          let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
+          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
         x = expr LEVEL "top" ->
           let (a, b, item_attrs) = h in
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs0 item_attrs in
           let h = (a, b, attrs) in
           let l = [h::t] in
-          expr_to_inline <:expr< let $_flag:o$ $list:l$ in $x$ >> ext []
-
-      | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
-        e = expr LEVEL "top" ->
-        let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
-        let e = MLast.ExLSI loc <:vala< si >> e in
-          expr_to_inline e ext attrs
-
-      | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
-         let si = <:str_item< open $_!:ovf$ $m$ >> in
-         let e = MLast.ExLSI loc <:vala< si >> e in
-          expr_to_inline e ext attrs
+          expr_to_inline <:expr< let $_flag:o$ $list:l$ in $x$ >> ext0 []
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->
