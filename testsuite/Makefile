@@ -24,8 +24,8 @@ MATRIXTESTS=official2official_test.byte o2official_test.byte r2official_test.byt
 
 export LC_ALL=C
 
-all-tests: all $(TESTS)
-matrix-tests: $(MATRIXTESTS)
+all-tests:: all $(TESTS)
+matrix-tests:: $(MATRIXTESTS)
 	for t in $(MATRIXTESTS); do echo "==== $$t ====" ; ./$$t || true; done
 
 all: roundtrippers \
@@ -59,13 +59,7 @@ all: roundtrippers \
 	quotedext_test \
 
 matrix-test:: $(MATRIXTESTS)
-	./official2official_test.byte -only-test $(ONLYTEST) || true
-	./o2official_test.byte -only-test $(ONLYTEST) || true
-	./r2official_test.byte -only-test $(ONLYTEST) || true
-	./o2r_test.byte -only-test $(ONLYTEST) || true
-	./r2r_test.byte -only-test $(ONLYTEST) || true
-	./r2o_test.byte -only-test $(ONLYTEST) || true
-	./o2o_test.byte -only-test $(ONLYTEST) || true
+	for t in $(MATRIXTESTS); do echo "==== $$t ====" ; ./$$t -only-test $(ONLYTEST) || true; done
 
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
