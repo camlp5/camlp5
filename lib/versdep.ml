@@ -399,13 +399,81 @@ value ocaml_pexp_let_str_item loc si body =
                     ptyexn_loc = loc}
       } ->
       Pexp_letexception exdef body
+    | {pstr_desc=Pstr_extension
+                   (eid, PStr [{pstr_desc=Pstr_exception
+                                            {ptyexn_constructor = exdef;
+                                             ptyexn_attributes = item_attributes;
+                                             ptyexn_loc = loc}
+                   }])
+                   _
+      } ->
+       let attrs = exdef.pext_attributes in
+       let exdef = {(exdef) with pext_attributes = []} in
+       Pexp_extension
+         (eid,
+          PStr
+            [{pstr_desc =
+                Pstr_eval
+                  {pexp_desc = Pexp_letexception exdef body;
+                   pexp_loc = loc; pexp_loc_stack = [];
+                   pexp_attributes = attrs}
+                  [];
+              pstr_loc = loc}])
+
     | {pstr_desc=Pstr_module
                    {pmb_name=name;
                     pmb_expr=mexpr}
       } ->
       Pexp_letmodule name mexpr body
+
+    | {pstr_desc=Pstr_extension
+                   (eid, PStr [{pstr_desc=Pstr_module
+                                            {pmb_name = name;
+                                             pmb_expr = mexpr;
+                                             pmb_attributes = attrs};
+                                pstr_loc = loc
+                   }])
+                   _
+      } ->
+       Pexp_extension
+         (eid,
+          PStr
+            [{pstr_desc =
+               Pstr_eval
+                {pexp_desc = Pexp_letmodule name mexpr body;
+                  pexp_loc = loc; pexp_loc_stack = [];
+                  pexp_attributes = attrs}
+                [];
+              pstr_loc = loc}])
+       
     | {pstr_desc=Pstr_open od} ->
        Pexp_open od body
+
+
+    | {pstr_desc=Pstr_extension
+                   (eid, PStr [{pstr_desc=Pstr_open
+                                            {popen_expr = mexpr;
+                                             popen_override = ovf;
+                                             popen_attributes = attrs};
+                                pstr_loc = loc
+                   }])
+                   _
+      } ->
+       Pexp_extension
+         (eid,
+          PStr
+            [{pstr_desc =
+               Pstr_eval
+                {pexp_desc = Pexp_open {
+                                 popen_expr=mexpr;
+                                 popen_override=ovf;
+                                 popen_loc=loc;
+                                 popen_attributes=[]} body;
+                  pexp_loc = loc; pexp_loc_stack = [];
+                  pexp_attributes = attrs}
+                [];
+              pstr_loc = loc}])
+
     | _ -> 
        failwith (Format.asprintf "ocaml_pexp_let_str_item: unrecognized (maybe internal error, maybe user error): %a" Pprintast.structure [si])
     ]

@@ -3449,7 +3449,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let open! %e2 [@a2] M in ()|foo} ;
      official_input = OK {foo|let open! %e2 [@a2] M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3471,7 +3471,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let x = let open! %e2 [@a2] M in ()|foo} ;
      official_input = OK {foo|let x = let open! %e2 [@a2] M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3511,7 +3511,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-module-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let module %e2 [@a2] A = M in ()|foo} ;
      official_input = OK {foo|let module %e2 [@a2] A = M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3533,7 +3533,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-module-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let x = let module %e2 [@a2] A = M in ()|foo} ;
      official_input = OK {foo|let x = let module %e2 [@a2] A = M in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3573,7 +3573,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-exception-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
      official_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
@@ -3595,7 +3595,7 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-exception-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
+     o_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
      official_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo} ;
