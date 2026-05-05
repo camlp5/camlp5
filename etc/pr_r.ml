@@ -1786,8 +1786,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        MLast.ExLSI _ (Ploc.VaVal <:str_item< module $uidopt:_$ = $_$ >>) _ |
-        MLast.ExLSI _ (Ploc.VaVal <:str_item< open $_!:_$ $_$ >>) _ |
+        MLast.ExLSI _ _ _ |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< $_$ [@ $_attribute:_$] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
