@@ -438,8 +438,6 @@ let ocaml_ptyp_object loc ml is_open =
   Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
-let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
-
 let ocaml_ptyp_poly =
   Some
     (fun loc cl t ->
@@ -464,7 +462,7 @@ let ocaml_ptyp_variant loc catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
-let ocaml_package_type loc li ltl : package_type =
+let ocaml_package_type loc ?(alg_attributes = []) li ltl : package_type =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
@@ -593,14 +591,14 @@ let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
 
-let ocaml_ptyp_pack pt = Ptyp_package pt;;
+let ocaml_ptyp_package pt = Ptyp_package pt;;
 
 let ocaml_pexp_pack loc me pto =
   let e = Pexp_pack me in
   if pto = None then e
   else
     let (pto : Parsetree.core_type_desc option) =
-      option_map ocaml_ptyp_pack pto
+      option_map ocaml_ptyp_package pto
     in
     let (pto : Parsetree.core_type option) =
       option_map (ocaml_mktyp loc) pto
@@ -724,8 +722,10 @@ let ocaml_ppat_record lpl is_closed =
 
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
-let ocaml_ppat_unpack =
-  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
+let ocaml_ppat_unpack loc s = Ppat_unpack (mkloc loc s);;
+
+let ocaml_ppat_constraint p ty =
+  ocaml_mkpat p.ppat_loc (Ppat_constraint (p, ty))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;

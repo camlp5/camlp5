@@ -447,8 +447,6 @@ let ocaml_ptyp_object loc ml is_open =
   Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
-let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
-
 let ocaml_ptyp_poly =
   Some
     (fun loc cl t ->
@@ -473,10 +471,10 @@ let ocaml_ptyp_variant loc catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
-let ocaml_package_type loc li ltl : package_type =
+let ocaml_package_type loc ?(alg_attributes = []) li ltl : package_type =
   {ppt_path = mkloc loc li;
    ppt_cstrs = List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl;
-   ppt_loc = loc; ppt_attrs = []}
+   ppt_loc = loc; ppt_attrs = alg_attributes}
 ;;
 
 let ocaml_pconst_char c = Pconst_char c;;
@@ -619,7 +617,7 @@ let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
 
-let ocaml_ptyp_pack pt = Ptyp_package pt;;
+let ocaml_ptyp_package pt = Ptyp_package pt;;
 
 let ocaml_pexp_pack loc me pto = Pexp_pack (me, pto);;
 
@@ -712,8 +710,10 @@ let ocaml_ppat_record lpl is_closed =
 
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
-let ocaml_ppat_unpack =
-  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
+let ocaml_ppat_unpack loc s = Ppat_unpack (mkloc loc s);;
+
+let ocaml_ppat_constraint p ty =
+  ocaml_mkpat p.ppat_loc (Ppat_constraint (p, ty))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;

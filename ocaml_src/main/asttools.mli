@@ -44,6 +44,12 @@ type 'a fsm =
 val check_fsm : 'a fsm -> (string * string) Stream.t -> bool;;
 val type_binder_fsm : string fsm;;
 val expr_wrap_attrs : loc -> expr -> attribute list -> expr;;
+val merge_left_auxiliary_attrs :
+  nonterm_name:string -> left_name:string -> right_name:string ->
+    attribute list -> attribute list Ploc.vala -> attribute list Ploc.vala;;
+val merge_right_auxiliary_attrs :
+  nonterm_name:string -> left_name:string -> right_name:string ->
+    attribute list Ploc.vala -> attribute list -> attribute list Ploc.vala;;
 val expr_to_inline : expr -> (loc * string) option -> attribute list -> expr;;
 val ctyp_wrap_attrs : ctyp -> attribute list -> ctyp;;
 val ctyp_to_inline : ctyp -> (loc * string) option -> attribute list -> ctyp;;

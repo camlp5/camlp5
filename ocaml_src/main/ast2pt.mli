@@ -24,3 +24,4 @@ val expr : MLast.expr -> Parsetree.expression;;
 val patt : MLast.patt -> Parsetree.pattern;;
 val module_expr : MLast.module_expr -> Parsetree.module_expr;;
 val module_type : MLast.module_type -> Parsetree.module_type;;
+val str_item : MLast.str_item -> Parsetree.structure -> Parsetree.structure;;

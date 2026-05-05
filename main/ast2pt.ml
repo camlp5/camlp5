@@ -562,12 +562,10 @@ and ctyp =
   | TyOlb loc lab _ → error loc "labeled type not allowed here"
   | TyOpn loc ->  error loc "open (parsed as '..') type not allowed here"
   | TyPck loc mt →
-      match ocaml_ptyp_package with
-      [ Some ptyp_package →
-          let (mt, attrs) = module_type_unwrap_attrs mt in
-          let pt = package_of_module_type loc mt in
-          mktyp ~{alg_attributes=conv_attributes attrs} loc (ptyp_package pt)
-      | None → error loc "no package type in this ocaml version" ]
+      let (mt, attrs) = module_type_unwrap_attrs mt in
+      let pt = package_of_module_type loc mt in
+      mktyp ~{alg_attributes=conv_attributes attrs} loc (ocaml_ptyp_package pt)
+
   | TyPol loc pl t →
       match ocaml_ptyp_poly with
       [ Some ptyp_poly →
@@ -625,7 +623,7 @@ and add_polytype t =
           let (ct, attrs) = ptyp_poly (mkloc loc) [] (ctyp t) in
           mktyp ~{alg_attributes=attrs} loc ct ]
   | None → ctyp t ]
-and package_of_module_type loc mt =
+and package_of_module_type ?{alg_attributes=[]} loc mt =
   let (mt, with_con) =
     match mt with
     [ <:module_type< $mt$ with $list:with_con$ >> →
@@ -653,7 +651,7 @@ and package_of_module_type loc mt =
     | _ → (mt, []) ]
   in
   let li = module_type_to_longident mt in
-  ocaml_package_type (mkloc loc) li with_con
+  ocaml_package_type ~{alg_attributes=alg_attributes} (mkloc loc) li with_con
 
 and type_decl ?{item_attributes=[]} tn tl priv (cl,tdCon) =
   fun
@@ -847,16 +845,13 @@ and patt =
             (ppat_type (mkloc loc) (extended_lilongid_to_longident loc (uv lili)))
       | None → error loc "no #type in this ocaml version" ]
   | PaUnp loc s mto →
-      match ocaml_ppat_unpack with
-      [ Some (ppat_unpack, ptyp_package) →
-          let p = mkpat loc (ppat_unpack (mkloc loc) (option_map uv (uv s))) in
-          match mto with
-          [ Some mt →
-              let (mt, alg_attrs) = module_type_unwrap_attrs mt in
-              let pt = package_of_module_type loc mt in
-              mkpat loc (Ppat_constraint p (mktyp ~{alg_attributes=conv_attributes alg_attrs} loc (ptyp_package pt)))
-          | None → p ]
-      | None → error loc "no unpack pattern in this ocaml version" ]
+      let p = mkpat loc (ocaml_ppat_unpack (mkloc loc) (option_map uv (uv s))) in
+      match mto with
+        [ Some mt →
+          let (mt, alg_attrs) = module_type_unwrap_attrs mt in
+          let pt = package_of_module_type ~{alg_attributes=conv_attributes alg_attrs} loc mt in
+          ocaml_ppat_constraint p (mktyp loc (ocaml_ptyp_package pt))
+        | None → p ]
   | PaVrn loc s →
       match ocaml_ppat_variant with
       [ Some (_, ppat_variant) → mkpat loc (ppat_variant (uv s, None))

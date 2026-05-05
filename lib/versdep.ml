@@ -749,10 +749,6 @@ value ocaml_ptyp_object loc ml is_open =
   END
 ;
 
-value ocaml_ptyp_package =
-  Some (fun pt -> Ptyp_package pt)
-;
-
 value ocaml_ptyp_poly =
     Some
       (fun loc cl t ->
@@ -800,7 +796,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
   END
 ;
 
-value ocaml_package_type loc li ltl : package_type =
+value ocaml_package_type loc ?{alg_attributes=[]} li ltl : package_type =
 IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
 ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
@@ -808,14 +804,14 @@ ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     ppt_path = mkloc loc li
   ; ppt_cstrs = List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl
   ; ppt_loc = loc
-  ; ppt_attrs = []
+  ; ppt_attrs = alg_attributes
   }
 ELSE
   {
     ppt_path = mkloc loc li
   ; ppt_constraints = List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl
   ; ppt_loc = loc
-  ; ppt_attrs = []
+  ; ppt_attrs = alg_attributes
   }
 END
 ;
@@ -1034,14 +1030,14 @@ value ocaml_pexp_override sel =
   Pexp_override sel
 ;
 
-value ocaml_ptyp_pack pt = Ptyp_package pt ;
+value ocaml_ptyp_package pt = Ptyp_package pt ;
 
 value ocaml_pexp_pack loc me pto =
 IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
   let e = Pexp_pack me in
   if pto = None then e
   else
-    let pto : option Parsetree.core_type_desc = option_map ocaml_ptyp_pack pto in
+    let pto : option Parsetree.core_type_desc = option_map ocaml_ptyp_package pto in
     let pto : option Parsetree.core_type = option_map (ocaml_mktyp loc) pto in
     ocaml_pexp_constraint (ocaml_mkexp loc e) pto None
 ELSE
@@ -1215,12 +1211,28 @@ value ocaml_ppat_type =
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    Some (fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s)), fun pt -> Ptyp_package pt)
+    (fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s)))
   ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
-    Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
+    (fun loc s -> Ppat_unpack (mkloc loc s))
   ELSE
-    Some (fun loc s -> Ppat_unpack (mkloc loc s) None, fun pt -> Ptyp_package pt)
+    (fun loc s -> Ppat_unpack (mkloc loc s) None)
   END
+;
+
+value ocaml_ppat_constraint =
+IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
+    (fun p ty ->
+      ocaml_mkpat p.ppat_loc (Ppat_constraint p ty))
+ELSE
+    (fun p ty ->
+      match (p, ty) with [
+          ({ppat_desc=Ppat_unpack mid None},
+           {ptyp_desc=Ptyp_package pty}) ->
+          {(p) with ppat_desc=Ppat_unpack mid (Some pty)}
+        | _ -> ocaml_mkpat p.ppat_loc (Ppat_constraint p ty)
+        ]
+    )
+END
 ;
 
 value ocaml_ppat_var loc s = Ppat_var (mkloc loc s);
