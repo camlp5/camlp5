@@ -3411,11 +3411,11 @@ type nat _ =
 
     {name="str_item-let-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()|foo} ;
-     official_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()|foo} ;
+     o_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()[@@a4]|foo} ;
+     official_input = OK {foo|let%e1 [@a1] x = y [@@a3] in () [@@a4]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo|;;[%e1 let x = y[@@a1 ][@@a3 ] in ()]|foo} ;
+     official_output = OK {foo|;;[%e1 let x = y[@@a1 ][@@a3 ] in ()][@@a4]|foo} ;
      r_output = OK {foo||foo}
     };
     {name="expr-let-1"; implem = True ;
@@ -3459,11 +3459,11 @@ type nat _ =
     ELSE
     {name="str_item-let-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
-     official_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
+     o_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()[@@a4]|foo} ;
+     official_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()[@@a4]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo|;;[%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     official_output = OK {foo|;;[%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])][@@a4]|foo} ;
      r_output = OK {foo||foo}
     }
     END
@@ -3521,11 +3521,11 @@ type nat _ =
     ELSE
     {name="str_item-let-module-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
-     official_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
+     o_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in () [@@a4]|foo} ;
+     official_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in () [@@a4]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo|;;[%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     official_output = OK {foo|;;[%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])] [@@a4]|foo} ;
      r_output = OK {foo||foo}
     }
    END
@@ -3583,11 +3583,11 @@ type nat _ =
     ELSE
     {name="str_item-let-exception-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
-     official_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
+     o_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in () [@@a4]|foo} ;
+     official_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in () [@@a4]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo|;;[%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
+     official_output = OK {foo|;;[%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])] [@@a4]|foo} ;
      r_output = OK {foo||foo}
     }
     END

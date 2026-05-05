@@ -1068,30 +1068,30 @@ EXTEND
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
-        e = expr LEVEL "top" ->
+        e = expr LEVEL "top" ; attrs2 = item_attributes ->
           let (i,me,attrs) = h in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
           let h = (i,me,attrs) in
           let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
           let e = MLast.ExLSI loc <:vala< si >> e in
           let e = expr_to_inline e ext0 attrs0 in
-          <:str_item< $exp:e$ >>
+          <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
-      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
           let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
           let e = MLast.ExLSI loc <:vala< si >> e in
           let e = expr_to_inline e ext0 attrs0 in
-          <:str_item< $exp:e$ >>
+          <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
-        x = expr LEVEL "top" ->
+        x = expr LEVEL "top" ; attrs2 = item_attributes ->
           let (a, b, item_attrs) = h in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs0 item_attrs in
           let h = (a, b, attrs) in
           let l = [h::t] in
           let e = expr_to_inline <:expr< let $_flag:o$ $list:l$ in $x$ >> ext0 [] in
-          <:str_item< $exp:e$ >>
+          <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding ->
           let (a, b, item_attrs) = h in
