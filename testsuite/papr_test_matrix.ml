@@ -1138,7 +1138,7 @@ and t2 = bool[@@"foo"];
     END
 ;
     IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
-    {name="named-module-argumet"; implem = True ;
+    {name="named-module-argument"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
      official_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
@@ -1150,7 +1150,7 @@ and t2 = bool[@@"foo"];
 |foo}
     }
     ELSE
-    {name="named-module-argumet"; implem = True ;
+    {name="named-module-argument"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
      official_input = OK {foo|let f (module M : A.B.S) = ()|foo} ;
