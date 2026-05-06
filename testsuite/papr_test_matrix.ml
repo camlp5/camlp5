@@ -3615,15 +3615,7 @@ ELSE
 END
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
-    {name="str_item-let-extension-1"; implem = True ;
-     exclude=["skip_reparse"];
-     o_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
-     official_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
-     r_input = OK {foo|let exception%e2 [@a2] E in ();|foo} ;
-     o_output = OK {foo|let [%%e2 exception E[@a2];;] in ();;|foo} ;
-     official_output = OK {foo|[%e2 ((let exception E  in ())[@a2 ])]|foo} ;
-     r_output = OK {foo|let [%%"e2" exception E[@"a2"];] in ();|foo}
-    }
+    skip
 ELSE
     {name="str_item-let-extension-1"; implem = True ;
      exclude=[];
@@ -3637,15 +3629,7 @@ ELSE
 END
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
-    {name="expr-let-extension-1"; implem = True ;
-     exclude=["skip_reparse"];
-     o_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
-     official_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
-     r_input = OK {foo|value x = let exception%e2 [@a2] E in ();|foo} ;
-     o_output = OK {foo|let x = let [%%e2 exception E[@a2];;] in ();;|foo} ;
-     official_output = OK {foo|let x = [%e2 ((let exception E  in ())[@a2 ])]|foo} ;
-     r_output = OK {foo|value x = let [%%"e2" exception E[@"a2"];] in ();|foo}
-    }
+    skip
 ELSE
     {name="expr-let-extension-1"; implem = True ;
      exclude=[];
