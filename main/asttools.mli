@@ -1,7 +1,15 @@
 (* camlp5r *)
 (* asttools.mli,v *)
 
+#load "pa_macro.cmo";
+
 open MLast;
+
+IFNDEF STRICT THEN
+  DEFINE_TYPE V t = t
+ELSE
+  DEFINE_TYPE V t = Ploc.vala t
+END;
 
 value prefix_eq : string → string → bool;
 type choice α β =
@@ -46,12 +54,12 @@ value merge_left_auxiliary_attrs :
             ~nonterm_name:string ->
             ~left_name:string ->
             ~right_name:string ->
-            list attribute -> Ploc.vala (list attribute) -> Ploc.vala (list attribute) ;
+            list attribute -> V (list attribute) -> V (list attribute) ;
 value merge_right_auxiliary_attrs :
             ~nonterm_name:string ->
             ~left_name:string ->
             ~right_name:string ->
-            Ploc.vala (list attribute) -> list attribute -> Ploc.vala (list attribute) ;
+            V (list attribute) -> list attribute -> V (list attribute) ;
 value expr_to_inline :
   expr → option (loc * string) → list attribute → expr;
 value ctyp_wrap_attrs : ctyp → list attribute → ctyp;

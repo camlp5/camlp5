@@ -246,7 +246,7 @@ let rec ok_let_str_item =
     {pstr_desc = Pstr_exception _} | {pstr_desc = Pstr_module _} |
     {pstr_desc = Pstr_open _} ->
       true
-  | {pstr_desc = Pstr_extension ((_, PStr [si]), _)} -> ok_let_str_item si
+  | {pstr_desc = Pstr_extension (_, _)} -> true
   | _ -> false
 ;;
 let ocaml_pexp_let_str_item loc si body =

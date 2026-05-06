@@ -351,8 +351,8 @@ let module_expr_wrap_attrs e l =
 let merge_left_auxiliary_attrs ~nonterm_name ~left_name ~right_name left_attrs
     right_attrs =
   match left_attrs, right_attrs with
-    l1, Ploc.VaVal l2 -> Ploc.VaVal (l1 @ l2)
-  | [], Ploc.VaAnt _ -> right_attrs
+    l1, l2 -> l1 @ l2
+  | [], _ -> right_attrs
   | _ ->
       failwith
         (Printf.sprintf "%s: cannot specify both %s AND %s antiquotation"
@@ -362,8 +362,8 @@ let merge_left_auxiliary_attrs ~nonterm_name ~left_name ~right_name left_attrs
 let merge_right_auxiliary_attrs ~nonterm_name ~left_name ~right_name
     left_attrs right_attrs =
   match left_attrs, right_attrs with
-    Ploc.VaVal l1, l2 -> Ploc.VaVal (l1 @ l2)
-  | Ploc.VaAnt _, [] -> left_attrs
+    l1, l2 -> l1 @ l2
+  | _, [] -> left_attrs
   | _ ->
       failwith
         (Printf.sprintf "%s: cannot specify both %s antiquotation AND %s"

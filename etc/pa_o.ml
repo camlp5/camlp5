@@ -1013,6 +1013,13 @@ EXTEND
           str_item_to_inline <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
 
       | "let"; (ext0,attrs0) = ext_attributes ;
+          e = item_extension ; attrs1 = item_attributes ;  "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
+          let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = expr_to_inline e ext0 attrs0 in
+          <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
+
+      | "let"; (ext0,attrs0) = ext_attributes ;
         "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs1 = item_attributes ; "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
           let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs1$ >> ext1 in
           let e = MLast.ExLSI loc <:vala< si >> x in
@@ -1238,6 +1245,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | el = V e_phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
       [ "let"; (ext0,attrs0) = ext_attributes ;
+          e = item_extension ; attrs1 = item_attributes ;  "in" ; x = expr LEVEL "top" →
+          let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes ;
         "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
           let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
           let e = MLast.ExLSI loc <:vala< si >> x in

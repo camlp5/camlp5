@@ -1,7 +1,11 @@
 (* camlp5r *)
 (* asttools.mli,v *)
 
+(* #load "pa_macro.cmo" *)
+
 open MLast;;
+
+(* *)
 
 val prefix_eq : string -> string -> bool;;
 type ('a, 'b) choice =
@@ -46,10 +50,10 @@ val type_binder_fsm : string fsm;;
 val expr_wrap_attrs : loc -> expr -> attribute list -> expr;;
 val merge_left_auxiliary_attrs :
   nonterm_name:string -> left_name:string -> right_name:string ->
-    attribute list -> attribute list Ploc.vala -> attribute list Ploc.vala;;
+    attribute list -> attribute list -> attribute list;;
 val merge_right_auxiliary_attrs :
   nonterm_name:string -> left_name:string -> right_name:string ->
-    attribute list Ploc.vala -> attribute list -> attribute list Ploc.vala;;
+    attribute list -> attribute list -> attribute list;;
 val expr_to_inline : expr -> (loc * string) option -> attribute list -> expr;;
 val ctyp_wrap_attrs : ctyp -> attribute list -> ctyp;;
 val ctyp_to_inline : ctyp -> (loc * string) option -> attribute list -> ctyp;;

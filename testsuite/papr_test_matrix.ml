@@ -3413,7 +3413,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()[@@a4]|foo} ;
      official_input = OK {foo|let%e1 [@a1] x = y [@@a3] in () [@@a4]|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let%e1 [@a1] x = y [@@a3] in ()[@@a4];|foo} ;
      o_output = OK {foo|let _ = [%e1 let x = y[@@a1] [@@a3] in ()][@@a4];;|foo};
      official_output = OK {foo|;;[%e1 let x = y[@@a1 ][@@a3 ] in ()][@@a4]|foo} ;
      r_output = OK {foo|[%"e1" let x = y[@@"a1"] [@@"a3"] in ();][@@"a4"];|foo}
@@ -3422,7 +3422,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let x = let%e1 [@a1] x = y [@@a3] in ()|foo} ;
      official_input = OK {foo|let x = let%e1 [@a1] x = y [@@a3] in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] x = y [@@a3] in ();|foo} ;
      o_output = OK {foo|let x = [%e1 let x = y[@@a1] [@@a3] in ()];;|foo} ;
      official_output = OK {foo|let x = [%e1 let x = y[@@a1 ][@@a3 ] in ()]|foo} ;
      r_output = OK {foo|value x = [%"e1" let x = y[@@"a1"] [@@"a3"] in ();];|foo}
@@ -3432,7 +3432,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let open! M in ()|foo} ;
      official_input = OK {foo|let open! M in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let open! M in ();|foo} ;
      o_output = OK {foo|let _ = let open! M in ();;|foo};
      official_output = OK {foo|;;let open! M in ()|foo} ;
      r_output = OK {foo|let open! M in ();|foo}
@@ -3441,27 +3441,27 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let x = let open! M in ()|foo} ;
      official_input = OK {foo|let x = let open! M in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let open! M in ();|foo} ;
      o_output = OK {foo|let x = let open! M in ();;|foo};
      official_output = OK {foo|let x = let open! M in ()|foo} ;
      r_output = OK {foo|value x = let open! M in ();|foo}
     };
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-open-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let open! %e2 [@a2] M in ()|foo} ;
      official_input = OK {foo|let open! %e2 [@a2] M in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|let open! %e2 [@a2] M in ();|foo} ;
+     o_output = OK {foo|let _ = let [%%e2 open! M[@@a2];;] in ();;|foo};
      official_output = OK {foo|;;[%e2 ((let open! M in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|let [%%"e2" open! M[@@"a2"];] in ();|foo}
     }
     ELSE
     {name="str_item-let-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()[@@a4]|foo} ;
      official_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()[@@a4]|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()[@@a4];|foo} ;
      o_output = OK {foo|let _ = [%e1 (let [%%e2 open! M[@@a2] [@@a3];;] in ())[@a1]][@@a4];;|foo};
      official_output = OK {foo|;;[%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])][@@a4]|foo} ;
      r_output = OK {foo|[%"e1" (let [%%"e2" open! M[@@"a2"] [@@"a3"];] in ())[@"a1"];][@@"a4"];|foo}
@@ -3470,20 +3470,20 @@ type nat _ =
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-open-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let x = let open! %e2 [@a2] M in ()|foo} ;
      official_input = OK {foo|let x = let open! %e2 [@a2] M in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|value x = let open! %e2 [@a2] M in ();|foo} ;
+     o_output = OK {foo|let x = let [%%e2 open! M[@@a2];;] in ();;|foo};
      official_output = OK {foo|let x = [%e2 ((let open! M in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value x = let [%%"e2" open! M[@@"a2"];] in ();|foo}
     }
     ELSE
     {name="expr-let-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
      official_input = OK {foo|let x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] open! %e2 [@a2] M[@@a3] in ();|foo} ;
      o_output = OK {foo|let x = [%e1 (let [%%e2 open! M[@@a2] [@@a3];;] in ())[@a1]];;|foo};
      official_output = OK {foo|let x = [%e1 ((let [%%e2 open! M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo|value x = [%"e1" (let [%%"e2" open! M[@@"a2"] [@@"a3"];] in ())[@"a1"];];|foo}
@@ -3494,7 +3494,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let module A = M in ()|foo} ;
      official_input = OK {foo|let module A = M in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let module A = M in ();|foo} ;
      o_output = OK {foo|let _ = let module A = M in ();;|foo};
      official_output = OK {foo|;;let module A = M in ()|foo} ;
      r_output = OK {foo|let module A = M in ();|foo}
@@ -3503,27 +3503,27 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let x = let module A = M in ()|foo} ;
      official_input = OK {foo|let x = let module A = M in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let module A = M in ();|foo} ;
      o_output = OK {foo|let x = let module A = M in ();;|foo} ;
      official_output = OK {foo|let x = let module A = M in ()|foo} ;
      r_output = OK {foo|value x = let module A = M in ();|foo}
     };
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-module-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let module %e2 [@a2] A = M in ()|foo} ;
      official_input = OK {foo|let module %e2 [@a2] A = M in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|let module %e2 [@a2] A = M in ();|foo} ;
+     o_output = OK {foo|let _ = let [%%e2 module A = M[@@a2];;] in ();;|foo};
      official_output = OK {foo|;;[%e2 ((let module A = M in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|let [%%"e2" module A = M[@@"a2"];] in ();|foo}
     }
     ELSE
     {name="str_item-let-module-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in () [@@a4]|foo} ;
      official_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in () [@@a4]|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in () [@@a4];|foo} ;
      o_output = OK {foo|let _ = [%e1 (let [%%e2 module A = M[@@a2] [@@a3];;] in ())[@a1]][@@a4];;|foo};
      official_output = OK {foo|;;[%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])] [@@a4]|foo} ;
      r_output = OK {foo|[%"e1" (let [%%"e2" module A = M[@@"a2"] [@@"a3"];] in ())[@"a1"];][@@"a4"];|foo}
@@ -3532,20 +3532,20 @@ type nat _ =
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-module-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let x = let module %e2 [@a2] A = M in ()|foo} ;
      official_input = OK {foo|let x = let module %e2 [@a2] A = M in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|value x = let module %e2 [@a2] A = M in ();|foo} ;
+     o_output = OK {foo|let x = let [%%e2 module A = M[@@a2];;] in ();;|foo};
      official_output = OK {foo|let x = [%e2 ((let module A = M in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value x = let [%%"e2" module A = M[@@"a2"];] in ();|foo}
     }
     ELSE
     {name="expr-let-module-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
      official_input = OK {foo|let x = let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] module %e2 [@a2] A = M[@@a3] in ();|foo} ;
      o_output = OK {foo|let x = [%e1 (let [%%e2 module A = M[@@a2] [@@a3];;] in ())[@a1]];;|foo};
      official_output = OK {foo|let x = [%e1 ((let [%%e2 module A = M[@@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo|value x = [%"e1" (let [%%"e2" module A = M[@@"a2"] [@@"a3"];] in ())[@"a1"];];|foo}
@@ -3556,7 +3556,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let exception E in ()|foo} ;
      official_input = OK {foo|let exception E in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let exception E in ();|foo} ;
      o_output = OK {foo|let _ = let exception E in ();;|foo};
      official_output = OK {foo|;;let exception E  in ()|foo} ;
      r_output = OK {foo|let exception E in ();|foo}
@@ -3565,27 +3565,27 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|let x = let exception E in ()|foo} ;
      official_input = OK {foo|let x = let exception E in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let exception E in ();|foo} ;
      o_output = OK {foo|let x = let exception E in ();;|foo} ;
      official_output = OK {foo|let x = let exception E  in ()|foo} ;
      r_output = OK {foo|value x = let exception E in ();|foo}
     };
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-exception-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
      official_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|let exception%e2 [@a2] E in ();|foo} ;
+     o_output = OK {foo|let _ = let [%%e2 exception E[@a2];;] in ();;|foo};
      official_output = OK {foo|;;[%e2 ((let exception E  in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|let [%%"e2" exception E[@"a2"];] in ();|foo}
     }
     ELSE
     {name="str_item-let-exception-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in () [@@a4]|foo} ;
      official_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in () [@@a4]|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|let%e1 [@a1] exception%e2 [@a2] E[@@a3] in () [@@a4];|foo} ;
      o_output = OK {foo|let _ = [%e1 (let [%%e2 exception E[@a2][@@a3];;] in ())[@a1]][@@a4];;|foo};
      official_output = OK {foo|;;[%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])] [@@a4]|foo} ;
      r_output = OK {foo|[%"e1" (let [%%"e2" exception E[@"a2"][@@"a3"];] in ())[@"a1"];][@@"a4"];|foo}
@@ -3594,23 +3594,67 @@ type nat _ =
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="expr-let-exception-1"; implem = True ;
-     exclude=[];
+     exclude=["skip_reparse"];
      o_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
      official_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo} ;
+     r_input = OK {foo|value x = let exception%e2 [@a2] E in ();|foo} ;
+     o_output = OK {foo|let x = let [%%e2 exception E[@a2];;] in ();;|foo} ;
      official_output = OK {foo|let x = [%e2 ((let exception E  in ())[@a2 ])]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value x = let [%%"e2" exception E[@"a2"];] in ();|foo}
     }
 ELSE
     {name="expr-let-exception-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
      official_input = OK {foo|let x = let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ()|foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] exception%e2 [@a2] E[@@a3] in ();|foo} ;
      o_output = OK {foo|let x = [%e1 (let [%%e2 exception E[@a2][@@a3];;] in ())[@a1]];;|foo} ;
      official_output = OK {foo|let x = [%e1 ((let [%%e2 exception E [@a2 ][@@a3 ]] in ())[@a1 ])]|foo} ;
      r_output = OK {foo|value x = [%"e1" (let [%%"e2" exception E[@"a2"][@@"a3"];] in ())[@"a1"];];|foo}
+    }
+END
+;
+    IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+    {name="str_item-let-extension-1"; implem = True ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
+     official_input = OK {foo|let exception%e2 [@a2] E in ()|foo} ;
+     r_input = OK {foo|let exception%e2 [@a2] E in ();|foo} ;
+     o_output = OK {foo|let [%%e2 exception E[@a2];;] in ();;|foo} ;
+     official_output = OK {foo|[%e2 ((let exception E  in ())[@a2 ])]|foo} ;
+     r_output = OK {foo|let [%%"e2" exception E[@"a2"];] in ();|foo}
+    }
+ELSE
+    {name="str_item-let-extension-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
+     official_input = OK {foo|let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
+     r_input = OK {foo|let%e1 [@a1] [%%e2] [@@a2] in () [@@a3];|foo} ;
+     o_output = OK {foo|let _ = [%e1 (let [%%e2][@@a2] in ())[@a1]][@@a3];;|foo};
+     official_output = OK {foo|;;[%e1 ((let [%%e2 ][@@a2 ] in ())[@a1 ])][@@a3 ]|foo};
+     r_output = OK {foo|[%"e1" (let [%%"e2"][@@"a2"] in ())[@"a1"];][@@"a3"];|foo}
+    }
+END
+;
+    IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+    {name="expr-let-extension-1"; implem = True ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
+     official_input = OK {foo|let x = let exception%e2 [@a2] E in ()|foo} ;
+     r_input = OK {foo|value x = let exception%e2 [@a2] E in ();|foo} ;
+     o_output = OK {foo|let x = let [%%e2 exception E[@a2];;] in ();;|foo} ;
+     official_output = OK {foo|let x = [%e2 ((let exception E  in ())[@a2 ])]|foo} ;
+     r_output = OK {foo|value x = let [%%"e2" exception E[@"a2"];] in ();|foo}
+    }
+ELSE
+    {name="expr-let-extension-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
+     official_input = OK {foo|let x = let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
+     r_input = OK {foo|value x = let%e1 [@a1] [%%e2] [@@a2] in () [@@a3];|foo} ;
+     o_output = OK {foo|let x = [%e1 (let [%%e2][@@a2] in ())[@a1]][@@a3];;|foo};
+     official_output = OK {foo|let x = [%e1 ((let [%%e2 ][@@a2 ] in ())[@a1 ])][@@a3 ]|foo};
+     r_output = OK {foo|value x = [%"e1" (let [%%"e2"][@@"a2"] in ())[@"a1"];][@@"a3"];|foo}
     }
 END
 ;

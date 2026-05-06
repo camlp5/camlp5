@@ -549,35 +549,6 @@ value test_label_eq =
        | _ -> raise Stream.Failure ])
 ;
 
-value patt_wrap_attrs loc e l =
-let rec wrec e = fun [
-  [] -> e
-| [h :: t] -> wrec <:patt< $e$ [@ $_attribute:h$ ] >> t
-] in wrec e l
-;
-
-value patt_to_inline loc p ext attrs =
-  let p = patt_wrap_attrs loc p attrs in
-  match ext with [ None -> p
-  | Some attrid ->
-   <:patt< [% $attrid:attrid$ ? $patt:p$ ] >>
-  ]
-;
-
-value class_expr_wrap_attrs loc e l =
-let rec wrec e = fun [
-  [] -> e
-| [h :: t] -> wrec <:class_expr< $e$ [@ $_attribute:h$ ] >> t
-] in wrec e l
-;
-
-value str_item_to_inline loc si ext =
-  match ext with [ None -> si
-  | Some attrid ->
-   <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
-  ]
-;
-
 value is_lparen_f strm =
   match Stream.npeek 1 strm with [
     [("","(")] -> True
@@ -792,7 +763,7 @@ EXTEND
       | "type" ; check_type_extension ; te = type_extension →
           <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
-          str_item_to_inline loc <:str_item< value $_flag:r$ $_list:l$ >> ext
+          str_item_to_inline <:str_item< value $_flag:r$ $_list:l$ >> ext
 
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:str_item< # $_lid:n$ $_opt:dp$ >>
@@ -948,32 +919,56 @@ EXTEND
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   expr:
     [ "top" RIGHTA
-      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
-        "of" ; tyl = V (LIST1 ctyp_below_alg_attribute) ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
-        let si = <:str_item< exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ >> in
-        MLast.ExLSI loc <:vala< si >> x
+      [ "let"; (ext0,attrs0) = ext_attributes ;
+          e = item_extension ; attrs1 = item_attributes ;  "in" ; x = SELF →
+          let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          expr_to_inline e ext0 attrs0
 
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
-        "in" ; x = SELF ->
-        let si = <:str_item< exception $_uid:id$ $_algattrs:alg_attrs$ >> in
-        MLast.ExLSI loc <:vala< si >> x
+      | "let"; (ext0,attrs0) = ext_attributes ;
+        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
+          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> x in
+          expr_to_inline e ext0 attrs0
 
-      | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
-        x = SELF →
-          expr_to_inline <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext []
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and"); "in";
+        e = SELF ->
+         let l = match (l, attrs1) with [
+               (<:vala< [h::t] >>, [_::_]) ->
+               let (i,me,attrs) = h in
+               let attrs = merge_left_auxiliary_attrs ~{nonterm_name="expr-let-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
+               let h = (i,me,attrs) in
+               <:vala< [h::t] >>
+              | (_, []) -> l
+              | _ -> failwith "expr-let-module: syntax error"
+             ] in
+          let si = str_item_to_inline <:str_item< module $_flag:r$ $_list:l$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
+          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+          let e = MLast.ExLSI loc <:vala< si >> e in
+          expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+        x = expr LEVEL "top" ->
+          let l = match (l, attrs0) with [
+                (<:vala< [h::t] >>, [_ :: _]) ->
+                let (a, b, item_attrs) = h in
+                let attrs = merge_left_auxiliary_attrs ~{nonterm_name="expr-let-rec"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs0 item_attrs in
+                let h = (a, b, attrs) in
+                <:vala< [h::t] >>
+              | (_, []) -> l
+              | _ -> failwith "expr-let-rec: syntax error"
+              ] in
+          expr_to_inline <:expr< let $_flag:o$ $_list:l$ in $x$ >> ext0 []
 
       | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
-      | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
-        let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
-        let e = MLast.ExLSI loc <:vala< si >> e in
-          expr_to_inline e ext attrs
-      | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
-        let si = <:str_item< open $_!:ovf$ $m$ >> in
-        let e = MLast.ExLSI loc <:vala< si >> e in
-          expr_to_inline e ext attrs
       | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →
           expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; p = ipatt; e = fun_def →
@@ -1256,7 +1251,7 @@ EXTEND
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
     | NONA [ "exception"; (ext,attrs) = ext_attributes; p = patt →
-        patt_to_inline loc <:patt< exception $p$ >> ext attrs
+        patt_to_inline <:patt< exception $p$ >> ext attrs
       | "effect" ; p1 = SELF ; "," ; p2 = patt LEVEL "simple" ->
          <:patt< effect $p1$ , $p2$ >>
       ]
@@ -1265,7 +1260,7 @@ EXTEND
     | LEFTA
       [ p1 = SELF; p2 = SELF → <:patt< $p1$ $p2$ >>
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF → 
-          patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
+          patt_to_inline <:patt< lazy $p$ >> ext attrs ]
     | "simple"
       [ p = patt_ident -> p
       | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
@@ -1543,10 +1538,12 @@ EXTEND
       ] ]
   ;
   extension_constructor:
-  [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
+  [ [ attrs = alg_attributes_no_anti; ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
         <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident; (ls, tl,rto,attrs) = rest_constructor_declaration →
-        <:extension_constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
+    | attrs = alg_attributes_no_anti; ci = cons_ident; (ls, tl,rto,alg_attrs) = rest_constructor_declaration →
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
+        <:extension_constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
     ] ]
   ;
 
@@ -1604,7 +1601,7 @@ EXTEND
   class_expr:
     [ "top"
       [ "fun"; alg_attrs = alg_attributes_no_anti; p = ipatt; ce = class_fun_def →
-          class_expr_wrap_attrs loc <:class_expr< fun $p$ → $ce$ >> alg_attrs
+          class_expr_wrap_attrs <:class_expr< fun $p$ → $ce$ >> alg_attrs
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF →
           <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >>
