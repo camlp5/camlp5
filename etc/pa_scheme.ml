@@ -794,13 +794,11 @@
    ((Sexpr loc [(Slid _ "letmodule") se1 se2 se3])
     (let*
      ((s (anti_uidopt_or_error se1)) (me (module_expr_se se2)) (e (expr_se se3)))
-     (MLast.ExLSI loc (Ploc.VaVal <:str_item< module $_uidopt:s$ = $me$ >>) e)
-
-))
+     <:expr< let module $_uidopt:s$ = $me$ in $e$ >>))
    ((Sexpr loc [(Slid _ "letopen") se1 se3])
     (let*
      ((s (anti_uid_or_error se1)) (e (expr_se se3)))
-     (MLast.ExLSI loc (Ploc.VaVal <:str_item< open $_uid:s$ >>) e)))
+     <:expr< let open $_uid:s$ in $e$ >>))
    ((Sexpr loc [(Slid _ "match") se . sel])
     (let*
      ((e (expr_se se))

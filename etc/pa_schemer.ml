@@ -1093,11 +1093,11 @@ and expr_se =
       let s = anti_uidopt_or_error se1 in
       let me = module_expr_se se2 in
       let e = expr_se se3 in
-      MLast.ExLSI loc (Ploc.VaVal <:str_item< module $_uidopt:s$ = $me$ >>) e
+      <:expr< let module $_uidopt:s$ = $me$ in $e$ >>
   | Sexpr loc [Slid _ "letopen"; se1; se3] →
       let s = anti_uid_or_error se1 in
       let e = expr_se se3 in
-      MLast.ExLSI loc (Ploc.VaVal <:str_item< open $_uid:s$ >>) e
+      <:expr< let open $_uid:s$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] →
       let e = expr_se se in
       let pel =

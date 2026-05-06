@@ -466,6 +466,16 @@ value tests = "test pa_r+quotations-to-pr_r" >::: (List.map mktest
   (Ploc.VaVal (MLast.StOpn loc (Ploc.VaVal False) (MLast.MeUid loc s) (Ploc.VaVal []))) e;
 |foo}
       }
+      ;{
+        name = "let-str-item-1";
+        code = {foo| <:expr< let $stri:si$ in $e$ >> ; |foo};
+        expect = {foo|MLast.ExLSI loc (Ploc.VaVal si) e;|foo}
+      }
+      ;{
+        name = "let-str-item-2";
+        code = {foo| <:expr< let $_stri:si$ in $e$ >> ; |foo};
+        expect = {foo|MLast.ExLSI loc si e;|foo}
+      }
     ])
  ;
 

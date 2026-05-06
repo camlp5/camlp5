@@ -481,7 +481,7 @@ value check_lident_colon =
     check_lident_colon_f
 ;
 
-value pa_fails : Stream.t 'a -> string = parser [ ] ;
+value pa_fails : Stream.t 'a -> Qast.t = parser [ ] ;
 
 value fails =
   Grammar.Entry.of_parser gram "fails"
@@ -766,9 +766,10 @@ EXTEND
       | check_let_not_exception ; "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr ; attrs = item_attributes; "in"; e = SELF →
           let si = Qast.Node "StOpn" [Qast.Loc; ovf; m; attrs] in
           Qast.Node "ExLSI" [Qast.Loc; Qast.VaVal si; e]
-(*
-      | check_let_not_exception ; "let" ; si = SV fails "stri" ; "in" ; x = SELF ->
- *)       
+
+      | check_let_not_exception ; "let" ; si = SV fails "stri" ; "in" ; e = SELF ->
+          Qast.Node "ExLSI" [Qast.Loc; si; e]
+
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
       | "fun"; p = ipatt; e = fun_def →
           Qast.Node "ExFun"

@@ -1353,9 +1353,6 @@ EXTEND_PRINTER
         let loc = MLast.loc_of_expr e0 in
           pr_letlike "let" pc loc rf pel e
 
-      | MLast.ExLSI loc (Ploc.VaVal <:str_item< exception $uid:e$ of $list:tl$ $algattrs:attrs$ >>) x ->
-          pprintf pc "@[<a>let %p@ in@] %p" exception_decl (loc, e, tl, [], attrs, []) curr x
-
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
            when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let loc = MLast.loc_of_expr e0 in
@@ -1367,7 +1364,7 @@ EXTEND_PRINTER
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body
 
-      | MLast.ExLSI _ (Ploc.VaVal si) e ->
+      | <:expr< let $stri:si$ in $e$ >> ->
           if pc.dang = ";" then
             pprintf pc "(@[<a>let %p@ in@]@ %p)" str_item si curr e
           else

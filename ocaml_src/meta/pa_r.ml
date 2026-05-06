@@ -418,28 +418,6 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
-let check_let_exception_f strm =
-  match Stream.npeek 2 strm with
-    ["", "let"; "", "exception"] -> ()
-  | _ -> raise Stream.Failure
-;;
-
-let check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception" check_let_exception_f
-;;
-
-let check_let_not_exception_f strm =
-  match Stream.npeek 2 strm with
-    ["", "let"; "", "exception"] -> raise Stream.Failure
-  | ["", "let"; _] -> ()
-  | _ -> raise Stream.Failure
-;;
-
-let check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;;
-
 let stream_peek_nth n strm =
   let rec loop n =
     function
@@ -704,6 +682,14 @@ let (pa_fails : 'a Stream.t -> string) =
 ;;
 
 let fails = Grammar.Entry.of_parser gram "fails" pa_fails;;
+
+let (pa_str_item_fails : 'a Stream.t -> MLast.str_item) =
+  fun (strm__ : _ Stream.t) -> raise Stream.Failure
+;;
+
+let str_item_fails =
+  Grammar.Entry.of_parser gram "str_item_fails" pa_str_item_fails
+;;
 
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -2712,6 +2698,25 @@ Grammar.safe_extend
                  str_item_to_inline (MLast.StExc (loc, ec, attrs)) ext1
                in
                let e = MLast.ExLSI (loc, si, x) in
+               expr_to_inline e ext0 attrs0 :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "let")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
+                   (Grammar.s_nterm
+                      (str_item_fails : 'str_item_fails Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           "194fe98d",
+           (fun (e : 'expr) _ (si : 'str_item_fails)
+                (ext0, attrs0 : 'ext_attributes) _ (loc : Ploc.t) ->
+              (let e = MLast.ExLSI (loc, si, e) in
                expr_to_inline e ext0 attrs0 :
                'expr)));
         Grammar.production

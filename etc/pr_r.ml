@@ -437,7 +437,7 @@ value rec seq_of_expr e =
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
-  | MLast.ExLSI loc (Ploc.VaVal si) e ->
+  | <:expr< let $stri:si$ in $e$ >> ->
       SE_let_str_item si (seq_of_expr e)
   | e ->
       SE_other e None ]
@@ -449,7 +449,7 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | MLast.ExLSI loc (Ploc.VaVal si) e ->
+  | <:expr< let $stri:si$ in $e$ >> ->
       match el with
       [ [] -> SE_let_str_item si (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
@@ -1524,8 +1524,7 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | MLast.ExLSI loc (Ploc.VaVal <:str_item< exception $uid:e$ of $list:tl$ $algattrs:attrs$ >>) x ->
-          pprintf pc "@[<a>let %p@ in@] %p" exception_decl (loc, e, tl, [], attrs, []) curr x
+
       | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
@@ -1547,7 +1546,7 @@ EXTEND_PRINTER
         pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)
           curr body
 
-      | (MLast.ExLSI loc (Ploc.VaVal si) e) as ge ->
+      | <:expr< let $stri:si$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None -> pprintf pc "%p@ %p" let_str_item_up_to_in si curr e ]
@@ -1786,7 +1785,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        MLast.ExLSI _ _ _ |
+        <:expr< let $_stri:_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< $_$ [@ $_attribute:_$] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->

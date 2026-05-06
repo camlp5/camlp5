@@ -516,39 +516,6 @@ value build_letop_binder loc letop b l e = do {
   }
 ;
 
-
-value is_let_exception_f strm =
-  Stream.npeek 1 strm = [("","let")] &&
-  match Stream.npeek 2 strm with
-    [ [("", "let"); ("", "exception")] -> True
-    | _ -> False ]
-;
-
-value check_let_exception_f strm =
-  if is_let_exception_f strm then () else raise Stream.Failure
-;
-
-value check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception"
-    check_let_exception_f
-;
-value is_let_not_exception_f strm =
-  Stream.npeek 1 strm = [("","let")] &&
-  match Stream.npeek 2 strm with
-    [ [("", "let"); ("", "exception")] -> False
-    | _ -> True ]
-;
-
-
-value check_let_not_exception_f strm =
-  if is_let_not_exception_f strm then () else raise Stream.Failure
-;
-
-value check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;
-
 (* returns True if the stream is a type-decl, and not an extension.
    returns False if the stream is an extension and not a type-decl.
    Since a type-decl might not have an "=" (if it's a list of decls)
@@ -1015,14 +982,14 @@ EXTEND
       | "let"; (ext0,attrs0) = ext_attributes ;
           e = item_extension ; attrs1 = item_attributes ;  "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
           let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes ;
         "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs1 = item_attributes ; "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
           let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs1$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
@@ -1032,14 +999,14 @@ EXTEND
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
           let h = (i,me,attrs) in
           let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
           let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
@@ -1247,13 +1214,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       [ "let"; (ext0,attrs0) = ext_attributes ;
           e = item_extension ; attrs1 = item_attributes ;  "in" ; x = expr LEVEL "top" →
           let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes ;
         "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
           let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
@@ -1262,13 +1229,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
           let h = (i,me,attrs) in
           let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
           let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";

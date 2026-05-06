@@ -308,29 +308,6 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
-value check_let_exception_f = (fun strm ->
-    match Stream.npeek 2 strm with
-      [ [("", "let"); ("", "exception")] -> ()
-      | _ -> raise Stream.Failure ])
-;
-
-value check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception"
-    check_let_exception_f
-;
-
-value check_let_not_exception_f = (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
-       | [("", "let"); _] -> ()
-       | _ -> raise Stream.Failure ])
-;
-
-value check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;
-
 value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
     fun
@@ -602,6 +579,13 @@ value pa_fails : Stream.t 'a -> string = parser [ ] ;
 value fails =
   Grammar.Entry.of_parser gram "fails"
     pa_fails
+;
+
+value pa_str_item_fails : Stream.t 'a -> MLast.str_item = parser [ ] ;
+
+value str_item_fails =
+  Grammar.Entry.of_parser gram "str_item_fails"
+    pa_str_item_fails
 ;
 
 
@@ -922,13 +906,18 @@ EXTEND
       [ "let"; (ext0,attrs0) = ext_attributes ;
           e = item_extension ; attrs1 = item_attributes ;  "in" ; x = SELF →
           let si = <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs1$ >> in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
+
+      | "let"; (ext0,attrs0) = ext_attributes ;
+        si = V str_item_fails "stri" ; "in" ; e = SELF ->
+         let e = <:expr< let $_stri:si$ in $e$ >> in
+         expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes ;
         "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
           let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> x in
+          let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and"); "in";
@@ -943,13 +932,13 @@ EXTEND
               | _ -> failwith "expr-let-module: syntax error"
              ] in
           let si = str_item_to_inline <:str_item< module $_flag:r$ $_list:l$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
           let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
-          let e = MLast.ExLSI loc <:vala< si >> e in
+          let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
@@ -1176,11 +1165,11 @@ EXTEND
       | "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
           let si = <:str_item< module $_uidopt:m$ = $mb$ >> in
-          let e = MLast.ExLSI loc <:vala< si >> (mksequence loc el) in
+          let e = <:expr< let $stri:si$ in $mksequence loc el$ >> in
           [expr_to_inline e ext attrs]
       | "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; el = SELF →
         let si = <:str_item< open $_!:ovf$ $m$ >> in
-        let e =  MLast.ExLSI loc <:vala< si >> (mksequence loc el) in
+        let e = <:expr< let $stri:si$ in $mksequence loc el$ >> in
           [expr_to_inline e ext attrs]
       | e = expr; ";"; el = SELF → [e :: el]
       | e = expr; ";" → [e]

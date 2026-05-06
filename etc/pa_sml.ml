@@ -113,7 +113,7 @@ value apply_bind loc e bl =
     | [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
         loop_letrec e [(p1, e1, <:vala< [] >>)] list
     | [<:str_item< module $uid:s_argle$ = $me$ >> :: list] ->
-        let e = MLast.ExLSI loc (Ploc.VaVal <:str_item< module $uid:s_argle$ = $me$ >>) e in
+        let e = <:expr< let module $uid:s_argle$ = $me$ in $e$ >> in
         loop e list
     | [si :: list] ->
         raise Exit ]
@@ -294,12 +294,11 @@ value record_expr loc x1 =
            <:class_str_item< method $lid:id$ = $lid:id$ >>)
         x1
     in
-    MLast.ExLSI loc (Ploc.VaVal <:str_item<
-      module M =
+    <:expr<
+      let module M =
         struct
           class a = object $list:list1 @ list2$ end;
-        end >>)
-      <:expr< new M.a >>
+        end in new M.a >>
 ;
 
 value record_match_assoc loc lpl e =
