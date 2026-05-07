@@ -751,6 +751,16 @@ EXTEND
   | "module"; si = str_item_module -> si
   | "module"; "type"; si = str_item_module_type -> si
   | "open"; si = str_item_open -> si
+
+      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
+          vala_it (fun tdl ->
+            if List.exists (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
+              failwith "type-declaration cannot mix decl and subst"
+            else ()) tdl ;
+            <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
+          }
+      | "type" ; check_type_extension ; te = type_extension →
+          <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
   ] ]
   ;
   str_item:
@@ -770,15 +780,6 @@ EXTEND
 
       | si = shared_str_item -> si
 
-      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
-          vala_it (fun tdl ->
-            if List.exists (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
-              failwith "type-declaration cannot mix decl and subst"
-            else ()) tdl ;
-            <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
-          }
-      | "type" ; check_type_extension ; te = type_extension →
-          <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           str_item_to_inline <:str_item< value $_flag:r$ $_list:l$ >> ext
 

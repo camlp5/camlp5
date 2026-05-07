@@ -3605,6 +3605,20 @@ type nat _ =
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     skip
     ELSE
+    {name="str_item-let-type-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let type t = M in ()|foo} ;
+     official_input = OK {foo|let type t = M in ()|foo} ;
+     r_input = OK {foo|let type t = [ M ] in ();|foo} ;
+     o_output = OK {foo|let _ = let type t = M in ();;|foo};
+     official_output = OK {foo|;;let type t = | M in ()|foo} ;
+     r_output = OK {foo|let type t = [ M ] in ();|foo}
+    }
+    END
+;
+    IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+    skip
+    ELSE
     {name="expr-let-module_type-0"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let module type A = M in ()|foo} ;

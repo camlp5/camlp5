@@ -1459,6 +1459,46 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_extension :
+                    'check_type_extension Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (type_extension : 'type_extension Grammar.Entry.e)),
+           "194fe98d",
+           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
+              (MLast.StTypExten
+                 (loc,
+                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
+                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
+                   MLast.teAttributes = te.MLast.teAttributes}) :
+               'shared_str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "type")))
+                   (Grammar.s_nterm
+                      (check_type_decl : 'check_type_decl Grammar.Entry.e)))
+                (Grammar.s_flag (Grammar.s_token ("", "nonrec"))))
+             (Grammar.s_list1sep
+                (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
+                (Grammar.s_token ("", "and")) false),
+           "194fe98d",
+           (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
+              (vala_it
+                 (fun tdl ->
+                    if List.exists
+                         (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl
+                    then
+                      failwith "type-declaration cannot mix decl and subst")
+                 tdl;
+               MLast.StTyp (loc, nrfl, tdl) :
+               'shared_str_item)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
              (Grammar.s_nterm
                 (str_item_open : 'str_item_open Grammar.Entry.e)),
@@ -1564,46 +1604,6 @@ Grammar.safe_extend
            (fun (l : 'let_binding list) (r : bool) (ext : 'ext_opt) _
                 (loc : Ploc.t) ->
               (str_item_to_inline (MLast.StVal (loc, r, l)) ext :
-               'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
-                (Grammar.s_nterm
-                   (check_type_extension :
-                    'check_type_extension Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (type_extension : 'type_extension Grammar.Entry.e)),
-           "194fe98d",
-           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.StTypExten
-                 (loc,
-                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
-                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
-                   MLast.teAttributes = te.MLast.teAttributes}) :
-               'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "type")))
-                   (Grammar.s_nterm
-                      (check_type_decl : 'check_type_decl Grammar.Entry.e)))
-                (Grammar.s_flag (Grammar.s_token ("", "nonrec"))))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
-                (Grammar.s_token ("", "and")) false),
-           "194fe98d",
-           (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
-              (vala_it
-                 (fun tdl ->
-                    if List.exists
-                         (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl
-                    then
-                      failwith "type-declaration cannot mix decl and subst")
-                 tdl;
-               MLast.StTyp (loc, nrfl, tdl) :
                'str_item)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop

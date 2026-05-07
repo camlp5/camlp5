@@ -965,6 +965,21 @@ EXTEND
   | "module"; si = str_item_module -> si
   | "module"; "type"; si = str_item_module_type -> si
   | "open"; si = str_item_open -> si
+      | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = FLAG "nonrec";
+        htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
+          let htd = {(htd) with MLast.tdAttributes = attrs } in
+          let tdl = [htd :: ttd] in do {
+  if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
+            else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
+              if nr then failwith "type-subst declaration must not specify <<nonrec>>" else ()
+            else failwith "type-declaration cannot mix decl and subst" ;
+            str_item_to_inline <:str_item< type $flag:nr$ $list:tdl$ >> ext
+          }
+      | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
+          let te = { (te) with MLast.teAttributes = attrs } in
+          str_item_to_inline <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
   ] ]
   ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
@@ -984,22 +999,6 @@ EXTEND
           str_item_to_inline <:str_item< include $me$ $_itemattrs:attrs$ >> ext
 
       | si = shared_str_item → si
-
-      | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = FLAG "nonrec";
-        htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
-          let htd = {(htd) with MLast.tdAttributes = attrs } in
-          let tdl = [htd :: ttd] in do {
-  if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
-            else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
-              if nr then failwith "type-subst declaration must not specify <<nonrec>>" else ()
-            else failwith "type-declaration cannot mix decl and subst" ;
-            str_item_to_inline <:str_item< type $flag:nr$ $list:tdl$ >> ext
-          }
-      | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
-          let te = { (te) with MLast.teAttributes = attrs } in
-          str_item_to_inline <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
 
       | "let"; (ext0,attrs0) = ext_attributes ;
           e = item_extension ; attrs1 = item_attributes ;  "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →

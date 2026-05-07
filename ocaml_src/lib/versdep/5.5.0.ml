@@ -244,7 +244,8 @@ let ocaml_ppat_exception p = Ppat_exception p;;
 let rec ok_let_str_item =
   function
     {pstr_desc = Pstr_exception _} | {pstr_desc = Pstr_module _} |
-    {pstr_desc = Pstr_modtype _} | {pstr_desc = Pstr_open _} ->
+    {pstr_desc = Pstr_modtype _} | {pstr_desc = Pstr_type (_, _)} |
+    {pstr_desc = Pstr_typext _} | {pstr_desc = Pstr_open _} ->
       true
   | {pstr_desc = Pstr_extension (_, _)} -> true
   | _ -> false
