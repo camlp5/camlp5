@@ -1,3 +1,10 @@
+Camlp5 Version 8.05.00:
+-----------------------
+
+* [07 May 2026] compatibility with OCaml 5.5.0
+
+* Only syntax changes, and I hope I got 'em all
+
 Camlp5 Version 8.04.00:
 -----------------------
 

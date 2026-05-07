@@ -1,4 +1,4 @@
-version: "8.04.00"
+version: "8.05.00"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """
