@@ -776,6 +776,9 @@ and ctyp =
       | None -> error loc "no variant type or inherit in this ocaml version"
       end
   | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
+  | TyExt (loc, _) ->
+      error loc
+        "external (parsed as 'external <string>') type not allowed here"
   | TyExten (loc, ebody) ->
       mktyp loc (ocaml_ptyp_extension (extension (uv ebody)))
   | TyOpen (loc, li, t) ->

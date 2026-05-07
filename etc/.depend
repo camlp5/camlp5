@@ -45,11 +45,11 @@ pa_mktest.cmo: ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi \
 pa_mktest.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx
 pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/asttools.cmi ../main/mLast.cmi \
     ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/quotedext.cmo \
     ../main/reloc.cmi
 pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/quotedext.cmx \
     ../main/reloc.cmx
 pa_oop.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \

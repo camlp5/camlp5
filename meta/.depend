@@ -31,10 +31,10 @@ pa_macro_gram.cmo: ../lib/grammar.cmi ../lib/ploc.cmi pa_extend.cmo \
 pa_macro_gram.cmx: ../lib/grammar.cmx ../lib/ploc.cmx pa_extend.cmx \
     pa_macro.cmx
 pa_r.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/asttools.cmi ../main/mLast.cmi \
     ../main/mlsyntax.cmi ../main/pcaml.cmi
 pa_r.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx
 pa_rp.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/asttools.cmi ../main/exparser.cmi ../main/pcaml.cmi
