@@ -765,6 +765,10 @@ Grammar.safe_extend
      grammar_entry_create "str_item_module"
    and str_item_open : 'str_item_open Grammar.Entry.e =
      grammar_entry_create "str_item_open"
+   and str_item_module_type : 'str_item_module_type Grammar.Entry.e =
+     grammar_entry_create "str_item_module_type"
+   and shared_str_item : 'shared_str_item Grammar.Entry.e =
+     grammar_entry_create "shared_str_item"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -1421,6 +1425,75 @@ Grammar.safe_extend
                in
                str_item_to_inline (MLast.StOpn (loc, ovf, me, attrs)) ext :
                'str_item_open)))]];
+    Grammar.extension
+      (str_item_module_type : 'str_item_module_type Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_nterm
+                            (ext_attributes :
+                             'ext_attributes Grammar.Entry.e)))
+                      (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           "194fe98d",
+           (fun (attrs : 'item_attributes) (mt : 'module_type) _ (i : 'ident)
+                (ext, alg_attrs : 'ext_attributes) (loc : Ploc.t) ->
+              (let attrs =
+                 merge_left_auxiliary_attrs
+                   ~nonterm_name:"str_item-module-type"
+                   ~left_name:"algebraic attributes"
+                   ~right_name:"item attributes" alg_attrs attrs
+               in
+               str_item_to_inline (MLast.StMty (loc, i, mt, attrs)) ext :
+               'str_item_module_type)))]];
+    Grammar.extension (shared_str_item : 'shared_str_item Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
+             (Grammar.s_nterm
+                (str_item_open : 'str_item_open Grammar.Entry.e)),
+           "194fe98d",
+           (fun (si : 'str_item_open) _ (loc : Ploc.t) ->
+              (si : 'shared_str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "module")))
+                (Grammar.s_token ("", "type")))
+             (Grammar.s_nterm
+                (str_item_module_type :
+                 'str_item_module_type Grammar.Entry.e)),
+           "194fe98d",
+           (fun (si : 'str_item_module_type) _ _ (loc : Ploc.t) ->
+              (si : 'shared_str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
+             (Grammar.s_nterm
+                (str_item_module : 'str_item_module Grammar.Entry.e)),
+           "194fe98d",
+           (fun (si : 'str_item_module) _ (loc : Ploc.t) ->
+              (si : 'shared_str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_token ("", "exception")))
+             (Grammar.s_nterm
+                (str_item_exception : 'str_item_exception Grammar.Entry.e)),
+           "194fe98d",
+           (fun (si : 'str_item_exception) _ (loc : Ploc.t) ->
+              (si : 'shared_str_item)))]];
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
@@ -1533,39 +1606,11 @@ Grammar.safe_extend
                MLast.StTyp (loc, nrfl, tdl) :
                'str_item)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
+          (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
-                (str_item_open : 'str_item_open Grammar.Entry.e)),
+                (shared_str_item : 'shared_str_item Grammar.Entry.e)),
            "194fe98d",
-           (fun (si : 'str_item_open) _ (loc : Ploc.t) -> (si : 'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "module")))
-                         (Grammar.s_token ("", "type")))
-                      (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
-                   (Grammar.s_token ("", "=")))
-                (Grammar.s_nterm
-                   (module_type : 'module_type Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (item_attributes : 'item_attributes Grammar.Entry.e)),
-           "194fe98d",
-           (fun (attrs : 'item_attributes) (mt : 'module_type) _ (i : 'ident)
-                _ _ (loc : Ploc.t) ->
-              (MLast.StMty (loc, i, mt, attrs) : 'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_nterm
-                (str_item_module : 'str_item_module Grammar.Entry.e)),
-           "194fe98d",
-           (fun (si : 'str_item_module) _ (loc : Ploc.t) ->
-              (si : 'str_item)));
+           (fun (si : 'shared_str_item) (loc : Ploc.t) -> (si : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1632,15 +1677,6 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp)
                 (ls : 'type_binder_opt) _ (i : string) _ (loc : Ploc.t) ->
               (MLast.StExt (loc, i, ls, t, pd, attrs) : 'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_token ("", "exception")))
-             (Grammar.s_nterm
-                (str_item_exception : 'str_item_exception Grammar.Entry.e)),
-           "194fe98d",
-           (fun (si : 'str_item_exception) _ (loc : Ploc.t) ->
-              (si : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2648,69 +2684,18 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "let")))
-                         (Grammar.s_nterm
-                            (ext_attributes :
-                             'ext_attributes Grammar.Entry.e)))
-                      (Grammar.s_token ("", "open")))
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "let")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    (Grammar.s_nterm
-                      (str_item_open : 'str_item_open Grammar.Entry.e)))
-                (Grammar.s_token ("", "in")))
-             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "top"),
-           "194fe98d",
-           (fun (e : 'expr) _ (si : 'str_item_open) _
-                (ext0, attrs0 : 'ext_attributes) _ (loc : Ploc.t) ->
-              (let e = MLast.ExLSI (loc, si, e) in
-               expr_to_inline e ext0 attrs0 :
-               'expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "let")))
-                         (Grammar.s_nterm
-                            (ext_attributes :
-                             'ext_attributes Grammar.Entry.e)))
-                      (Grammar.s_token ("", "module")))
-                   (Grammar.s_nterm
-                      (str_item_module : 'str_item_module Grammar.Entry.e)))
+                      (shared_str_item : 'shared_str_item Grammar.Entry.e)))
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e : 'expr) _ (si : 'str_item_module) _
+           (fun (x : 'expr) _ (si : 'shared_str_item)
                 (ext0, attrs0 : 'ext_attributes) _ (loc : Ploc.t) ->
-              (let e = MLast.ExLSI (loc, si, e) in
-               expr_to_inline e ext0 attrs0 :
-               'expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_token ("", "let")))
-                            (Grammar.s_nterm
-                               (ext_attributes :
-                                'ext_attributes Grammar.Entry.e)))
-                         (Grammar.s_token ("", "exception")))
-                      (Grammar.s_nterm (ext_opt : 'ext_opt Grammar.Entry.e)))
-                   (Grammar.s_nterm
-                      (str_item_exception :
-                       'str_item_exception Grammar.Entry.e)))
-                (Grammar.s_token ("", "in")))
-             Grammar.s_self,
-           "194fe98d",
-           (fun (x : 'expr) _ (si : 'str_item_exception) (ext1 : 'ext_opt) _
-                (ext0, attrs0 : 'ext_attributes) _ (loc : Ploc.t) ->
-              (let si = str_item_to_inline si ext1 in
-               let e = MLast.ExLSI (loc, si, x) in
+              (let e = MLast.ExLSI (loc, si, x) in
                expr_to_inline e ext0 attrs0 :
                'expr)));
         Grammar.production

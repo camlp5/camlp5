@@ -3417,6 +3417,15 @@ type nat _ =
      official_output = OK {foo|[%%e open! M[@@a ][@@b ]]|foo} ;
      r_output = OK {foo|[%%"e" open! M[@@"a"][@@"b"];];|foo}
     };
+    {name="str_item-module_type-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type %e [@a] M = N [@@b]|foo} ;
+     official_input = OK {foo|module type %e [@a] M = N [@@b]|foo} ;
+     r_input = OK {foo|module type %e [@a] M = N [@@b];|foo} ;
+     o_output = OK {foo|[%%e module type M = N[@@a] [@@b];;];;|foo};
+     official_output = OK {foo|[%%e module type M  = N[@@a ][@@b ]]|foo} ;
+     r_output = OK {foo|[%%"e" module type M = N[@@"a"] [@@"b"];];|foo}
+    };
     {name="str_item-let-0"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = y in ()|foo} ;
@@ -3579,6 +3588,34 @@ type nat _ =
     }
     END
 ;
+    IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+    skip
+    ELSE
+    {name="str_item-let-module_type-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let module type A = M in ()|foo} ;
+     official_input = OK {foo|let module type A = M in ()|foo} ;
+     r_input = OK {foo|let module type A = M in ();|foo} ;
+     o_output = OK {foo|let _ = let module type A = M in ();;|foo};
+     official_output = OK {foo|;;let module type A = M in ()|foo} ;
+     r_output = OK {foo|let module type A = M in ();|foo}
+    }
+    END
+;
+    IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+    skip
+    ELSE
+    {name="expr-let-module_type-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let module type A = M in ()|foo} ;
+     official_input = OK {foo|let x = let module type A = M in ()|foo} ;
+     r_input = OK {foo|value x = let module type A = M in ();|foo} ;
+     o_output = OK {foo|let x = let module type A = M in ();;|foo} ;
+     official_output = OK {foo|let x = let module type A = M in ()|foo} ;
+     r_output = OK {foo|value x = let module type A = M in ();|foo}
+    }
+    END
+;
     {name="str_item-let-exception-0"; implem = True ;
      exclude=[];
      o_input = OK {foo|let exception E in ()|foo} ;
@@ -3643,7 +3680,7 @@ END
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     skip
-ELSE
+    ELSE
     {name="str_item-let-extension-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
@@ -3653,11 +3690,11 @@ ELSE
      official_output = OK {foo|;;[%e1 ((let [%%e2 ][@@a2 ] in ())[@a1 ])][@@a3 ]|foo};
      r_output = OK {foo|[%"e1" (let [%%"e2"][@@"a2"] in ())[@"a1"];][@@"a3"];|foo}
     }
-END
+    END
 ;
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     skip
-ELSE
+    ELSE
     {name="expr-let-extension-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let%e1 [@a1] [%%e2] [@@a2] in () [@@a3]|foo} ;
@@ -3667,7 +3704,7 @@ ELSE
      official_output = OK {foo|let x = [%e1 ((let [%%e2 ][@@a2 ] in ())[@a1 ])][@@a3 ]|foo};
      r_output = OK {foo|value x = [%"e1" (let [%%"e2"][@@"a2"] in ())[@"a1"];][@@"a3"];|foo}
     }
-END
+    END
 ;
     {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
