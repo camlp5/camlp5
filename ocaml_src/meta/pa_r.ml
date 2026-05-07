@@ -5028,6 +5028,14 @@ Grammar.safe_extend
            (fun (e : 'alg_extension) (loc : Ploc.t) ->
               (MLast.TyExten (loc, e) : 'ctyp)));
         Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_token ("", "external")))
+             (Grammar.s_token ("STRING", "")),
+           "194fe98d",
+           (fun (s : string) _ (loc : Ploc.t) ->
+              (MLast.TyExt (loc, s) : 'ctyp)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
            "194fe98d", (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp)));
         Grammar.production

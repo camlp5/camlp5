@@ -73,6 +73,8 @@ module Meta_make (C : MetaSig) =
             [C.vala (C.list poly_variant) lpv;
              C.option (C.option (C.vala (C.list C.string))) ools]
       | TyXtr loc s _ → C.xtr loc s
+      | TyExt loc s ->
+         C.node "TyExt" [C.vala C.string s]
       | TyExten loc exten ->
           let exten = conv_extension exten in
           C.node "TyExten" [exten]

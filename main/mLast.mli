@@ -62,6 +62,7 @@ and ctyp =
       option (option (V (list string)))
   | TyXtr of loc and string and option (V ctyp)
   | TyAtt of loc and ctyp and attribute
+  | TyExt of loc and V string
   | TyExten of loc and attribute
   | TyOpen of loc and longid and ctyp
   ]

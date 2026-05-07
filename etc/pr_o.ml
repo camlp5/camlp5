@@ -1844,6 +1844,7 @@ EXTEND_PRINTER
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< .. >> -> pprintf pc ".."
+      | <:ctyp< external $str:s$ >> -> pprintf pc "external \"%s\"" s
       | <:ctyp< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | <:ctyp:< ?$_$: $_$ >> | <:ctyp:< ~$_$: $_$ >> ->

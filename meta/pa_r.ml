@@ -1493,6 +1493,7 @@ EXTEND
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>
       | ".." -> <:ctyp< .. >>
       | "_" → <:ctyp< _ >>
+      | "external" ; s = V STRING -> <:ctyp< external $_str:s$ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | t = paren_ctyp -> t
       | "["; cdl = V (LIST1 constructor_declaration SEP "|"); "]" →

@@ -1432,6 +1432,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
           Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (greek_ascii_equiv i)]
       | ".." -> Qast.Node "TyOpn" [Qast.Loc]
       | "_" → Qast.Node "TyAny" [Qast.Loc]
+      | "external" ; s = SV STRING -> Qast.Node "TyExt" [Qast.Loc; s]
       | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
       | "("; "module"; mt = module_type ; ")" → Qast.Node "TyPck" [Qast.Loc; mt]
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" →

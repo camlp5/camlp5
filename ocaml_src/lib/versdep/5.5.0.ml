@@ -623,6 +623,8 @@ let ocaml_ptyp_package pt = Ptyp_package pt;;
 let ocaml_pexp_pack loc me pto = Pexp_pack (me, pto);;
 
 let ocaml_ptyp_tuple x = Ptyp_tuple x;;
+
+let ocaml_ptype_external (s : string) : type_kind = Ptype_external s;;
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_record lel eo =

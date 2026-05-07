@@ -103,6 +103,8 @@ let rec ctyp floc sh =
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
     | TyXtr (loc, x1, x2) ->
         let loc = floc loc in TyXtr (loc, x1, option_map (vala_map self) x2)
+    | TyExt (loc, x1) ->
+        let loc = floc loc in TyExt (loc, vala_map (fun x -> x) x1)
     | TyExten (loc, exten) ->
         let loc = floc loc in TyExten (loc, attribute_body floc sh exten)
     | TyOpen (loc, li, t) ->

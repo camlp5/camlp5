@@ -2051,6 +2051,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
+      | "external" ; s = V STRING -> <:ctyp< external $_str:s$ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 
           let mt = module_type_wrap_attrs mt attrs in

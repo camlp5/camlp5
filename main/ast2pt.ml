@@ -666,6 +666,13 @@ and type_decl ?{item_attributes=[]} tn tl priv (cl,tdCon) =
       let priv = if uv pf then Private else Public in
       mktype ~{item_attributes=item_attributes} loc tn tl cl (ocaml_ptype_open ()) priv (Some (ctyp t))
 
+  | TyMan loc t pf <:ctyp< external $str:s$ >> →
+      let priv = if uv pf then Private else Public in
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (ocaml_ptype_external s) priv (Some (ctyp t))
+
+  | <:ctyp:< external $str:s$ >>  →
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (ocaml_ptype_external s) priv None
+
   | TyRec loc ltl →
       mktype ~{item_attributes=item_attributes} loc tn tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl →

@@ -6770,6 +6770,22 @@ end ;
     }
   ]
 END
+@
+IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
+[]
+ELSE
+[
+  {name="type-external"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = external "foo"|foo} ;
+     official_input = OK {foo|type t = external "foo"|foo} ;
+     r_input = OK {foo|type t = external "foo";|foo} ;
+     o_output = OK {foo|type t = external "foo";;|foo};
+     official_output = OK {foo|type t = external "foo"|foo} ;
+     r_output = OK {foo|type t = external "foo";|foo}
+    }
+]
+END
 ;
 
   (*
