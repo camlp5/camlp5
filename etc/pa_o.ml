@@ -931,12 +931,31 @@ EXTEND
   | -> <:vala< [] >>
   ] ]
   ;
+
+  str_item_exception: [ [
+    ext = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes →
+    str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
+  ] ]
+  ;
+  str_item_module: [ [
+    (ext,alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding ->
+    let (i,me,attrs) = h in
+    let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs attrs in
+    let h = (i,me,attrs) in
+    str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext
+  ] ]
+  ;
+  str_item_open: [ [
+    ovf = V (FLAG "!") "!"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
+    let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+    str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
+  ] ]
+  ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   str_item:
     [ "top"
-      [ "exception"; ext = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes →
-          str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
+      [ "exception"; si = str_item_exception → si
 
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
@@ -949,20 +968,14 @@ EXTEND
       | "include"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< include $me$ $_itemattrs:attrs$ >> ext
-      | "module"; (ext,alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding ->
-          let (i,me,attrs) = h in
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs attrs in
-          let h = (i,me,attrs) in
-          str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext
+      | "module"; si = str_item_module -> si
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< module type $_:i$ = 'abstract $_itemattrs:attrs$ >> ext
-      | "open"; ovf = V (FLAG "!") "!"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
+      | "open"; si = str_item_open -> si
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = FLAG "nonrec";
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
@@ -987,25 +1000,17 @@ EXTEND
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
       | "let"; (ext0,attrs0) = ext_attributes ;
-        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs1 = item_attributes ; "in" ; x = expr LEVEL "top" ; attrs2 = item_attributes →
-          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs1$ >> ext1 in
+        "exception"; si = str_item_exception; "in"; x = expr LEVEL "top" ; attrs2 = item_attributes →
           let e = <:expr< let $stri:si$ in $x$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
-      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
-        e = expr LEVEL "top" ; attrs2 = item_attributes ->
-          let (i,me,attrs) = h in
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
-          let h = (i,me,attrs) in
-          let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; si = str_item_module; "in"; e = expr LEVEL "top" ; attrs2 = item_attributes ->
           let e = <:expr< let $stri:si$ in $e$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
 
-      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ; attrs2 = item_attributes ->
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
-          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; si = str_item_open; "in"; e = expr LEVEL "top" ; attrs2 = item_attributes ->
           let e = <:expr< let $stri:si$ in $e$ >> in
           let e = expr_to_inline e ext0 attrs0 in
           <:str_item< $exp:e$ $_itemattrs:attrs2$ >>
@@ -1218,23 +1223,15 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes ;
-        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
-          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
+        "exception"; si = str_item_exception; "in" ; x = SELF →
           let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
-      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding; "in";
-        e = expr LEVEL "top" ->
-          let (i,me,attrs) = h in
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
-          let h = (i,me,attrs) in
-          let si = str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext1 in
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; si = str_item_module; "in"; e = expr LEVEL "top" ->
           let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
-      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
-          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; si = str_item_open; "in"; e = expr LEVEL "top" ->
           let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 

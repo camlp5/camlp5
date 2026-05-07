@@ -3390,6 +3390,33 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    {name="str_item-exception-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception%e [@a] E of int|foo} ;
+     official_input = OK {foo|exception%e [@a] E of int|foo} ;
+     r_input = OK {foo|exception%e [@a] E of int;|foo} ;
+     o_output = OK {foo|[%%e exception E of int[@a];;];;|foo};
+     official_output = OK {foo|[%%e exception E of int [@a ]]|foo} ;
+     r_output = OK {foo|[%%"e" exception E of int[@"a"];];|foo}
+    };
+    {name="str_item-module-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module%e [@a] M = N|foo} ;
+     official_input = OK {foo|module%e [@a] M = N|foo} ;
+     r_input = OK {foo|module%e [@a] M = N;|foo} ;
+     o_output = OK {foo|[%%e module M = N[@@a];;];;|foo};
+     official_output = OK {foo|[%%e module M = N[@@a ]]|foo} ;
+     r_output = OK {foo|[%%"e" module M = N[@@"a"];];|foo}
+    };
+    {name="str_item-open-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|open! %e [@a] M[@@b]|foo} ;
+     official_input = OK {foo|open! %e [@a] M [@@b]|foo} ;
+     r_input = OK {foo|open! %e [@a] M[@@b];|foo} ;
+     o_output = OK {foo|[%%e open! M[@@a][@@b];;];;|foo} ;
+     official_output = OK {foo|[%%e open! M[@@a ][@@b ]]|foo} ;
+     r_output = OK {foo|[%%"e" open! M[@@"a"][@@"b"];];|foo}
+    };
     {name="str_item-let-0"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = y in ()|foo} ;

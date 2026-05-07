@@ -715,12 +715,36 @@ EXTEND
   | -> <:vala< [] >>
   ] ]
   ;
+  str_item_exception: [ [
+    ext = ext_opt; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
+    str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:item_attrs$ >> ext
+  ] ]
+  ;
+  str_item_module: [ [
+    (ext,attrs1) = ext_attributes; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
+    let l = match (l, attrs1) with [
+          (<:vala< [h::t] >>, [_::_]) ->
+          let (i,me,attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
+          let h = (i,me,attrs) in
+               <:vala< [h::t] >>
+              | (_, []) -> l
+              | _ -> failwith "str_item-module: syntax error"
+             ] in
+          str_item_to_inline <:str_item< module $_flag:r$ $_list:l$ >> ext
+  ] ]
+  ;
+  str_item_open: [ [
+    ovf = V (FLAG "!") "!"; (ext,attrs1) = ext_attributes; me = module_expr; attrs = item_attributes ->
+    let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
+    str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
+  ] ]
+  ;
   str_item:
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
-      | "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
-          <:str_item< exception $_excon:ec$ $_itemattrs:item_attrs$ >>
+      | "exception"; si = str_item_exception -> si
 
       | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
@@ -731,12 +755,10 @@ EXTEND
           <:str_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
 
       | "include"; me = module_expr ; attrs = item_attributes → <:str_item< include $me$ $_itemattrs:attrs$ >>
-      | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
-          <:str_item< module $_flag:r$ $_list:l$ >>
+      | "module"; si = str_item_module -> si
       | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = item_attributes →
           <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
-      | "open"; ovf = V (FLAG "!") "!"; me = module_expr; attrs = item_attributes ->
-          <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
+      | "open"; si = str_item_open -> si
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
           vala_it (fun tdl ->
             if List.exists (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
@@ -915,29 +937,17 @@ EXTEND
          expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes ;
-        "exception"; ext1 = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes ; "in" ; x = SELF →
-          let si = str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext1 in
+        "exception"; ext1 = ext_opt; si = str_item_exception; "in" ; x = SELF →
+          let si = str_item_to_inline si ext1 in
           let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
-      | "let"; (ext0,attrs0) = ext_attributes; "module"; (ext1,attrs1) = ext_attributes; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and"); "in";
+      | "let"; (ext0,attrs0) = ext_attributes; "module"; si = str_item_module; "in";
         e = SELF ->
-         let l = match (l, attrs1) with [
-               (<:vala< [h::t] >>, [_::_]) ->
-               let (i,me,attrs) = h in
-               let attrs = merge_left_auxiliary_attrs ~{nonterm_name="expr-let-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs in
-               let h = (i,me,attrs) in
-               <:vala< [h::t] >>
-              | (_, []) -> l
-              | _ -> failwith "expr-let-module: syntax error"
-             ] in
-          let si = str_item_to_inline <:str_item< module $_flag:r$ $_list:l$ >> ext1 in
           let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
-      | "let"; (ext0,attrs0) = ext_attributes; "open"; ovf = V (FLAG "!") "!"; (ext1,attrs1) = ext_attributes; me = module_expr ; item_attrs = item_attributes; "in"; e = expr LEVEL "top" ->
-          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 item_attrs in
-          let si = str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext1 in
+      | "let"; (ext0,attrs0) = ext_attributes; "open"; si = str_item_open; "in"; e = expr LEVEL "top" ->
           let e = <:expr< let $stri:si$ in $e$ >> in
           expr_to_inline e ext0 attrs0
 
