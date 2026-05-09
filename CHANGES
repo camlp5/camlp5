@@ -5,6 +5,20 @@ Camlp5 Version 8.05.00:
 
 * Only syntax changes, and I hope I got 'em all
 
+Camlp5 Version 8.04.01:
+-----------------------
+
+* [08 May 2026]
+
+  * fix bugs in syntax support for labeled tuples:
+
+    in `M(~a:x,b)` (or any other constructor expression with only argument as a
+    labeled tuple, the conversion from Camlp5 AST to OCaml AST was wrong, erasing
+    the labels.
+
+  * minor fixups in configure script (opam puts LIBDIR at PREFIX/lib, not PREFIX/lib/ocaml)
+    and this adjusts configure to do the same
+
 Camlp5 Version 8.04.00:
 -----------------------
 

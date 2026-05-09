@@ -14,13 +14,13 @@ Pcaml.inter_phrases := Some ";;\n";;
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
  *)
-(*
-#require "camlp5.pr_o";;
- *)
 
+#require "camlp5.pr_o";;
+
+(*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
+ *)
 
 #require "camlp5.parser_quotations";;
 (*
@@ -94,6 +94,10 @@ let pp_lexbuf lb =
 ;;
 #install_printer pp_lexbuf ;;
 
+let pp_expression e = Fmt.(pf stdout "#<expression< %a >>" Pprintast.expression e) ;;
+#install_printer pp_expression ;;
+
+
 open Asttypes ;;
 open Parsetree ;;
 open Longident ;;
@@ -117,8 +121,12 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
 #install_printer pp_sig_item ;;
  *)
 print_string "================ START ================\n";; flush stdout ;;
-
+(*
 #directory "../etc";;
+ *)
+
+#trace Ast2pt.expr ;;
+PAPR.Implem.( {foo| M (~x:(a b), y)|foo} |> pa1 |> to_official) |> Official.Implem.pr |> print_string ;;
 
 (*
 ;;; Local Variables: ***

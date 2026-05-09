@@ -208,9 +208,9 @@ fi
 if test "$libdir" != ""; then
     LIBDIR=$libdir
 elif test "$prefix" != ""; then
-    LIBDIR='$(PREFIX)/lib/ocaml'
+    LIBDIR='$(PREFIX)/lib'
 else
-    LIBDIR=$ocamlc_where
+    LIBDIR=$(echo $ocamlc_where | perl -p -e "s,/ocaml\$,,")
 fi
 if test "$mandir" != ""; then
     MANDIR=$mandir

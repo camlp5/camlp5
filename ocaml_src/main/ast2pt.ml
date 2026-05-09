@@ -1129,12 +1129,18 @@ and expr =
       let al = List.map label_expr al in
       begin match ocaml_pexp_construct_args (expr f).pexp_desc with
         Some (li, li_loc, None, _) ->
-          let al = List.map snd al in
+          let al =
+            List.map
+              (function
+                 "", e -> None, e
+               | s, e -> Some s, e)
+              al
+          in
           if !(Prtools.no_constructors_arity) then
             let a =
               match al with
-                [a] -> a
-              | _ -> mkexp loc (ocaml_pexp_tuple (add_empty_labels al))
+                [a] -> snd a
+              | _ -> mkexp loc (ocaml_pexp_tuple al)
             in
             mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
           else mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li al
