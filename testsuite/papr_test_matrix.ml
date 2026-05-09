@@ -5056,6 +5056,15 @@ END
      official_output = OK {foo|;;f ~x ~y:e|foo} ;
      r_output = OK {foo|f ~{x} ~{y=e};|foo}
     };
+    {name="labeled-function-actual-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|f ~x ~y:(a b)|foo} ;
+     official_input = OK {foo|f ~x ~y:(a b)|foo} ;
+     r_input = OK {foo|f ~{x} ~{y=a b} ;|foo} ;
+     o_output = OK {foo|let _ = f ~x ~y:(a b);;|foo};
+     official_output = OK {foo|;;f ~x ~y:(a b)|foo} ;
+     r_output = OK {foo|f ~{x} ~{y=a b};|foo}
+    };
     {name="ctyp-labeled-arguments-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t = pat:string -> string|foo} ;
@@ -6347,6 +6356,42 @@ ELSE
      o_output = OK {foo|let _ = ~x:(x:a:>b), y;;|foo};
      official_output = OK {foo|;;(~x:(x:a:>b), y)|foo} ;
      r_output = OK {foo|(~{x=(x:a:>b)}, y);|foo}
+    }
+  ; {name="labeled-tuple-exp-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~x:(a b), y)|foo} ;
+     official_input = OK {foo|(~x:(a b), y)|foo} ;
+     r_input = OK {foo|(~{x=(a b)}, y);|foo} ;
+     o_output = OK {foo|let _ = ~x:(a b), y;;|foo};
+     official_output = OK {foo|;;(~x:(a b), y)|foo} ;
+     r_output = OK {foo|(~{x=a b}, y);|foo}
+    }
+  ; {name="labeled-tuple-exp-5"; implem = True ;
+     exclude=["o2official";"r2official"];
+     o_input = OK {foo| M (~x:(a b), y)|foo} ;
+     official_input = OK {foo|M (~x:(a b), y)|foo} ;
+     r_input = OK {foo|M ~{x=(a b)} y;|foo} ;
+     o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
+     official_output = OK {foo|;;M (~x:(a b), y)|foo} ;
+     r_output = OK {foo|M ~{x=a b} y;|foo}
+    }
+  ; {name="labeled-tuple-exp-5-only-o"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| M (~x:(a b), y)|foo} ;
+     official_input = OK {foo|M (~x:(a b), y)|foo} ;
+     r_input = SKIP "" "" ;
+     o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
+     official_output = OK {foo|;;M (~x:(a b), y)|foo} ;
+     r_output = OK {foo|M ~{x=a b} y;|foo}
+    }
+  ; {name="labeled-tuple-exp-5-only-r"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|M ~{x=(a b)} y;|foo} ;
+     o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
+     official_output = OK {foo|;;((M (~x:(a b), y))[@ocaml.explicit_arity ])|foo} ;
+     r_output = OK {foo|M ~{x=a b} y;|foo}
     }
  ;{name="labeled-tuple-pat-1"; implem = True ;
      exclude=[];

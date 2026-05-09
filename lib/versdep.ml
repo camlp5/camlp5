@@ -867,8 +867,7 @@ value ocaml_pexp_construct_args =
     | _ -> None ]
 ;
 
-value mkexp_ocaml_pexp_construct_arity loc li_loc li (al : list expression) =
-  let al = List.map (fun x -> (None, x)) al in
+value mkexp_ocaml_pexp_construct_arity loc li_loc li (al : list (option string * expression)) =
   let a = ocaml_mkexp loc (ocaml_pexp_tuple al) in
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
