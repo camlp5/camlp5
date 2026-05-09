@@ -520,8 +520,8 @@ let ocaml_pexp_construct_args =
   | _ -> None
 ;;
 
-let mkexp_ocaml_pexp_construct_arity loc li_loc li (al : expression list) =
-  let al = List.map (fun x -> None, x) al in
+let mkexp_ocaml_pexp_construct_arity loc li_loc li
+    (al : (string option * expression) list) =
   let a = ocaml_mkexp loc (ocaml_pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
    pexp_loc_stack = [];

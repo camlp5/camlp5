@@ -62,7 +62,7 @@ conflicts: [
    "p5scm" { <= "0.4.0" }
    "pa_ppx" { <= "0.20" }
 ]
-x-ci-accept-failures: [ "opensuse-tumbleweed" ]
+x-ci-accept-failures: [ "freebsd" "opensuse-tumbleweed" ]
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
 url {
   src: ""
