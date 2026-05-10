@@ -15,7 +15,7 @@ DIFF=diff -Bwi -u20
 RM=rm
 
 TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test r2official_test \
-        r2sch_test q_MLast_test revised_q_ast_test \
+        r2sch_test q_MLast_test revised_parser_test official_parser_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test reloc_test o_top_test2 o_top_test r_top_test grammar_bug_test \
 	little_lang_test o_lexer_test r_lexer_test quotedext_test
@@ -34,8 +34,8 @@ all: roundtrippers \
 	official2official_test.byte \
 	r2sch_test.byte \
 	q_MLast_test.byte \
-	revised_q_ast_test.byte \
-	official_q_ast_test.byte \
+	revised_parser_test.byte \
+	official_parser_test.byte \
 	sch2r_test.pa_scheme.byte \
 	sch2r_test.pa_schemer.byte \
 	extfun_test.byte \
