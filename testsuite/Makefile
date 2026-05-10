@@ -182,7 +182,7 @@ official_parser_test:: official_parser_test.byte
 	./official_parser_test.byte
 
 official_parser_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo official_parser_test.ml
-	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o official_parser_test.byte
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_o.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o official_parser_test.byte
 
 grammar_bug_test:: grammar_bug_test.byte
 	$(NOVERBOSE) mkdir -p _build

@@ -32,7 +32,7 @@ i.name >:: (fun  [ _ ->
                          ])
 ;
 
-value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
+value shared_syntax_tests = "shared-syntax" >::: (List.map mktest
     [
       {
         name = "prototype";
@@ -51,22 +51,10 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
         expect = {foo|MLast.PaAny loc;
 |foo}
       }
-      ;{
-        name = "patt-patt-any";
-        code = {foo| match x with [ <:patt< _ >> -> 1 ]; |foo} ;
-        expect = {foo|match x with [ MLast.PaAny _ -> 1 ];
-|foo}
-      }
       ; { name = "expr-apply-1" ;
           expect = {foo|MLast.ExApp loc e1 e2;
 |foo} ;
           code = {foo|<:expr< $e1$ $e2$ >>;|foo}
-        }
-      ; { name = "expr-apply-2" ;
-          expect = {foo|fun
-[ MLast.ExApp _ _ e2 -> 1 ];
-|foo} ;
-          code = {foo|fun [ <:expr< $_$ $e2$ >> -> 1 ];|foo}
         }
       ; { name = "expr-new-1" ; 
           expect = {foo|MLast.ExNew loc
@@ -211,11 +199,6 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
 |foo} ;
           code = {foo| <:expr< [%a b;] >> ; |foo}
         }
-      ; { name = "variants-1" ; 
-          expect = {foo|MLast.TyVrn loc (Ploc.VaVal l) None;
-|foo} ;
-          code = {foo|<:ctyp< [= $list:l$ ] >>; |foo}
-        }
       ; { name = "tuple-type-antiquotation-1" ; 
           expect = {foo|MLast.TyTup loc (Ploc.VaVal l);
 |foo} ;
@@ -273,6 +256,102 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
 |foo} ;
           code = {foo|<:patt< (type $lid:PM.type_id p$) >> ;|foo}
         }
+      ; { name = "expr-long-1" ; 
+          expect = {foo|MLast.ExLong loc
+  (MLast.LiAcc loc (MLast.LiUid loc (Ploc.VaVal "A")) (Ploc.VaVal "B"));
+|foo} ;
+          code = {foo|<:expr< A . B >>;|foo}
+        }
+      ; { name = "expr-acc-1d" ; 
+          expect = {foo|MLast.ExFle loc (MLast.ExLong loc (MLast.LiUid loc (Ploc.VaVal e1)))
+  (Ploc.VaVal (None, Ploc.VaVal m));
+|foo} ;
+          code = {foo|<:expr< $uid:e1$ . $lid:m$ >> ;|foo}
+        }
+      ; { name = "two-level-expr-1" ;
+          expect = {foo|MLast.ExTup loc
+  (Ploc.VaVal
+     [MLast.ExLid loc (Ploc.VaVal x); MLast.ExLid loc (Ploc.VaVal y)]);
+|foo} ;
+          code = {foo|<:expr< ($lid:x$, $lid:y$) >> ;|foo}
+        }
+      ; { name = "extended-longident-1" ; 
+          expect = {foo|MLast.LiAcc loc li (Ploc.VaVal m);
+|foo} ;
+          code = {foo|<:extended_longident< $longid:li$ . $uid:m$ >> ;|foo}
+        }
+      ; {
+        name = "expr-extension-type-1";
+        code = {foo|<:expr< [%typ: bool] >>;|foo};
+        expect = {foo|MLast.ExExten loc
+  (Ploc.VaVal
+     (Ploc.VaVal (loc, "typ"),
+      MLast.TyAttr loc (Ploc.VaVal (MLast.TyLid loc (Ploc.VaVal "bool")))));
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-1";
+        code = {foo|<:patt< $longid:li$ (type $_list:loc_ids$ ) >>;|foo};
+        expect = {foo|MLast.PaLong loc li loc_ids;
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-2";
+        code = {foo|<:patt< $longid:li$ >>;|foo};
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal []);
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-3";
+        code = {foo|<:patt< $longid:li$ (type a) >>;|foo};
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a")]);
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-4";
+        code = {foo|<:patt< $longid:li$ (type a b c) >>;|foo};
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a"); (loc, "b"); (loc, "c")]);
+|foo}
+      }
+      ; {
+        name = "binders-external-1";
+        code = {foo|<:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
+        expect = {foo|MLast.StExt loc i ls t pd attrs;
+|foo}
+      }
+      ; {
+        name = "binders-external-2";
+        code = {foo|<:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
+        expect = {foo|MLast.SgExt loc i (Ploc.VaVal []) t pd attrs;
+|foo}
+      }
+    ])
+ ;
+
+value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
+    [
+      {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+      ;{
+        name = "patt-patt-any";
+        code = {foo| match x with [ <:patt< _ >> -> 1 ]; |foo} ;
+        expect = {foo|match x with [ MLast.PaAny _ -> 1 ];
+|foo}
+      }
+      ; { name = "expr-apply-2" ;
+          expect = {foo|fun
+[ MLast.ExApp _ _ e2 -> 1 ];
+|foo} ;
+          code = {foo|fun [ <:expr< $_$ $e2$ >> -> 1 ];|foo}
+        }
+      ; { name = "variants-1" ; 
+          expect = {foo|MLast.TyVrn loc (Ploc.VaVal l) None;
+|foo} ;
+          code = {foo|<:ctyp< [= $list:l$ ] >>; |foo}
+        }
       ; { name = "type-extension" ;
           expect = {foo|MLast.StTypExten loc
   {MLast.teNam = Ploc.VaVal (None, Ploc.VaVal "t");
@@ -285,18 +364,6 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
    MLast.teAttributes = Ploc.VaVal []};
 |foo} ;
           code = {foo|<:str_item< type t += [ A ] >> ;|foo}
-        }
-      ; { name = "expr-long-1" ; 
-          expect = {foo|MLast.ExLong loc
-  (MLast.LiAcc loc (MLast.LiUid loc (Ploc.VaVal "A")) (Ploc.VaVal "B"));
-|foo} ;
-          code = {foo|<:expr< A . B >>;|foo}
-        }
-      ; { name = "expr-acc-1d" ; 
-          expect = {foo|MLast.ExFle loc (MLast.ExLong loc (MLast.LiUid loc (Ploc.VaVal e1)))
-  (Ploc.VaVal (None, Ploc.VaVal m));
-|foo} ;
-          code = {foo|<:expr< $uid:e1$ . $lid:m$ >> ;|foo}
         }
       ; { name = "typedecl-0" ;
           expect = {foo|MLast.StTyp loc (Ploc.VaVal False)
@@ -366,13 +433,6 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
 |foo} ;
           code = {foo|<:expr< $e$ $dotop:s$ ( $list:le$ ) >> ;|foo}
         }
-      ; { name = "two-level-expr-1" ;
-          expect = {foo|MLast.ExTup loc
-  (Ploc.VaVal
-     [MLast.ExLid loc (Ploc.VaVal x); MLast.ExLid loc (Ploc.VaVal y)]);
-|foo} ;
-          code = {foo|<:expr< ($lid:x$, $lid:y$) >> ;|foo}
-        }
       ; { name = "two-level-patt-1" ;
           expect = {foo|fun
 [ MLast.ExTup loc
@@ -381,11 +441,6 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
     1 ];
 |foo} ;
           code = {foo|fun [ <:expr:< ($lid:x$, $lid:y$) >> -> 1 ] ;|foo}
-        }
-      ; { name = "extended-longident-1" ; 
-          expect = {foo|MLast.LiAcc loc li (Ploc.VaVal m);
-|foo} ;
-          code = {foo|<:extended_longident< $longid:li$ . $uid:m$ >> ;|foo}
         }
       ; { name = "generic-constructor-1" ;
           expect = {foo|fun
@@ -412,54 +467,9 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
     <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:_$ >> as gc -> 1 ];|foo}
         }
       ; {
-        name = "expr-extension-type-1";
-        code = {foo|<:expr< [%typ: bool] >>;|foo};
-        expect = {foo|MLast.ExExten loc
-  (Ploc.VaVal
-     (Ploc.VaVal (loc, "typ"),
-      MLast.TyAttr loc (Ploc.VaVal (MLast.TyLid loc (Ploc.VaVal "bool")))));
-|foo}
-      }
-      ; {
-        name = "patt-PaLong-1";
-        code = {foo|<:patt< $longid:li$ (type $_list:loc_ids$ ) >>;|foo};
-        expect = {foo|MLast.PaLong loc li loc_ids;
-|foo}
-      }
-      ; {
-        name = "patt-PaLong-2";
-        code = {foo|<:patt< $longid:li$ >>;|foo};
-        expect = {foo|MLast.PaLong loc li (Ploc.VaVal []);
-|foo}
-      }
-      ; {
-        name = "patt-PaLong-3";
-        code = {foo|<:patt< $longid:li$ (type a) >>;|foo};
-        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a")]);
-|foo}
-      }
-      ; {
-        name = "patt-PaLong-4";
-        code = {foo|<:patt< $longid:li$ (type a b c) >>;|foo};
-        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a"); (loc, "b"); (loc, "c")]);
-|foo}
-      }
-      ; {
         name = "binders-constructor-1";
         code = {foo|<:constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >> ;|foo};
         expect = {foo|(loc, ci, ls, tl, rto, attrs);
-|foo}
-      }
-      ; {
-        name = "binders-external-1";
-        code = {foo|<:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
-        expect = {foo|MLast.StExt loc i ls t pd attrs;
-|foo}
-      }
-      ; {
-        name = "binders-external-2";
-        code = {foo|<:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
-        expect = {foo|MLast.SgExt loc i (Ploc.VaVal []) t pd attrs;
 |foo}
       }
     ])
@@ -486,17 +496,20 @@ value official_syntax_tests = "official-syntax" >::: (List.map mktest
  ;
 
 value q_MLast_parser_tests = "q_MLast parser" >::: [
-    "revised syntax" >: revised_syntax_tests
+    "shared syntax" >: shared_syntax_tests
+  ; "revised syntax" >: revised_syntax_tests
 ]
 ;
 
 value revised_parser_tests = "revised parser" >::: [
-    "revised syntax" >: revised_syntax_tests
+    "shared syntax" >: shared_syntax_tests
+  ; "revised syntax" >: revised_syntax_tests
 ]
 ;
 
 value official_parser_tests = "official parser" >::: [
-    "official syntax" >: official_syntax_tests
+    "shared syntax" >: shared_syntax_tests
+  ; "official syntax" >: official_syntax_tests
 ]
 ;
   
