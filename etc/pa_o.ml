@@ -808,6 +808,13 @@ value fails =
     pa_fails
 ;
 
+value pa_labeled_ctyp_list_fails : Stream.t 'a -> list (Ploc.vala (option (Ploc.vala string)) * MLast.ctyp) = parser [ ] ;
+
+value labeled_ctyp_list_fails =
+  Grammar.Entry.of_parser gram "labeled_ctyp_list_fails"
+    pa_labeled_ctyp_list_fails
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -2092,7 +2099,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]
-      | "("; t = SELF; ")" -> <:ctyp< $t$ >> ] ]
+      | "("; t = SELF; ")" -> <:ctyp< $t$ >>
+      | "("; l = V labeled_ctyp_list_fails "list" ; ")" -> <:ctyp< ( $_list:l$ ) >>
+    ] ]
   ;
   maybe_labeled_ctyp:
   [ [ x = labeled_ctyp -> x

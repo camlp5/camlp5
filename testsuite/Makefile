@@ -166,20 +166,23 @@ r2sch_test.byte: r2sch_test.ml testutil.cmo
 q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
-q_MLast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
+antiquotation_test.cmo: antiquotation_test.ml
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -c $^
 
-revised_q_ast_test:: revised_q_ast_test.byte
-	./revised_q_ast_test.byte
+q_MLast_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo q_MLast_test.ml
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
 
-revised_q_ast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o revised_q_ast_test.byte
+revised_parser_test:: revised_parser_test.byte
+	./revised_parser_test.byte
 
-official_q_ast_test:: official_q_ast_test.byte
-	./official_q_ast_test.byte
+revised_parser_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo revised_parser_test.ml
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o revised_parser_test.byte
 
-official_q_ast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_o.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o official_q_ast_test.byte
+official_parser_test:: official_parser_test.byte
+	./official_parser_test.byte
+
+official_parser_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo official_parser_test.ml
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o official_parser_test.byte
 
 grammar_bug_test:: grammar_bug_test.byte
 	$(NOVERBOSE) mkdir -p _build
