@@ -1794,6 +1794,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           else
             <:patt< $lid:op$ >>
       | "("; pl = V p_phony "list"; ","; clflag = V [ ".." -> False | -> True ] "closed"; ")" -> <:patt< ($_list:pl$, $_closed:clflag$) >>
+      | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
+
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>

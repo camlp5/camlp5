@@ -209,6 +209,36 @@ value shared_syntax_tests = "shared-syntax" >::: (List.map mktest
 |foo} ;
           code = {foo|<:ctyp< ( $_list:l$ ) >>; |foo}
         }
+      ; { name = "tuple-expr-antiquotation-1" ; 
+          expect = {foo|MLast.ExTup loc (Ploc.VaVal l);
+|foo} ;
+          code = {foo|<:expr< ( $list:l$ ) >>; |foo}
+        }
+      ; { name = "tuple-expr-antiquotation-2" ; 
+          expect = {foo|MLast.ExTup loc l;
+|foo} ;
+          code = {foo|<:expr< ( $_list:l$ ) >>; |foo}
+        }
+      ; { name = "tuple-patt-antiquotation-1" ; 
+          expect = {foo|MLast.PaTup loc (Ploc.VaVal l) (Ploc.VaVal True);
+|foo} ;
+          code = {foo|<:patt< ( $list:l$ ) >>; |foo}
+        }
+      ; { name = "tuple-patt-antiquotation-2" ; 
+          expect = {foo|MLast.PaTup loc l (Ploc.VaVal True);
+|foo} ;
+          code = {foo|<:patt< ( $_list:l$ ) >>; |foo}
+        }
+      ; { name = "tuple-patt-antiquotation-3" ; 
+          expect = {foo|MLast.PaTup loc (Ploc.VaVal l) (Ploc.VaVal f);
+|foo} ;
+          code = {foo|<:patt< ( $list:l$, $closed:f$ ) >>; |foo}
+        }
+      ; { name = "tuple-patt-antiquotation-4" ; 
+          expect = {foo|MLast.PaTup loc l f;
+|foo} ;
+          code = {foo|<:patt< ( $_list:l$, $_closed:f$ ) >>; |foo}
+        }
       ; { name = "variants-2" ; 
           expect = {foo|MLast.PaVrn loc (Ploc.VaVal "Foo");
 |foo} ;
