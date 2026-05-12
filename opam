@@ -37,7 +37,7 @@ depends: [
   "conf-diffutils" { with-test & (os-distribution = "alpine" | os-distribution = "freebsd") }
   "re" { >= "1.11.0" }
   "ounit2" { with-test }
-  "pcre2" { >= "8.0.3" }
+  "pcre2" { >= "8.0.4" }
   "rresult"
   "bos"
   "fmt"
