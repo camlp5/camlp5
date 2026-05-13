@@ -1,3 +1,13 @@
+Camlp5 Version 8.04.02:
+-----------------------
+
+* [12 May 2026]
+
+  * More bugs in syntax support for labeled tuples
+
+  * fixed many minor bugs that impeded getting labeled tuples working in the
+    pa_ppx suite of packages
+
 Camlp5 Version 8.04.01:
 -----------------------
 
