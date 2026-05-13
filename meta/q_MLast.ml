@@ -298,29 +298,6 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
-value check_let_exception_f = (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> ()
-       | _ -> raise Stream.Failure ])
-;
-
-value check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception"
-    check_let_exception_f
-;
-
-value check_let_not_exception_f = (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
-       | [("", "let"); _] -> ()
-       | _ -> raise Stream.Failure ])
-;
-
-value check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;
-
 value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
     fun
@@ -595,21 +572,9 @@ EXTEND
   | -> Qast.VaVal (Qast.List [])
   ] ]
   ;
-  str_item:
-    [ "top" LEFTA
-      [ si = SELF ; "[@@" ; attr = SV attribute_body "attribute"; "]" ->
-        Qast.Node "StAtt" [Qast.Loc; si; attr]
-      ]
-    | "simple"
-      [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
-          Qast.Node "StDcl" [Qast.Loc; st]
-      | "exception"; ec = SV extension_constructor "excon" ; item_attrs = item_attributes →
+  shared_str_item: [ [
+        "exception"; ec = SV extension_constructor "excon" ; item_attrs = item_attributes →
           Qast.Node "StExc" [Qast.Loc; ec; item_attrs]
-
-      | "external"; i = SV LIDENT; ":"; ls = type_binder_opt; t = ctyp; "=";
-        pd = SV (LIST1 STRING) ; attrs = item_attributes →
-          Qast.Node "StExt" [Qast.Loc; i; ls; t; pd; attrs]
-      | "include"; me = module_expr ; attrs = item_attributes → Qast.Node "StInc" [Qast.Loc; me; attrs]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
@@ -621,6 +586,24 @@ EXTEND
           Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
       | "type" ; check_type_extension ; te = type_extension →
           Qast.Node "StTypExten" [Qast.Loc; te]
+  ] ]
+  ;
+  str_item:
+    [ "top" LEFTA
+      [ si = SELF ; "[@@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "StAtt" [Qast.Loc; si; attr]
+      ]
+    | "simple"
+      [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
+          Qast.Node "StDcl" [Qast.Loc; st]
+
+      | "external"; i = SV LIDENT; ":"; ls = type_binder_opt; t = ctyp; "=";
+        pd = SV (LIST1 STRING) ; attrs = item_attributes →
+          Qast.Node "StExt" [Qast.Loc; i; ls; t; pd; attrs]
+      | "include"; me = module_expr ; attrs = item_attributes → Qast.Node "StInc" [Qast.Loc; me; attrs]
+
+      | si = shared_str_item -> si
+
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") →
           Qast.Node "StVal" [Qast.Loc; r; l]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) →
@@ -752,22 +735,10 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ check_let_exception ; "let" ; "exception" ; ec = SV extension_constructor "excon" ; item_attrs = item_attributes ; "in" ; x = SELF →
-        let si = Qast.Node "StExc" [Qast.Loc; ec; item_attrs] in
-        Qast.Node "ExLSI" [Qast.Loc ; Qast.VaVal si ; x]
-      | check_let_not_exception ; "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
+      [ "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
-      | check_let_not_exception ; "let"; "module"; mb = mod_binding; "in";
-        e = SELF →
-        let si = Qast.Node "StMod" [Qast.Loc; Qast.VaVal (Qast.Bool False); Qast.VaVal (Qast.List [mb])] in
-            Qast.Node "ExLSI" [Qast.Loc ; Qast.VaVal si ; e]
-
-      | check_let_not_exception ; "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr ; attrs = item_attributes; "in"; e = SELF →
-          let si = Qast.Node "StOpn" [Qast.Loc; ovf; m; attrs] in
-          Qast.Node "ExLSI" [Qast.Loc; Qast.VaVal si; e]
-
-      | check_let_not_exception ; "let" ; si = SV fails "stri" ; "in" ; e = SELF ->
+      | "let" ; si = SV shared_str_item "stri" ; "in" ; e = SELF ->
           Qast.Node "ExLSI" [Qast.Loc; si; e]
 
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
