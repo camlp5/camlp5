@@ -760,6 +760,26 @@ value fails =
     pa_fails
 ;
 
+value pa_labeled_ctyp_list_fails : Stream.t 'a -> list (Ploc.vala (option (Ploc.vala string)) * MLast.ctyp) = parser [ ] ;
+
+value labeled_ctyp_list_fails =
+  Grammar.Entry.of_parser gram "labeled_ctyp_list_fails"
+    pa_labeled_ctyp_list_fails
+;
+
+value unlabeled_expr = fun [
+  <:expr< ~{$lid:_$ = $_$} >> -> False
+| _ -> True
+]
+;
+
+value unlabeled_patt = fun [
+  <:patt< ~{$lid:_$ = $_$} >> -> False
+| _ -> True
+]
+;
+
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -1357,7 +1377,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           [ 1 -> <:expr< $e1$ $e2$ >>
           | _ ->
               match e2 with
-              [ <:expr< ( $list:el$ ) >> ->
+              [ <:expr< ( $list:el$ ) >> when List.for_all unlabeled_expr el ->
                   List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) e1 el
               | _ -> <:expr< $e1$ $e2$ >> ] ]
       | "assert"; (ext,attrs) = ext_attributes; e = SELF ->
@@ -1712,7 +1732,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
                 | _ -> p2 ]
               in
               match p2 with
-              [ <:patt< ( $list:pl$ ) >> ->
+              [ <:patt< ( $list:pl$ ) >> when List.for_all unlabeled_patt pl ->
                   List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>) p1 pl
               | _ -> <:patt< $p1$ $p2$ >> ] ]
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 
@@ -1755,6 +1775,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           else
             <:patt< $lid:op$ >>
       | "("; pl = V p_phony "list"; ","; clflag = V [ ".." -> False | -> True ] "closed"; ")" -> <:patt< ($_list:pl$, $_closed:clflag$) >>
+      | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
+
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>
@@ -2061,7 +2083,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]
-      | "("; t = SELF; ")" -> <:ctyp< $t$ >> ] ]
+      | "("; t = SELF; ")" -> <:ctyp< $t$ >>
+      | "("; l = V labeled_ctyp_list_fails "list" ; ")" -> <:ctyp< ( $_list:l$ ) >>
+    ] ]
   ;
   maybe_labeled_ctyp:
   [ [ x = labeled_ctyp -> x

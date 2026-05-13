@@ -228,13 +228,13 @@ MLast.TyVrn loc lpv ools;
 
 (* t-uple *)
 <:patt< ($list:lp$) >>;
-MLast.PaTup loc (Ploc.VaVal lp) (Ploc.VaVal False);
-MLast.PaTup loc (Ploc.VaVal lp) (Ploc.VaVal b);
-MLast.PaTup loc (Ploc.VaVal lp) b;
+<:patt< ($list:lp$, ..) >>;
+<:patt< ($list:lp$, $closed:b$) >>;
+<:patt< ($list:lp$, $_closed:b$) >>;
 <:patt< ($_list:lp$) >>;
-MLast.PaTup loc lp (Ploc.VaVal False);
-MLast.PaTup loc lp (Ploc.VaVal b);
-MLast.PaTup loc lp b;
+<:patt< ($_list:lp$, ..) >>;
+<:patt< ($_list:lp$, $closed:b$) >>;
+<:patt< ($_list:lp$, $_closed:b$) >>;
 
 (* type constraint *)
 <:patt< ($p$ : $t$) >>;

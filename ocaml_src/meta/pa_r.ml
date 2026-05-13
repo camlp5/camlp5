@@ -3624,6 +3624,28 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (longident : 'longident Grammar.Entry.e)))
+                            (Grammar.s_token ("", ".")))
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+                   (Grammar.s_token ("", ",")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm (expr : 'expr Grammar.Entry.e))
+                   (Grammar.s_token ("", ",")) false))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (el : 'expr list) _ (e : 'expr) _ _ (li : 'longident)
+                (loc : Ploc.t) ->
+              (MLast.ExOpen (loc, li, mktupexp loc e el) : 'expr_longident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm
                             (longident : 'longident Grammar.Entry.e)))

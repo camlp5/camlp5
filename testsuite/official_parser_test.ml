@@ -8,7 +8,7 @@ open OUnitTest ;
 
 value _ = 
 if not Sys.interactive.val then
-  run_test_tt_main Antiquotation_test.q_MLast_parser_tests
+  run_test_tt_main Antiquotation_test.official_parser_tests
 else ()
 ;
   

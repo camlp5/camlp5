@@ -768,7 +768,6 @@ let ocaml_ppat_tuple l cflag =
 ;;
 
 let mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
-  let al = List.map (fun x -> None, x) al in
   let a = ocaml_mkpat loc (ocaml_ppat_tuple al Closed) in
   {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) true;
    ppat_loc = loc; ppat_loc_stack = [];

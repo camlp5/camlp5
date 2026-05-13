@@ -752,16 +752,18 @@ and patt =
           let p = patt (exception_to_constructor_pattern f0) in
           mkpat loc (ocaml_ppat_exception p)
       | _ -> 
-      let al = List.map patt al in
+      let al : list (option string * Parsetree.pattern) = List.map label_patt al in
       let p = (patt f).ppat_desc in
       match ocaml_ppat_construct_args p with
       [ Some (li, li_loc, None, _) →
           if Prtools.no_constructors_arity.val then
             let a =
               match al with
-              [ [a] -> a
+              [ [(None, a)] -> a
+              | [(Some lab, _)] ->
+                 error (loc_of_patt f)
+                   (Printf.sprintf "single labeled pattern argument %s not allowed" lab)
               | _ ->
-                 let al = add_empty_labels al in
                  mkpat loc (ocaml_ppat_tuple al Closed) ]
             in
             mkpat loc (ocaml_ppat_construct li_loc li (Some ([],a)) False)
@@ -773,9 +775,11 @@ and patt =
               [ Some (s, None) →
                   let a =
                     match al with
-                    [ [a] → a
+                    [ [(None, a)] → a
+                    | [(Some lab, _)] ->
+                       error (loc_of_patt f)
+                         (Printf.sprintf "single labeled pattern argument %s not allowed" lab)
                     | _ →
-                      let al = add_empty_labels al in
                       mkpat loc (ocaml_ppat_tuple al Closed)
                     ]
                   in
@@ -830,19 +834,7 @@ and patt =
         (Ppat_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
   | PaTup loc pl clflag →
-      let labeled_patt = fun [
-            PaLab ploc (PaLid _ s as p) po ->
-            let p =
-              match uv po with
-                [ Some p → p
-                | None → p ]
-            in
-            (Some (uv s), patt p)
-          | PaLab ploc (PaTyc _ (PaLid _ s) ty as p) <:vala< None >> ->
-             (Some (uv s), patt p)
-          | p -> (None, patt p)
-          ] in
-      let l = List.map labeled_patt (uv pl) in
+      let l = List.map label_patt (uv pl) in
       let clflag = if uv clflag then Closed else Open in
       mkpat loc (ocaml_ppat_tuple l clflag)
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
@@ -1212,6 +1204,20 @@ and expr =
   | ExExten loc ebody -> mkexp loc (ocaml_pexp_extension (extension (uv ebody)))
   | ExUnr loc -> error loc "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)"
   ]
+
+and label_patt = fun [
+      PaLab ploc (PaLid _ s as p) po ->
+      let p =
+        match uv po with
+          [ Some p → p
+          | None → p ]
+      in
+      (Some (uv s), patt p)
+    | PaLab ploc (PaTyc _ (PaLid _ s) ty as p) <:vala< None >> ->
+       (Some (uv s), patt p)
+    | p -> (None, patt p)
+    ]
+
 and label_expr =
   fun
   [ ExLab loc p eo →

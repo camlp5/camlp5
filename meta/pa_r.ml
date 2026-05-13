@@ -1150,6 +1150,7 @@ EXTEND
             <:expr< $longid:li$ . $lid:op$ >>
 
       | li = longident ; "." ; "(" ; e = expr ; ")" -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; "(" ; e = expr; ","; el = LIST1 expr SEP "," ; ")" -> <:expr< $longid:li$ . ( $mktupexp loc e el$ ) >>
       | li = longident ; "." ; id = V LIDENT "lid" ->
         <:expr< $longid:li$ . $_lid:id$ >>
       | li = longident ; "." ; check_lbracket ; e = expr LEVEL "simple" -> <:expr< $longid:li$ . ( $e$ ) >>

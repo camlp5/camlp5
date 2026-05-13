@@ -1685,6 +1685,9 @@ EXTEND_PRINTER
         | <:expr< { $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
         | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
         | <:expr:< $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" longident li var_escaped (loc,v)
+        | <:expr< ($list:el$) >> ->
+          let el = List.map (fun e -> (e, ",")) el in
+          pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li (plist expr 0) el
 
         | e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
         ]
