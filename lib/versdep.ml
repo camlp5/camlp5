@@ -1159,9 +1159,6 @@ value ocaml_ppat_tuple l cflag =
 ;
 
 value mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
-  let al = 
-      List.map (fun x -> (None, x)) al
-  in
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     let a = ocaml_mkpat loc (ocaml_ppat_tuple al Closed) in
     {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) True;

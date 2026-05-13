@@ -815,6 +815,19 @@ value labeled_ctyp_list_fails =
     pa_labeled_ctyp_list_fails
 ;
 
+value unlabeled_expr = fun [
+  <:expr< ~{$lid:_$ = $_$} >> -> False
+| _ -> True
+]
+;
+
+value unlabeled_patt = fun [
+  <:patt< ~{$lid:_$ = $_$} >> -> False
+| _ -> True
+]
+;
+
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -1396,7 +1409,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           [ 1 -> <:expr< $e1$ $e2$ >>
           | _ ->
               match e2 with
-              [ <:expr< ( $list:el$ ) >> ->
+              [ <:expr< ( $list:el$ ) >> when List.for_all unlabeled_expr el ->
                   List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) e1 el
               | _ -> <:expr< $e1$ $e2$ >> ] ]
       | "assert"; (ext,attrs) = ext_attributes; e = SELF ->
@@ -1751,7 +1764,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
                 | _ -> p2 ]
               in
               match p2 with
-              [ <:patt< ( $list:pl$ ) >> ->
+              [ <:patt< ( $list:pl$ ) >> when List.for_all unlabeled_patt pl ->
                   List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>) p1 pl
               | _ -> <:patt< $p1$ $p2$ >> ] ]
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 

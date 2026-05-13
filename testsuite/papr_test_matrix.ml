@@ -6388,10 +6388,10 @@ ELSE
      exclude=["o2official";"r2official"];
      o_input = OK {foo| M (~x:(a b), y)|foo} ;
      official_input = OK {foo|M (~x:(a b), y)|foo} ;
-     r_input = OK {foo|M ~{x=(a b)} y;|foo} ;
+     r_input = OK {foo|M (~{x=(a b)}, y);|foo} ;
      o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
      official_output = OK {foo|;;M (~x:(a b), y)|foo} ;
-     r_output = OK {foo|M ~{x=a b} y;|foo}
+     r_output = OK {foo|M (~{x = a b}, y);|foo}
     }
   ; {name="labeled-tuple-exp-5-only-o"; implem = True ;
      exclude=[];
@@ -6400,9 +6400,27 @@ ELSE
      r_input = SKIP "" "" ;
      o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
      official_output = OK {foo|;;M (~x:(a b), y)|foo} ;
-     r_output = OK {foo|M ~{x=a b} y;|foo}
+     r_output = OK {foo|M (~{x = a b}, y);|foo}
     }
   ; {name="labeled-tuple-exp-5-only-r"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|M ~{x=(a b)} y;|foo} ;
+     o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
+     official_output = OK {foo|;;((M (~x:(a b), y))[@ocaml.explicit_arity ])|foo} ;
+     r_output = OK {foo|M ~{x=a b} y;|foo}
+    }
+  ; {name="labeled-tuple-exp-6"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo| M (~x:(a b), y)|foo} ;
+     official_input = OK {foo|M (~x:(a b), y)|foo} ;
+     r_input = OK {foo|M (~{x=(a b)}, y);|foo} ;
+     o_output = OK {foo|let _ = M (~x:(a b), y);;|foo};
+     official_output = OK {foo|;;M (~x:(a b), y)|foo} ;
+     r_output = OK {foo|M (~{x = a b}, y);|foo}
+    }
+  ; {name="labeled-tuple-exp-6-only-r"; implem = True ;
      exclude=[];
      o_input = SKIP "" "" ;
      official_input = SKIP "" "" ;
@@ -6455,6 +6473,33 @@ ELSE
      o_output = OK {foo|let _ = let (~(x:t), y) = 1 in 1;;|foo};
      official_output = OK {foo|;;let (~x:(x:t), y) = 1 in 1|foo} ;
      r_output = OK {foo|let (~{(x:t)}, y) = 1 in 1;|foo}
+    }
+ ;{name="labeled-tuple-pat-6"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with (~x:t, y) -> 1|foo} ;
+     official_input = OK {foo|match x with (~x:t, y) -> 1|foo} ;
+     r_input = OK {foo|match x with [ (~{x=t}, y) -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with ~x:t, y -> 1;;|foo};
+     official_output = OK {foo|;;match x with | (~x:t, y) -> 1|foo};
+     r_output = OK {foo|match x with (~{x = t}, y) -> 1;|foo}
+    }
+ ;{name="labeled-tuple-pat-7"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo|match x with M(~x:t, y) -> 1|foo} ;
+     official_input = OK {foo|match x with M(~x:t, y) -> 1|foo} ;
+     r_input = OK {foo|match x with [ M(~{x=t}, y) -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with M(~x:t, y) -> 1;;|foo};
+     official_output = OK {foo|;;match x with | M(~x:t, y) -> 1|foo};
+     r_output = OK {foo|match x with [ M (~{x = t}, y) -> 1 ];|foo}
+    }
+ ;{name="labeled-tuple-pat-7-r2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|match x with [ M(~{x=t}, y) -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with M(~x:t, y) -> 1;;|foo};
+     official_output = OK {foo|;;match x with | ((M ((~x:t, y)))[@ocaml.explicit_arity ]) -> 1|foo};
+     r_output = OK {foo|match x with [ M (~{x = t}, y) -> 1 ];|foo}
     }
  ;{name="bivariant-type-parameter-syntax"; implem = True ;
      exclude=[];
