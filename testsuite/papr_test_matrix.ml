@@ -3481,8 +3481,7 @@ type nat _ =
      official_output = OK {foo|let x = [%e1 let x = y[@@a1 ][@@a3 ] in ()]|foo} ;
      r_output = OK {foo|value x = [%"e1" let x = y[@@"a1"] [@@"a3"] in ();];|foo}
     };
-
-    {name="str_item-let-open-0"; implem = True ;
+    {name="str_item-let-open-0a"; implem = True ;
      exclude=[];
      o_input = OK {foo|let open! M in ()|foo} ;
      official_input = OK {foo|let open! M in ()|foo} ;
@@ -3491,7 +3490,16 @@ type nat _ =
      official_output = OK {foo|;;let open! M in ()|foo} ;
      r_output = OK {foo|let open! M in ();|foo}
     };
-    {name="expr-let-open-0"; implem = True ;
+    {name="str_item-let-open-0b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let open M in f x ; g y|foo} ;
+     official_input = OK {foo|let open M in f x ; g y|foo} ;
+     r_input = OK {foo|let open M in do { f x; g y };|foo} ;
+     o_output = OK {foo|let _ = let open M in begin f x; g y end;;|foo};
+     official_output = OK {foo|;;let open M in f x; g y|foo} ;
+     r_output = OK {foo|do { let open M in f x; g y };|foo}
+    };
+    {name="expr-let-open-0a"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let open! M in ()|foo} ;
      official_input = OK {foo|let x = let open! M in ()|foo} ;
@@ -3499,6 +3507,16 @@ type nat _ =
      o_output = OK {foo|let x = let open! M in ();;|foo};
      official_output = OK {foo|let x = let open! M in ()|foo} ;
      r_output = OK {foo|value x = let open! M in ();|foo}
+    };
+    {name="expr-let-open-0b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let open M in f x ; g y in ()|foo} ;
+     official_input = OK {foo|let x = let open M in f x ; g y in ()|foo} ;
+     r_input = OK {foo|let x = let open M in do { f x; g y } in ();|foo} ;
+     o_output = OK {foo|let _ = let x = let open M in begin f x; g y end in ();;|foo};
+     official_output = OK {foo|;;let x = let open M in f x; g y in ()|foo} ;
+     r_output = OK {foo|let x = do { let open M in f x; g y } in
+();|foo}
     };
     IFDEF OCAML_VERSION < OCAML_5_5_0 THEN
     {name="str_item-let-open-1"; implem = True ;

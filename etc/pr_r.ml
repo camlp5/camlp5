@@ -616,7 +616,7 @@ and hvseq pc se =
     | SE_let_str_item si se ->
        let loc = MLast.loc_of_str_item si in
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>let %p@ %p@]" force_vertic str_item si loop se)
+          (pprintf pc "@[<i>let %p@ in %p@]" force_vertic str_item si loop se)
     | SE_closed e se ->
         pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
           e loop se

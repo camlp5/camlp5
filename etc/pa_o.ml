@@ -1241,7 +1241,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline e ext0 attrs0
 
       | "let"; (ext0,attrs0) = ext_attributes ;
-        si = shared_str_item; "in" ; x = SELF →
+        si = shared_str_item; "in" ; x = expr LEVEL "top" →
           let e = <:expr< let $stri:si$ in $x$ >> in
           expr_to_inline e ext0 attrs0
 
