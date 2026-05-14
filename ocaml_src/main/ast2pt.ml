@@ -784,6 +784,16 @@ and ctyp =
   | TyOpen (loc, li, t) ->
       let li = longid_to_longident li in
       mktyp loc (ocaml_ptyp_open (mkloc loc) li (ctyp t))
+  | TyFun (loc, idopt, mid, mt, ct) ->
+      let (mt, alg_attrs) = module_type_unwrap_attrs mt in
+      let pt =
+        package_of_module_type ~alg_attributes:(conv_attributes alg_attrs) loc
+          mt
+      in
+      let ct = ctyp ct in
+      mktyp loc
+        (ocaml_ptyp_functor (mkloc loc) (option_map uv (uv idopt)) (uv mid) pt
+           ct)
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then mkfield_var loc else []

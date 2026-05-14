@@ -6912,12 +6912,21 @@ ELSE
   }
   ;{name="type-functor-0"; implem = True ;
      exclude=[];
-     o_input = SKIP "" "" ;
+     o_input = OK {foo|type t = m:(module M:MT) -> t |foo} ;
      official_input = OK {foo|type t = m:(module M:MT) -> t |foo} ;
-     r_input = SKIP "" "" ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|type t = m:(module M : MT) -> t;|foo} ;
+     o_output = OK {foo|type t = m:(module M : MT) -> t;;|foo};
      official_output = OK {foo|type t = m:(module M : MT) -> t|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|type t = m:(module M : MT) -> t;|foo}
+    }
+  ;{name="type-functor-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = (module M:MT) -> t |foo} ;
+     official_input = OK {foo|type t = (module M:MT) -> t |foo} ;
+     r_input = OK {foo|type t = (module M : MT) -> t;|foo} ;
+     o_output = OK {foo|type t = (module M : MT) -> t;;|foo};
+     official_output = OK {foo|type t = (module M : MT) -> t|foo} ;
+     r_output = OK {foo|type t = (module M : MT) -> t;|foo}
     }
 ]
 END

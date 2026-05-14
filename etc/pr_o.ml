@@ -1841,8 +1841,8 @@ EXTEND_PRINTER
           match lab with [
               None ->
                 pprintf pc "@[<1>(module %s :@ %p) -> %p@]" s module_type mt ctyp_arrow ct
-            | Some <:vala< lab >> ->
-                pprintf pc "@[<1>%s:(module %s :@ %p) -> %p@]" lab s module_type mt ctyp_arrow ct
+            | Some lab ->
+                pprintf pc "@[<1>%s:(module %s :@ %p) -> %p@]" (Pcaml.unvala lab) s module_type mt ctyp_arrow ct
             ]
 
       | <:ctyp< ( module $mt$ ) >> ->

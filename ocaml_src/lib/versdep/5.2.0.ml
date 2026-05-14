@@ -712,6 +712,9 @@ let ocaml_ptyp_tuple x =
 let ocaml_ptype_external (s : string) : type_kind =
   failwith "Ptype_external: only available with ocaml >= 5.05"
 ;;
+let ocaml_ptyp_functor loc idopt mid pt ct : core_type_desc =
+  failwith "Ptyp_functor: only available with ocaml >= 5.05"
+;;
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_record lel eo =
