@@ -4933,8 +4933,8 @@ Grammar.safe_extend
                                      (Grammar.s_token ("", "(")))
                                   (Grammar.s_token ("", "module")))
                                (Grammar.s_nterm
-                                  (alg_attributes :
-                                   'alg_attributes Grammar.Entry.e)))
+                                  (ext_attributes :
+                                   'ext_attributes Grammar.Entry.e)))
                             (Grammar.s_token ("UIDENT", "")))
                          (Grammar.s_token ("", ":")))
                       (Grammar.s_nterm
@@ -4944,9 +4944,11 @@ Grammar.safe_extend
              (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
            "194fe98d",
            (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string)
-                (alg_attrs : 'alg_attributes) _ _ _ (i : string)
+                (ext, attrs : 'ext_attributes) _ _ _ (i : string)
                 (loc : Ploc.t) ->
-              (MLast.TyFun (loc, Some i, id, mt, ct) : 'ctyp_ident)));
+              (ctyp_to_inline (MLast.TyFun (loc, Some i, id, mt, ct)) ext
+                 attrs :
+               'ctyp_ident)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
@@ -5184,14 +5186,20 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                   (Grammar.s_token ("", "module")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_token ("", "module")))
+                   (Grammar.s_nterm
+                      (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                 (Grammar.s_nterm
                    (module_type : 'module_type Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "194fe98d",
-           (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
-              (MLast.TyPck (loc, mt) : 'paren_ctyp)));
+           (fun _ (mt : 'module_type) (ext, attrs : 'ext_attributes) _ _
+                (loc : Ploc.t) ->
+              (ctyp_to_inline (MLast.TyPck (loc, mt)) ext attrs :
+               'paren_ctyp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -5201,9 +5209,13 @@ Grammar.safe_extend
                          (Grammar.r_next
                             (Grammar.r_next
                                (Grammar.r_next
-                                  (Grammar.r_next Grammar.r_stop
-                                     (Grammar.s_token ("", "(")))
-                                  (Grammar.s_token ("", "module")))
+                                  (Grammar.r_next
+                                     (Grammar.r_next Grammar.r_stop
+                                        (Grammar.s_token ("", "(")))
+                                     (Grammar.s_token ("", "module")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                (Grammar.s_nterm
                                   (check_v_uident_colon :
                                    'check_v_uident_colon Grammar.Entry.e)))
@@ -5215,9 +5227,11 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "->")))
              (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
            "194fe98d",
-           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _ _ _
-                (loc : Ploc.t) ->
-              (MLast.TyFun (loc, None, id, mt, ct) : 'paren_ctyp)));
+           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _
+                (ext, attrs : 'ext_attributes) _ _ (loc : Ploc.t) ->
+              (let mt = module_type_wrap_attrs mt attrs in
+               MLast.TyFun (loc, None, id, mt, ct) :
+               'paren_ctyp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -5229,14 +5243,18 @@ Grammar.safe_extend
                                (Grammar.r_next
                                   (Grammar.r_next
                                      (Grammar.r_next
-                                        (Grammar.r_next Grammar.r_stop
-                                           (Grammar.s_nterm
-                                              (lidopt_fails :
-                                               'lidopt_fails
-                                                 Grammar.Entry.e)))
-                                        (Grammar.s_token ("", ":")))
-                                     (Grammar.s_token ("", "(")))
-                                  (Grammar.s_token ("", "module")))
+                                        (Grammar.r_next
+                                           (Grammar.r_next Grammar.r_stop
+                                              (Grammar.s_nterm
+                                                 (lidopt_fails :
+                                                  'lidopt_fails
+                                                    Grammar.Entry.e)))
+                                           (Grammar.s_token ("", ":")))
+                                        (Grammar.s_token ("", "(")))
+                                     (Grammar.s_token ("", "module")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                (Grammar.s_nterm
                                   (check_v_uident_colon :
                                    'check_v_uident_colon Grammar.Entry.e)))
@@ -5248,8 +5266,9 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "->")))
              (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
            "194fe98d",
-           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _ _ _ _
-                (lab : 'lidopt_fails) (loc : Ploc.t) ->
+           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _
+                (ext, attrs : 'ext_attributes) _ _ _ (lab : 'lidopt_fails)
+                (loc : Ploc.t) ->
               (MLast.TyFun (loc, lab, id, mt, ct) : 'paren_ctyp)))]];
     Grammar.extension
       (maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e) None
