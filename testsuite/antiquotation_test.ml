@@ -591,7 +591,7 @@ value official_type_functor_syntax_tests = "official type_functor-syntax" >::: (
         expect = {foo|
 MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
   (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
-  (MLast.TyLid loc (Ploc.VaVal "t"))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
 |foo}
       }
      ;{

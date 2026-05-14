@@ -753,6 +753,22 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+value check_v_lident_colon_f strm =
+  match stream_npeek 2 strm with [
+      [("LIDENT",_); ("",":")] -> ()
+    | [("ANTIQUOT", qs); ("",":")]
+      when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+    | [("ANTIQUOT_LOC", s); ("",":")]
+      when (match Plexer.parse_antiloc s with [ Some(_, ("lid"|"_lid"), _) -> True | _ -> False ]) -> ()
+    | _ -> raise Stream.Failure
+    ]
+;
+
+value check_v_lident_colon =
+  Grammar.Entry.of_parser gram "check_v_lident_colon"
+    check_v_lident_colon_f
+;
+
 value check_v_uident_colon_f strm =
   match stream_npeek 2 strm with [
       [("UIDENT",_); ("",":")] -> ()
@@ -806,6 +822,8 @@ value unlabeled_patt = fun [
 ]
 ;
 
+value labeled_ctyp = Grammar.Entry.create gram "labeled_ctyp";
+value maybe_labeled_ctyp = Grammar.Entry.create gram "maybe_labeled_ctyp";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
@@ -817,6 +835,7 @@ EXTEND
     attribute_body alg_attribute alg_attributes
     check_type_binder
     ext_attributes
+    labeled_ctyp maybe_labeled_ctyp
     ;
   located_rawstring: [ [
       s = V RAWSTRING ->
@@ -2082,6 +2101,14 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
+      [ tl = V (LIST1 maybe_labeled_ctyp SEP "*") ->
+        match tl with [
+            <:vala< [(<:vala< (Some i) >>, t)] >> -> <:ctyp< ~$_:i$: $t$ >>
+          | <:vala< [ (<:vala< None >>, t) ] >> -> t
+          | _ -> <:ctyp< ( $_list:tl$ ) >>
+          ]
+      ]
+(*
       [ t = labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*" ->
           <:ctyp< ( $list:[t :: tl]$ ) >>
       | t = labeled_ctyp ->
@@ -2093,6 +2120,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
          let t = (<:vala< None >>, t) in
           <:ctyp< ( $list:[t :: tl]$ ) >>
       ]
+ *)
     | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
     | "ctyp2" LEFTA
@@ -2128,8 +2156,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | t = ctyp LEVEL "apply" -> (<:vala< None >>, t)
     ] ] ;
   labeled_ctyp:
-  [ [ check_lident_colon ; li = LIDENT ; ":" ; t = ctyp LEVEL "apply" ->
-      (Ploc.VaVal (Some (Ploc.VaVal li)), t)
+  [ [ check_v_lident_colon ; li = V LIDENT ; ":" ; t = ctyp LEVEL "apply" ->
+      match t with [
+          <:ctyp< (module $_uid:uid$ : $mt$) -> $ct$ >> ->
+          (<:vala< None >>, <:ctyp< $_lid:li$ : (module $_uid:uid$ : $mt$) -> $ct$ >>)
+        | _ -> (Ploc.VaVal (Some li), t)
+        ]
     ] ] ;
   (* Identifiers *)
   ident:
