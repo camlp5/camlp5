@@ -103,8 +103,22 @@ MLast.TyVrn loc lpv ools;
 (* ctyp PPX attributes and extensions *)
 
 <:ctyp< $t$ [@ $_attribute:x$ ] >> ;
+<:ctyp< external $str:s$ >>;
+<:ctyp< external $_str:s$ >>;
 <:ctyp< [% $_extension:x$ ] >> ;
 <:ctyp< $longid:x$ . ( $t$ ) >> ;
+
+(* type-functor *)
+<:ctyp< (module $uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< (module $_uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $lid:s1$:(module $uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $lid:s1$:(module $_uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $_lid:s1$:(module $uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $_lid:s1$:(module $_uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $lidopt:os1$:(module $uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $lidopt:os1$:(module $_uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $_lidopt:os1$:(module $uid:s2$ : $mt$) -> $t$ >> ;
+<:ctyp< $_lidopt:os1$:(module $_uid:s2$ : $mt$) -> $t$ >> ;
 
 (* poly_variant: Polymorphic variants. *)
 
@@ -466,8 +480,9 @@ MLast.ExRec loc lpe oe;
 <:expr< $e$ [@ $_attribute:x$ ] >> ;
 <:expr< [% $_extension:x$ ] >> ;
 
-(* expr str_item *)
-MLast.ExLSI loc si e;
+(* expr let-str-item *)
+<:expr< let $stri:si$ in $e$ >>;
+<:expr< let $_stri:si$ in $e$ >>;
 
 (* unreachable *)
 <:expr< . >> ;
