@@ -2131,12 +2131,14 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "external" ; s = V STRING -> <:ctyp< external $_str:s$ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
 
-      | lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+      | lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; (ext,attrs) = ext_attributes; check_v_uident_colon; id = V UIDENT ; ":" ;
              mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+         let mt = module_type_wrap_attrs mt attrs in
         <:ctyp< $_lidopt:lab$ : (module $_uid:id$ : $mt$) -> $ct$ >>
 
       | "("; "module"; (ext,attrs) = ext_attributes; check_v_uident_colon; id = V UIDENT ; ":" ;
              mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+         let mt = module_type_wrap_attrs mt attrs in
         <:ctyp< (module $_uid:id$ : $mt$) -> $ct$ >>
 
       | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 

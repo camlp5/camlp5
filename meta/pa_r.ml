@@ -1542,6 +1542,7 @@ EXTEND
 
       | "("; "module"; (ext,attrs) = ext_attributes ;check_v_uident_colon; id = V UIDENT ; ":" ;
              mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+         let mt = module_type_wrap_attrs mt attrs in
         <:ctyp< (module $_uid:id$ : $mt$) -> $ct$ >>
 
       | "(" ; "module"; (ext,attrs) = ext_attributes; mt = module_type ; ")" →
