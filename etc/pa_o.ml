@@ -753,11 +753,38 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+value check_v_uident_colon_f strm =
+  match stream_npeek 2 strm with [
+      [("UIDENT",_); ("",":")] -> ()
+    | [("ANTIQUOT", qs); ("",":")]
+      when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+    | [("ANTIQUOT_LOC", s); ("",":")]
+      when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
+    | _ -> raise Stream.Failure
+    ]
+;
+
+value check_v_uident_colon =
+  Grammar.Entry.of_parser gram "check_v_uident_colon"
+    check_v_uident_colon_f
+;
+
 value pa_fails : Stream.t 'a -> string = parser [ ] ;
 
 value fails =
   Grammar.Entry.of_parser gram "fails"
     pa_fails
+;
+
+IFNDEF STRICT THEN
+value pa_lidopt_fails : Stream.t 'a -> option string = parser [ ] ;
+ELSE
+value pa_lidopt_fails : Stream.t 'a -> option (Ploc.vala string) = parser [ ] ;
+END ;
+
+value lidopt_fails =
+  Grammar.Entry.of_parser gram "lidopt_fails"
+    pa_lidopt_fails
 ;
 
 value pa_labeled_ctyp_list_fails : Stream.t 'a -> list (Ploc.vala (option (Ploc.vala string)) * MLast.ctyp) = parser [ ] ;
@@ -2075,6 +2102,15 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "_" -> <:ctyp< _ >>
       | "external" ; s = V STRING -> <:ctyp< external $_str:s$ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
+
+      | lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+        <:ctyp< $_lidopt:lab$ : (module $_uid:id$ : $mt$) -> $ct$ >>
+
+      | "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+        <:ctyp< (module $_uid:id$ : $mt$) -> $ct$ >>
+
       | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 
           let mt = module_type_wrap_attrs mt attrs in
           let ct = <:ctyp< ( module $mt$ ) >> in

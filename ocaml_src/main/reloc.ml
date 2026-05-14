@@ -109,6 +109,11 @@ let rec ctyp floc sh =
         let loc = floc loc in TyExten (loc, attribute_body floc sh exten)
     | TyOpen (loc, li, t) ->
         let loc = floc loc in TyOpen (loc, longid floc sh li, ctyp floc sh t)
+    | TyFun (loc, arg, s, mty, cty) ->
+        let loc = floc loc in
+        TyFun
+          (loc, vala_map (option_map (vala_map (fun x -> x))) arg,
+           vala_map (fun x -> x) s, module_type floc sh mty, ctyp floc sh cty)
   in
   self
 and v_option_v_string x = vala_map (option_map (vala_map (fun x -> x))) x

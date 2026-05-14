@@ -65,6 +65,7 @@ and ctyp =
   | TyExt of loc and V string
   | TyExten of loc and attribute
   | TyOpen of loc and longid and ctyp
+  | TyFun of loc and V (option (V string)) and V string and module_type and ctyp
   ]
 and poly_variant =
   [ PvTag of loc and V string and V bool and V (list ctyp) and attributes

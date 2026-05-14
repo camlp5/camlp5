@@ -22,11 +22,19 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 MATRIXTESTS=official2official_test.byte o2official_test.byte r2official_test.byte o2r_test.byte r2r_test.byte r2o_test.byte o2o_test.byte
 
+ANTIQUOTATIONTESTS= \
+	q_MLast_test.byte \
+	revised_parser_test.byte \
+	official_parser_test.byte \
+
 export LC_ALL=C
 
 all-tests:: all $(TESTS)
 matrix-tests:: $(MATRIXTESTS)
 	for t in $(MATRIXTESTS); do echo "==== $$t ====" ; ./$$t || true; done
+
+antiquotation-tests:: $(ANTIQUOTATIONTESTS)
+	for t in $(ANTIQUOTATIONTESTS); do echo "==== $$t ====" ; ./$$t || true; done
 
 all: roundtrippers \
 	o2r_test.byte \

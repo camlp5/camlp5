@@ -6909,6 +6909,15 @@ ELSE
      o_output = OK {foo|type t = external "foo";;|foo};
      official_output = OK {foo|type t = external "foo"|foo} ;
      r_output = OK {foo|type t = external "foo";|foo}
+  }
+  ;{name="type-functor-0"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = OK {foo|type t = m:(module M:MT) -> t |foo} ;
+     r_input = SKIP "" "" ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|type t = m:(module M : MT) -> t|foo} ;
+     r_output = OK {foo||foo}
     }
 ]
 END

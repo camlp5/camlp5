@@ -672,6 +672,25 @@ let check_type_binder =
 ;;
 
 
+let check_v_uident_colon_f strm =
+  match stream_npeek 2 strm with
+    ["UIDENT", _; "", ":"] -> ()
+  | ["ANTIQUOT", qs; "", ":"]
+    when prefix_eq "uid:" qs || prefix_eq "_uid:" qs ->
+      ()
+  | ["ANTIQUOT_LOC", s; "", ":"]
+    when
+      match Plexer.parse_antiloc s with
+        Some (_, ("uid" | "_uid"), _) -> true
+      | _ -> false ->
+      ()
+  | _ -> raise Stream.Failure
+;;
+
+let check_v_uident_colon =
+  Grammar.Entry.of_parser gram "check_v_uident_colon" check_v_uident_colon_f
+;;
+
 let watch_str_expr (x : string) (e : MLast.expr) = ();;
 let watch__str_expr (x : string) (e : MLast.expr) = ();;
 let watch_locstr_expr (x : Ploc.t * string) (e : MLast.expr) = ();;
@@ -682,6 +701,14 @@ let (pa_fails : 'a Stream.t -> string) =
 ;;
 
 let fails = Grammar.Entry.of_parser gram "fails" pa_fails;;
+
+let (pa_lidopt_fails : 'a Stream.t -> string option) =
+  fun (strm__ : _ Stream.t) -> raise Stream.Failure
+;;
+
+let lidopt_fails =
+  Grammar.Entry.of_parser gram "lidopt_fails" pa_lidopt_fails
+;;
 
 let (pa_str_item_fails : 'a Stream.t -> MLast.str_item) =
   fun (strm__ : _ Stream.t) -> raise Stream.Failure
@@ -4890,6 +4917,37 @@ Grammar.safe_extend
     Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next
+                                  (Grammar.r_next
+                                     (Grammar.r_next
+                                        (Grammar.r_next Grammar.r_stop
+                                           (Grammar.s_token ("LIDENT", "")))
+                                        (Grammar.s_token ("", ":")))
+                                     (Grammar.s_token ("", "(")))
+                                  (Grammar.s_token ("", "module")))
+                               (Grammar.s_nterm
+                                  (alg_attributes :
+                                   'alg_attributes Grammar.Entry.e)))
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", ":")))
+                      (Grammar.s_nterm
+                         (module_type : 'module_type Grammar.Entry.e)))
+                   (Grammar.s_token ("", ")")))
+                (Grammar.s_token ("", "->")))
+             (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
+           "194fe98d",
+           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string)
+                (alg_attrs : 'alg_attributes) _ _ _ (i : string)
+                (loc : Ploc.t) ->
+              (MLast.TyFun (loc, Some i, id, mt, ct) : 'ctyp_ident)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
@@ -5133,7 +5191,66 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            "194fe98d",
            (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
-              (MLast.TyPck (loc, mt) : 'paren_ctyp)))]];
+              (MLast.TyPck (loc, mt) : 'paren_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "(")))
+                                  (Grammar.s_token ("", "module")))
+                               (Grammar.s_nterm
+                                  (check_v_uident_colon :
+                                   'check_v_uident_colon Grammar.Entry.e)))
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", ":")))
+                      (Grammar.s_nterm
+                         (module_type : 'module_type Grammar.Entry.e)))
+                   (Grammar.s_token ("", ")")))
+                (Grammar.s_token ("", "->")))
+             (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
+           "194fe98d",
+           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _ _ _
+                (loc : Ploc.t) ->
+              (MLast.TyFun (loc, None, id, mt, ct) : 'paren_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next
+                                  (Grammar.r_next
+                                     (Grammar.r_next
+                                        (Grammar.r_next Grammar.r_stop
+                                           (Grammar.s_nterm
+                                              (lidopt_fails :
+                                               'lidopt_fails
+                                                 Grammar.Entry.e)))
+                                        (Grammar.s_token ("", ":")))
+                                     (Grammar.s_token ("", "(")))
+                                  (Grammar.s_token ("", "module")))
+                               (Grammar.s_nterm
+                                  (check_v_uident_colon :
+                                   'check_v_uident_colon Grammar.Entry.e)))
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", ":")))
+                      (Grammar.s_nterm
+                         (module_type : 'module_type Grammar.Entry.e)))
+                   (Grammar.s_token ("", ")")))
+                (Grammar.s_token ("", "->")))
+             (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e) "arrow"),
+           "194fe98d",
+           (fun (ct : 'ctyp) _ _ (mt : 'module_type) _ (id : string) _ _ _ _
+                (lab : 'lidopt_fails) (loc : Ploc.t) ->
+              (MLast.TyFun (loc, lab, id, mt, ct) : 'paren_ctyp)))]];
     Grammar.extension
       (maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e) None
       [None, None,

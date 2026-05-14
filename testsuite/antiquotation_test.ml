@@ -505,6 +505,152 @@ value revised_syntax_tests = "revised-syntax" >::: (List.map mktest
     ])
  ;
 
+value type_functor_syntax_tests = "type_functor-syntax" >::: (List.map mktest
+    [
+      {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+     ;{
+        name = "type-functor-0";
+        code = {foo|<:ctyp< m:(module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-1";
+        code = {foo|<:ctyp< (module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal None) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-2";
+        code = {foo|<:ctyp< $lid:l$:(module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal l))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-3";
+        code = {foo|<:ctyp< $lidopt:l$:(module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal l) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-4";
+        code = {foo|<:ctyp< m:(module $uid:m$:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal m)
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-5";
+        code = {foo|<:ctyp< m:(module M:$mt$) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  mt
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-6";
+        code = {foo|<:ctyp< m:(module M:MT) -> $ct$ >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  ct;
+|foo}
+      }
+    ])
+ ;
+
+value official_type_functor_syntax_tests = "official type_functor-syntax" >::: (List.map mktest
+    [
+      {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+     ;{
+        name = "type-functor-0";
+        code = {foo|<:ctyp< m:(module M:MT) -> t >>|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"))
+|foo}
+      }
+     ;{
+        name = "type-functor-1";
+        code = {foo|<:ctyp< (module M:MT) -> t >>|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal None) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-2";
+        code = {foo|<:ctyp< $lid:l$:(module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal l))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-3";
+        code = {foo|<:ctyp< $lidopt:l$:(module M:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal l) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-4";
+        code = {foo|<:ctyp< m:(module $uid:m$:MT) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal m)
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-5";
+        code = {foo|<:ctyp< m:(module M:$mt$) -> t >>;|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  mt
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo}
+      }
+     ;{
+        name = "type-functor-6";
+        code = {foo|<:ctyp< m:(module M:MT) -> $ct$ >>|foo};
+        expect = {foo|
+MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
+  (MLast.MtLong loc (MLast.LiUid loc (Ploc.VaVal "MT")))
+  ct;
+|foo}
+      }
+    ])
+ ;
+
 
 value official_syntax_tests = "official-syntax" >::: (List.map mktest
     [
@@ -522,24 +668,28 @@ value official_syntax_tests = "official-syntax" >::: (List.map mktest
           expect = {foo|MLast.TyTup loc l;
 |foo} ;
           code = {foo|<:ctyp< ( $_list:l$ ) >>; |foo}
-        }    ])
+        }
+    ])
  ;
 
 value q_MLast_parser_tests = "q_MLast parser" >::: [
     "shared syntax" >: shared_syntax_tests
   ; "revised syntax" >: revised_syntax_tests
+  ; "type_functor-syntax" >: type_functor_syntax_tests
 ]
 ;
 
 value revised_parser_tests = "revised parser" >::: [
     "shared syntax" >: shared_syntax_tests
   ; "revised syntax" >: revised_syntax_tests
+  ; "type_functor-syntax" >: type_functor_syntax_tests
 ]
 ;
 
 value official_parser_tests = "official parser" >::: [
     "shared syntax" >: shared_syntax_tests
   ; "official syntax" >: official_syntax_tests
+  ; "official type_functor-syntax" >: official_type_functor_syntax_tests
 ]
 ;
   

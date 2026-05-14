@@ -80,6 +80,11 @@ module Meta_make (C : MetaSig) =
           C.node "TyExten" [exten]
       | TyOpen _ li t ->
          C.node "TyOpen" [longid li; ctyp t]
+      | TyFun _ arg s mty cty ->
+         C.node "TyFun" [C.vala (C.option (C.vala C.string)) arg ;
+                         C.vala C.string s ;
+                         module_type mty ;
+                         ctyp cty]
       ]
     and labeled_ctyp (so, ct) = C.tuple [C.vala (C.option (C.vala C.string)) so; ctyp ct]
     and longid_lident (lio, s) = C.tuple [C.option (C.vala longid) lio; C.vala C.string s]

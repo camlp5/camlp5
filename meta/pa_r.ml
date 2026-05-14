@@ -562,6 +562,22 @@ value check_type_binder =
 ;
 
 
+value check_v_uident_colon_f strm =
+  match stream_npeek 2 strm with [
+      [("UIDENT",_); ("",":")] -> ()
+    | [("ANTIQUOT", qs); ("",":")]
+      when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+    | [("ANTIQUOT_LOC", s); ("",":")]
+      when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
+    | _ -> raise Stream.Failure
+    ]
+;
+
+value check_v_uident_colon =
+  Grammar.Entry.of_parser gram "check_v_uident_colon"
+    check_v_uident_colon_f
+;
+
 IFNDEF STRICT THEN
 value watch_str_expr (x : string) (e : MLast.expr) = () ;
 value watch__str_expr (x : string) (e : MLast.expr) = () ;
@@ -579,6 +595,17 @@ value pa_fails : Stream.t 'a -> string = parser [ ] ;
 value fails =
   Grammar.Entry.of_parser gram "fails"
     pa_fails
+;
+
+IFNDEF STRICT THEN
+value pa_lidopt_fails : Stream.t 'a -> option string = parser [ ] ;
+ELSE
+value pa_lidopt_fails : Stream.t 'a -> option (Ploc.vala string) = parser [ ] ;
+END ;
+
+value lidopt_fails =
+  Grammar.Entry.of_parser gram "lidopt_fails"
+    pa_lidopt_fails
 ;
 
 value pa_str_item_fails : Stream.t 'a -> MLast.str_item = parser [ ] ;
@@ -1464,6 +1491,10 @@ EXTEND
         <:ctyp< $longid:me1$ . ( $t$ ) >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>
+      | i = V LIDENT "lid" ; ":" ; "(" ; "module" ;
+        alg_attrs = alg_attributes ; id = V UIDENT ; ":" ;
+        mt = module_type ; ")" ; "->" ; ct = ctyp LEVEL "arrow" →
+        <:ctyp< $_lid:i$ : (module $_uid:id$ : $mt$) -> $ct$ >>
       ] 
     ]
   ;
@@ -1505,7 +1536,15 @@ EXTEND
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   paren_ctyp:
-    [ [ "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
+    [ [ lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+        <:ctyp< $_lidopt:lab$ : (module $_uid:id$ : $mt$) -> $ct$ >>
+
+      | "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+        <:ctyp< (module $_uid:id$ : $mt$) -> $ct$ >>
+
+      | "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
       | "("; t = maybe_labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*"; ")" → mktuptyp loc t tl
       | "("; t = maybe_labeled_ctyp; ")" → <:ctyp< $snd t$ >>
       | "("; tl = V (LIST1 maybe_labeled_ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>

@@ -141,6 +141,13 @@ value rec ctyp floc sh =
     | TyOpen loc li t ->
        let loc = floc loc in
        TyOpen loc (longid floc sh li) (ctyp floc sh t)
+    | TyFun loc arg s mty cty ->
+       let loc = floc loc in
+       TyFun loc
+         (vala_map (option_map (vala_map (fun x -> x))) arg)
+         (vala_map (fun x -> x) s)
+         (module_type floc sh mty)
+         (ctyp floc sh cty)
     ]
 and v_option_v_string x = vala_map (option_map (vala_map (fun x -> x))) x
 and generic_constructor floc sh = fun (loc, x1, x2, x3, x4, x5) ->

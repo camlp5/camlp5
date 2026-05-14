@@ -267,6 +267,7 @@ value patt = Eprinter.apply pr_patt;
 value simple_patt x = Eprinter.apply_level pr_patt "simple" x;
 value ctyp = Eprinter.apply pr_ctyp;
 value ctyp_below_alg_attribute x = Eprinter.apply_level pr_ctyp "below_alg_attribute" x;
+value ctyp_arrow x = Eprinter.apply_level pr_ctyp "arrow" x;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 value longident = Eprinter.apply pr_longident;
@@ -1974,6 +1975,15 @@ EXTEND_PRINTER
       | <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "@[<1>(%p)@]" (plist labeled_ctyp 0) tl
+
+      | <:ctyp< $lidopt:lab$ : (module $uid:s$ : $mt$) -> $ct$ >> ->
+          match lab with [
+              None ->
+                pprintf pc "@[<1>(module %s :@ %p) -> %p@]" s module_type mt ctyp_arrow ct
+            | Some <:vala< lab >> ->
+                pprintf pc "@[<1>%s:(module %s :@ %p) -> %p@]" lab s module_type mt ctyp_arrow ct
+            ]
+
       | <:ctyp< ( module $mt$ ) >> ->
           pprintf pc "@[(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->

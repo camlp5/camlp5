@@ -371,6 +371,20 @@ value stream_npeek n (strm  : Stream.t (string * string)) =
   Stream.npeek n strm
 ;
 
+value check_sv_uident_colon_f strm =
+  match stream_npeek 2 strm with [
+      [("UIDENT",_); ("",":")] -> ()
+    | [("ANTIQUOT", qs); ("",":")]
+      when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+    | _ -> raise Stream.Failure
+    ]
+;
+
+value check_sv_uident_colon =
+  Grammar.Entry.of_parser gram "check_sv_uident_colon"
+    check_sv_uident_colon_f
+;
+
 value check_dot_uid_f strm =
   match stream_npeek 5 strm with [
     [("",".") ; ("UIDENT",_) :: _] -> ()
@@ -1372,6 +1386,13 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
           Qast.Node "TyOpen" [Qast.Loc; me1; t]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
+      | i = SV LIDENT "lid" ; ":" ; "(" ; "module" ;
+        alg_attrs = alg_attributes ; id = SV UIDENT ; ":" ;
+        mty = module_type ; ")" ; "->" ; ty = ctyp →
+          Qast.Node "TyFun"
+          [Qast.Loc ;
+           Qast.VaVal (Qast.Option (Some i)) ;
+           id ; mty ; ty]
       ] 
     ]
   ;
@@ -1405,7 +1426,23 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       | "_" → Qast.Node "TyAny" [Qast.Loc]
       | "external" ; s = SV STRING -> Qast.Node "TyExt" [Qast.Loc; s]
       | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
+
+      | lab = SV fails "lidopt" ; ":"; "("; "module"; check_sv_uident_colon; id = SV UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp ->
+        Qast.Node "TyFun"
+          [Qast.Loc ;
+           lab ;
+           id ; mt ; ct]
+
+      | "("; "module"; check_sv_uident_colon; id = SV UIDENT ; ":" ;
+             mt = module_type ; ")"; "->" ; ct = ctyp ->
+        Qast.Node "TyFun"
+          [Qast.Loc ;
+           Qast.VaVal (Qast.Option None) ;
+           id ; mt ; ct]
+
       | "("; "module"; mt = module_type ; ")" → Qast.Node "TyPck" [Qast.Loc; mt]
+
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" →
           mktuptyp Qast.Loc t tl
       | "("; t = SELF; ")" → t
