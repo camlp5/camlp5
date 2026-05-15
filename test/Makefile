@@ -29,16 +29,26 @@ compare_quot_o:
 
 quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
 	cpp -E -DQMLAST -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
-	../meta/camlp5r ../meta/q_MLast.cmo ../etc/r_keywords.cmo ../etc/pr_r.cmo -l 400 -sep '\n' tmp.quot_r.ml | \
+	$(LAUNCH) not-ocamlfind preprocess -syntax camlp5r -package camlp5.pa_r,camlp5.quotations,camlp5.pr_r \
+	-ppopt -l -ppopt 400 \
+	-ppopt -sep -ppopt '\n' \
+	tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 
 quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)
 	cpp -E -DQAST -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
-	../meta/camlp5r ../meta/q_ast_base.cmo ../meta/q_ast.cmo ../etc/r_keywords.cmo ../etc/pr_r.cmo -l 400 -sep '\n' tmp.quot_r.ml | \
+	$(LAUNCH) not-ocamlfind preprocess -syntax camlp5r -package camlp5.pa_r,camlp5.quotations,camlp5.pr_r \
+	-ppopt -l -ppopt 400 \
+	-ppopt -sep -ppopt '\n' \
+	tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 
 quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)
-	../etc/camlp5o ../meta/q_ast_base.cmo ../meta/q_ast.cmo ../etc/o_keywords.cmo ../etc/pr_o.cmo -l 400 -flag M -sep '\n' quot_o.ml | \
+	$(LAUNCH) not-ocamlfind preprocess -syntax camlp5o -package camlp5.pa_o,camlp5.parser_quotations,camlp5.pr_o \
+	-ppopt -l -ppopt 400 \
+	-ppopt -flag -ppopt M \
+	-ppopt -sep -ppopt '\n' \
+	quot_o.ml | \
 	$(DIFF) -I '(\*' -B quot_o.out.ml -
 
 quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)

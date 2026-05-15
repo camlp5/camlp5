@@ -108,46 +108,46 @@ package "pa_op" (
 
 package "pr_r" (
   requires(toploop) = "camlp5"
-  archive(toploop)      = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(toploop)      = "r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
-  archive(syntax,preprocessor,native) = "r_keywords.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx"
+  archive(syntax,preprocessor,-native) = "r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo"
+  archive(syntax,preprocessor,native) = "r_keywords.cmx print_r.cmx pr_r.cmx print_ro.cmx pr_ro.cmx print_rp.cmx pr_rp.cmx"
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
-    archive(native) = "r_keywords.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx"
+    archive(byte) = "r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo"
+    archive(native) = "r_keywords.cmx print_r.cmx pr_r.cmx print_ro.cmx pr_ro.cmx print_rp.cmx pr_rp.cmx"
   )
 )
 
 package "pr_o" (
   requires(toploop) = "camlp5"
-  archive(toploop)      = "o_keywords.cmo pr_o.cmo"
+  archive(toploop)      = "o_keywords.cmo print_o.cmo pr_o.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "o_keywords.cmo pr_o.cmo"
-  archive(syntax,preprocessor,native) = "o_keywords.cmx pr_o.cmx"
+  archive(syntax,preprocessor,-native) = "o_keywords.cmo print_o.cmo pr_o.cmo"
+  archive(syntax,preprocessor,native) = "o_keywords.cmx print_o.cmx pr_o.cmx"
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "o_keywords.cmo pr_o.cmo"
-    archive(native) = "o_keywords.cmx pr_o.cmx"
+    archive(byte) = "o_keywords.cmo print_o.cmo pr_o.cmo"
+    archive(native) = "o_keywords.cmx print_o.cmx pr_o.cmx"
   )
 )
 
 package "pr_op" (
   requires(toploop) = "camlp5.pr_o"
-  archive(toploop)      = "pr_op.cmo"
+  archive(toploop)      = " print_op.cmo pr_op.cmo"
 
   requires(syntax,preprocessor) = "camlp5.pr_o"
-  archive(syntax,preprocessor,-native) = "pr_op.cmo"
-  archive(syntax,preprocessor,native) = "pr_op.cmx"
+  archive(syntax,preprocessor,-native) = "print_op.cmo pr_op.cmo"
+  archive(syntax,preprocessor,native) = "print_op.cmx pr_op.cmx"
 
   package "link" (
     requires = "camlp5.pr_o.link"
-    archive(byte) = "pr_op.cmo"
-    archive(native) = "pr_op.cmx"
+    archive(byte) = "print_op.cmo pr_op.cmo"
+    archive(native) = "print_op.cmx pr_op.cmx"
   )
 )
 

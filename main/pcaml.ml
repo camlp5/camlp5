@@ -477,20 +477,9 @@ value undef x = ref (fun _ -> failwith x);
 value print_interf = undef "no printer";
 value print_implem = undef "no printer";
 
-value show_expr e = Format.asprintf "%a" Pp_debug.Pp_MLast.pp_expr e ;
-value pr_expr = Eprinter.make ~{fail=show_expr} "expr";
-value pr_patt = Eprinter.make "patt";
-value pr_ctyp = Eprinter.make "type";
-value pr_str_item = Eprinter.make "str_item";
-value pr_sig_item = Eprinter.make "sig_item";
-value pr_longident = Eprinter.make "longident";
-value pr_module_expr = Eprinter.make "module_expr";
-value pr_module_type = Eprinter.make "module_type";
-value pr_class_sig_item = Eprinter.make "class_sig_item";
-value pr_class_str_item = Eprinter.make "class_str_item";
-value pr_class_expr = Eprinter.make "class_expr";
-value pr_class_type = Eprinter.make "class_type";
-value pr_expr_fun_args = ref Extfun.empty;
+module Base = Pr_base.PrBase(struct end) ;
+
+include Base ;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;
