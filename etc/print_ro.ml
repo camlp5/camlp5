@@ -16,7 +16,8 @@ open Printf;
 open Pretty;
 open Mlsyntax.Revised;
 
-module PP(Base : Mlsyntax.PRBASESIG) = struct
+module PP(Base : Mlsyntax.PRBASESIG)(Pr_r : Print_r.RSIG) = struct
+open Base.Printers ;
 open Base ;
 value uv = Pcaml.unvala ;
 

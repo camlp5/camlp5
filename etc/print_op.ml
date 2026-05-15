@@ -14,6 +14,7 @@ open Pretty;
 open Prtools;
 
 module PP(Base : Mlsyntax.PRBASESIG) = struct
+open Base.Printers ;
 open Base ;
 value not_impl name pc x =
   let desc =

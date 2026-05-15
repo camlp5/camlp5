@@ -27,6 +27,7 @@ value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
 module PP(Base : Mlsyntax.PRBASESIG) = struct
+open Base.Printers ;
 open Base ;
 do {
   Eprinter.clear pr_expr;
@@ -2176,8 +2177,8 @@ value apply_printer f (ast, eoi_loc) = do {
   cleanup ();
 };
 
-Pcaml.print_interf.val := apply_printer sig_item;
-Pcaml.print_implem.val := apply_printer str_item;
+value print_interf = apply_printer sig_item;
+value print_implem = apply_printer str_item;
 
 value is_uppercase c = char_uppercase c = c;
 
@@ -2226,7 +2227,7 @@ value default_flag () =
   else sprintf "A%s" off
 ;
 
-Pcaml.add_option "-flag" (Arg.String set_flags)
+add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        C/c enable/disable comments in phrases
@@ -2238,26 +2239,26 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        Z/z enable/disable compatibility with old versions of OCaml
        default setting is \"" ^ default_flag () ^ "\".");
 
-Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
+add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
      string_of_int Pretty.line_length.val ^ ")");
 
-Pcaml.add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
+add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
   "Read source file for text between phrases (default).";
 
-Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
+add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
-Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
+add_option "-ss" (Arg.Set flag_semi_semi)
   "(obsolete since version 4.02; use rather \"-flag M\").";
 
-Pcaml.add_option "-no_ss" (Arg.Clear flag_semi_semi)
+add_option "-no_ss" (Arg.Clear flag_semi_semi)
   "(obsolete since version 4.02; use rather \"-flag m\").";
 
-Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
+add_option "-cip" (Arg.Unit (fun x -> x))
   "(obsolete since version 4.02; use rather \"-flag C\")";
 
-Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
+add_option "-ncip" (Arg.Unit (fun x -> x))
   "(obsolete since version 4.02; use rather \"-flag c\")";
 
 (* Pretty printing extension for objects and labels *)

@@ -16,4 +16,4 @@ open Pretty;
 open Prtools;
 
 include Print_rp ;
-include (PP(Pcaml.Base)) ;
+include (PP(Pcaml.Base)(Pr_r.R)) ;

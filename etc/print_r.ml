@@ -38,7 +38,33 @@ value flag_where_after_arrow = ref True;
 
 value sep = Pcaml.inter_phrases;
 
-module PP(Base : Mlsyntax.PRBASESIG) = struct
+module type RSIG = sig
+  value print_interf : (list (MLast.sig_item * Ploc.t) * Ploc.t) -> unit ;
+  value print_implem : (list (MLast.str_item * Ploc.t) * Ploc.t) -> unit ;
+  value var_escaped_noloc : Pprintf.pr_context -> string -> string ;
+  value var_escaped : Pprintf.pr_context -> (Ploc.t * string) -> string ;
+  value pr_attribute : string -> Pprintf.pr_context -> Ploc.vala MLast.attribute_body -> string ;
+  value longident_lident : Pprintf.pr_context -> (option (Ploc.vala MLast.longid) * Ploc.vala string) -> string ;
+  value longident : Eprinter.pr_context -> MLast.longid -> string ;
+  value attribute_body : Eprinter.pr_context -> MLast.attribute_body -> string ;
+  value pr_extension : string -> Pprintf.pr_context -> (Ploc.vala MLast.attribute_body) -> string ;
+
+type seq =
+  [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr * MLast.attributes) and seq
+  | SE_let_str_item of MLast.str_item and seq
+  | SE_closed of MLast.expr and seq
+  | SE_other of MLast.expr and option seq ]
+;
+
+  value flatten_sequence : MLast.expr -> option seq ;
+  value sequence_box :
+    (Pprintf.pr_context -> unit -> string) ->
+    Prtools.pr_context -> seq -> string ;
+
+end ;
+
+module PP(Base : Mlsyntax.PRBASESIG) : RSIG = struct
+open Base.Printers ;
 open Base ;
 do {
   Eprinter.clear pr_expr;
@@ -2310,8 +2336,8 @@ value apply_printer f (ast, eoi_loc) = do {
   cleanup ();
 };
 
-Pcaml.print_interf.val := apply_printer sig_item;
-Pcaml.print_implem.val := apply_printer str_item;
+value print_interf = apply_printer sig_item;
+value print_implem = apply_printer str_item;
 
 value is_uppercase c = char_uppercase c = c;
 
@@ -2414,7 +2440,7 @@ value default_wflag () =
   else Printf.sprintf "A%s" off
 ;
 
-Pcaml.add_option "-flag" (Arg.String set_flags)
+add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        C/c enable/disable comments in phrases
@@ -2426,7 +2452,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 
-Pcaml.add_option "-wflag" (Arg.String set_wflags)
+add_option "-wflag" (Arg.String set_wflags)
   ("<str> Change displaying 'where' statements instead of 'let':
        A/a enable/disable all flags
        I/i enable/disable 'where' after 'in'
@@ -2440,26 +2466,26 @@ Pcaml.add_option "-wflag" (Arg.String set_wflags)
        W/w enable/disable 'where' after '->'
        default setting is \"" ^ default_wflag () ^ "\".");
 
-Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
+add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
      string_of_int Pretty.line_length.val ^ ")");
 
-Pcaml.add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
+add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
   "Read source file for text between phrases (default).";
 
-Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
+add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
-Pcaml.add_option "-no_where" (Arg.Unit (fun () -> set_wflags "a"))
+add_option "-no_where" (Arg.Unit (fun () -> set_wflags "a"))
   "(obsolete since version 4.02; use rather \"-wflag a\")";
 
-Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
+add_option "-cip" (Arg.Unit (fun x -> x))
   "(obsolete since version 4.02; use rather \"-flag C\")";
 
-Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
+add_option "-ncip" (Arg.Unit (fun x -> x))
   "(obsolete since version 4.02; use rather \"-flag c\")";
 
-Pcaml.add_option "-exp_dcl" (Arg.Unit (fun () -> set_flags "D"))
+add_option "-exp_dcl" (Arg.Unit (fun () -> set_flags "D"))
   "(obsolete since version 4.02; use rather \"-flag D\")";
 end
 ;

@@ -121,6 +121,8 @@ value ocaml_version : string;
        e.g. if OCaml version is "4.05.0+beta3", it is "4.05.0" *)
 value add_option : string -> Arg.spec -> string -> unit;
    (** Add an option to the command line options. *)
+value add_options : list (string * Arg.spec * string) -> unit;
+   (** Add a list of options to the command line options. *)
 value no_constructors_arity : ref bool;
    (** [True]: dont generate constructor arity. *)
 value string_of_loc : string -> int -> int -> int -> string;
@@ -147,7 +149,7 @@ value print_implem :
   ref ((list (MLast.str_item * MLast.loc) * MLast.loc) -> unit);
 
 module Base : Mlsyntax.PRBASESIG ;
-include Mlsyntax.PRBASESIG ;
+include Mlsyntax.PRINTERS ;
 
 value inter_phrases : ref (option string);
    (** String displayed between two consecutive phrases. If [None], the

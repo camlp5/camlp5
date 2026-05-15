@@ -18,4 +18,4 @@ open Pretty;
 open Mlsyntax.Revised;
 
 include Print_ro ;
-include (PP(Pcaml.Base)) ;
+include (PP(Pcaml.Base)(Pr_r.R)) ;

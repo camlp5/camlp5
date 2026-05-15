@@ -470,6 +470,9 @@ value arg_spec_list () = arg_spec_list_ref.val;
 value add_option name spec descr =
   arg_spec_list_ref.val := arg_spec_list_ref.val @ [(name, spec, descr)]
 ;
+value add_options l =
+  arg_spec_list_ref.val := arg_spec_list_ref.val @ l
+;
 
 (* Printers *)
 
@@ -479,7 +482,7 @@ value print_implem = undef "no printer";
 
 module Base = Mlsyntax.PrBase(struct end) ;
 
-include Base ;
+include Base.Printers ;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;

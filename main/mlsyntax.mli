@@ -47,8 +47,7 @@ module Revised :
     value is_special_op : string → bool;
   end
 ;
-
-module type PRBASESIG = sig
+module type PRINTERS = sig
 value pr_attribute_body : Eprinter.t MLast.attribute_body;
 value pr_expr : Eprinter.t MLast.expr;
 value pr_patt : Eprinter.t MLast.patt;
@@ -66,6 +65,14 @@ value pr_class_expr : Eprinter.t MLast.class_expr;
 
 value pr_expr_fun_args :
   ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+end ;
+
+module type PRBASESIG = sig
+module Printers : PRINTERS ;
+value options : ref (list (string * Arg.spec * string)) ;
+value add_option : string -> Arg.spec -> string -> unit ;
+value get_options : unit -> list (string * Arg.spec * string) ;
 end
 ;
+
 module PrBase : functor () -> PRBASESIG ;

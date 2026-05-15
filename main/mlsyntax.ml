@@ -195,7 +195,7 @@ value is_special_op s = is_operator s || is_letop s || is_andop s || is_dotop s 
 
 end ;
 
-module type PRBASESIG = sig
+module type PRINTERS = sig
 value pr_attribute_body : Eprinter.t MLast.attribute_body;
 value pr_expr : Eprinter.t MLast.expr;
 value pr_patt : Eprinter.t MLast.patt;
@@ -213,11 +213,19 @@ value pr_class_expr : Eprinter.t MLast.class_expr;
 
 value pr_expr_fun_args :
   ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+end ;
+
+module type PRBASESIG = sig
+module Printers : PRINTERS ;
+value options : ref (list (string * Arg.spec * string)) ;
+value add_option : string -> Arg.spec -> string -> unit ;
+value get_options : unit -> list (string * Arg.spec * string) ;
 end
 ;
 
 
 module PrBase() : PRBASESIG = struct
+module Printers = struct
 value show_expr e = Format.asprintf "%a" Pp_debug.Pp_MLast.pp_expr e ;
 value pr_attribute_body = Eprinter.make "pr_attribute_body";
 value pr_expr = Eprinter.make ~{fail=show_expr} "expr";
@@ -233,5 +241,15 @@ value pr_class_str_item = Eprinter.make "class_str_item";
 value pr_class_expr = Eprinter.make "class_expr";
 value pr_class_type = Eprinter.make "class_type";
 value pr_expr_fun_args = ref Extfun.empty;
+end ;
+value options = ref [] ;
+value add_option k v doc = options.val := [(k,v,doc) :: options.val] ;
+value get_options () =
+  let l = options.val in
+  do {
+    options.val := []
+  ; l
+  }
+;
 end
 ;
