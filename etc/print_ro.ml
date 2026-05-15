@@ -11,7 +11,6 @@
 
 (* Pretty printing extension for objects and labels *)
 
-open Pcaml;
 open Prtools;
 open Printf;
 open Pretty;

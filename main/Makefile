@@ -8,9 +8,9 @@ SHELL=/bin/bash
 INCLUDES=-I ../odyl -I $(TOP)/boot -I $(TOP)/lib
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 LINKFLAGS=$(DEBUG) $(INCLUDES)
-CAMLP5_OBJS_0=$(TOP)/boot/versdep.cmo $(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOPU)/pconfig.cmo asttools.cmo quotedext.cmo quotation.cmo prtools.cmo reloc.cmo pp_debug.cmo pr_base.cmo pcaml.cmo ast2pt.cmo mlsyntax.cmo exparser.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo
+CAMLP5_OBJS_0=$(TOP)/boot/versdep.cmo $(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOPU)/pconfig.cmo asttools.cmo quotedext.cmo quotation.cmo prtools.cmo reloc.cmo pp_debug.cmo mlsyntax.cmo pr_base.cmo pcaml.cmo ast2pt.cmo exparser.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo
 CAMLP5_OBJS=$(CAMLP5_OBJS_0) main.cmo
-CAMLP5_XOBJS=../lib/versdep.cmx ../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOPU)/pconfig.cmx asttools.cmx quotedext.cmx quotation.cmx prtools.cmx reloc.cmx pp_debug.cmx pr_base.cmx pcaml.cmx ast2pt.cmx mlsyntax.cmx exparser.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
+CAMLP5_XOBJS=../lib/versdep.cmx ../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOPU)/pconfig.cmx asttools.cmx quotedext.cmx quotation.cmx prtools.cmx reloc.cmx pp_debug.cmx mlsyntax.cmx pr_base.cmx pcaml.cmx ast2pt.cmx exparser.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
 OBJS=../odyl/odyl.cma $(CAMLP5N).cma
 CAMLP5M=
 
