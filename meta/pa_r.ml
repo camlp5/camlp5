@@ -1491,10 +1491,10 @@ EXTEND
         <:ctyp< $longid:me1$ . ( $t$ ) >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>
-      | i = V LIDENT "lid" ; ":" ; "(" ; "module" ;
-        alg_attrs = alg_attributes ; id = V UIDENT ; ":" ;
+      | i = V LIDENT "lid" ; ":" ; "(" ; "module" ; (ext,attrs) = ext_attributes;
+        id = V UIDENT ; ":" ;
         mt = module_type ; ")" ; "->" ; ct = ctyp LEVEL "arrow" →
-        <:ctyp< $_lid:i$ : (module $_uid:id$ : $mt$) -> $ct$ >>
+        ctyp_to_inline <:ctyp< $_lid:i$ : (module $_uid:id$ : $mt$) -> $ct$ >> ext attrs
       ] 
     ]
   ;
@@ -1536,15 +1536,17 @@ EXTEND
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   paren_ctyp:
-    [ [ lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+    [ [ lab = V lidopt_fails "lidopt" ; ":"; "("; "module"; (ext,attrs) = ext_attributes; check_v_uident_colon; id = V UIDENT ; ":" ;
              mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
         <:ctyp< $_lidopt:lab$ : (module $_uid:id$ : $mt$) -> $ct$ >>
 
-      | "("; "module"; check_v_uident_colon; id = V UIDENT ; ":" ;
+      | "("; "module"; (ext,attrs) = ext_attributes ;check_v_uident_colon; id = V UIDENT ; ":" ;
              mt = module_type ; ")"; "->" ; ct = ctyp LEVEL "arrow" ->
+         let mt = module_type_wrap_attrs mt attrs in
         <:ctyp< (module $_uid:id$ : $mt$) -> $ct$ >>
 
-      | "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
+      | "(" ; "module"; (ext,attrs) = ext_attributes; mt = module_type ; ")" →
+             ctyp_to_inline <:ctyp< ( module $mt$ ) >> ext attrs
       | "("; t = maybe_labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*"; ")" → mktuptyp loc t tl
       | "("; t = maybe_labeled_ctyp; ")" → <:ctyp< $snd t$ >>
       | "("; tl = V (LIST1 maybe_labeled_ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>

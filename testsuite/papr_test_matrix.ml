@@ -2416,23 +2416,32 @@ END ;
      exclude=[];
      o_input = OK {foo|type t = (module[@foo] M)|foo} ;
      official_input = OK {foo|type t = (module[@foo] M)|foo} ;
-     r_input = OK {foo|type t = (module M[@foo]);|foo} ;
-     o_output = OK {foo|type t = (module M[@foo]);;
+     r_input = OK {foo|type t = (module[@foo] M);|foo} ;
+     o_output = OK {foo|type t = (module M)[@foo];;
 |foo};
      official_output = OK {foo|type t = (((module M))[@foo ])|foo} ;
-     r_output = OK {foo|type t = (module M[@"foo"]);
+     r_output = OK {foo|type t = (module M)[@"foo"];
 |foo}
+    };
+    {name="firstclass-modules3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = (module%ext[@foo] M)|foo} ;
+     official_input = OK {foo|type t = (module%ext[@foo] M)|foo} ;
+     r_input = OK {foo|type t = (module%ext[@foo] M);|foo} ;
+     o_output = OK {foo|type t = [%ext: (module M)[@foo]];;|foo};
+     official_output = OK {foo|type t = [%ext : (((module M))[@foo ])]|foo} ;
+     r_output = OK {foo|type t = [%"ext": (module M)[@"foo"]];|foo}
     };
     {name="inline-extensions20"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t = (module%foo[@foo] M)|foo} ;
      official_input = OK {foo|type t = (module%foo[@foo] M)|foo} ;
-     r_input = OK {foo|type t = [%foo: (module M[@foo])];
+     r_input = OK {foo|type t = [%foo: (module M)[@foo]];
 |foo} ;
-     o_output = OK {foo|type t = [%foo: (module M[@foo])];;
+     o_output = OK {foo|type t = [%foo: (module M)[@foo]];;
 |foo};
      official_output = OK {foo|type t = [%foo :(((module M))[@foo ])]|foo} ;
-     r_output = OK {foo|type t = [%"foo": (module M[@"foo"])];
+     r_output = OK {foo|type t = [%"foo": (module M)[@"foo"]];
 |foo}
     };
     {name="inline-attributes-4a"; implem = True ;
@@ -6927,6 +6936,15 @@ ELSE
      o_output = OK {foo|type t = (module M : MT) -> t;;|foo};
      official_output = OK {foo|type t = (module M : MT) -> t|foo} ;
      r_output = OK {foo|type t = (module M : MT) -> t;|foo}
+    }
+  ;{name="type-functor-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = (module%ext [@a] M:MT) -> t|foo} ;
+     official_input = OK {foo|type t = (module%ext [@a] M:MT) -> t |foo} ;
+     r_input = OK {foo|type t = (module%ext [@a] M:MT) -> t ;|foo} ;
+     o_output = OK {foo|type t = (module M : MT[@a]) -> t;;|foo};
+     official_output = OK {foo|type t = (module M : MT) -> t|foo} ;
+     r_output = OK {foo|type t = (module M : MT[@"a"]) -> t;|foo}
     }
 ]
 END
