@@ -90,16 +90,16 @@ package "pa_o" (
 
 package "printers" (
   requires(toploop) = "camlp5"
-  archive(toploop)      = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo"
+  archive(toploop)      = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo printers.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo"
-  archive(syntax,preprocessor,native) = "r_keywords.cmx print_r.cmx print_ro.cmx print_rp.cmx o_keywords.cmx print_o.cmx print_op.cmx"
+  archive(syntax,preprocessor,-native) = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo printers.cmo"
+  archive(syntax,preprocessor,native) = "r_keywords.cmx print_r.cmx print_ro.cmx print_rp.cmx o_keywords.cmx print_o.cmx print_op.cmx printers.cmx"
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo"
-    archive(native) = "r_keywords.cmx print_r.cmx print_ro.cmx print_rp.cmx o_keywords.cmx print_o.cmx print_op.cmx"
+    archive(byte) = "r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo printers.cmo"
+    archive(native) = "r_keywords.cmx print_r.cmx print_ro.cmx print_rp.cmx o_keywords.cmx print_o.cmx print_op.cmx printers.cmx"
   )
 )
 
