@@ -5,7 +5,7 @@
 open Mlsyntax ;
 
 module PrettyPrint (P : PRINTERS) = struct
-value pp eprinter x pps =
+value pp eprinter pps x =
   Fmt.(pf pps "%s" (Eprinter.apply eprinter Pprintf.empty_pc x)) ;
 
   value pp_attribute_body = pp P.pr_attribute_body ;
