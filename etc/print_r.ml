@@ -38,7 +38,7 @@ value flag_where_after_arrow = ref True;
 
 value sep = Pcaml.inter_phrases;
 
-module PP(Base : Pr_base.PRBASESIG) = struct
+module PP(Base : Mlsyntax.PRBASESIG) = struct
 open Base ;
 do {
   Eprinter.clear pr_expr;

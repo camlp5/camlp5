@@ -477,7 +477,7 @@ value undef x = ref (fun _ -> failwith x);
 value print_interf = undef "no printer";
 value print_implem = undef "no printer";
 
-module Base = Pr_base.PrBase(struct end) ;
+module Base = Mlsyntax.PrBase(struct end) ;
 
 include Base ;
 

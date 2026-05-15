@@ -146,8 +146,8 @@ value print_interf :
 value print_implem :
   ref ((list (MLast.str_item * MLast.loc) * MLast.loc) -> unit);
 
-module Base : Pr_base.PRBASESIG ;
-include Pr_base.PRBASESIG ;
+module Base : Mlsyntax.PRBASESIG ;
+include Mlsyntax.PRBASESIG ;
 
 value inter_phrases : ref (option string);
    (** String displayed between two consecutive phrases. If [None], the

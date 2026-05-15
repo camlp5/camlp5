@@ -13,7 +13,7 @@ open Parserify;
 open Pretty;
 open Prtools;
 
-module PP(Base : Pr_base.PRBASESIG) = struct
+module PP(Base : Mlsyntax.PRBASESIG) = struct
 open Base ;
 value not_impl name pc x =
   let desc =
