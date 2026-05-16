@@ -94,10 +94,10 @@ pa_ounit2.cmo: pa_ounit2.ml
 test.cmo: test.ml
 	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.quotations -syntax camlp5r -warn-error A -c -i -impl test.ml
 
-testutil.cmo: testutil.ml
+testutil.cmo testutil.cmi: testutil.ml
 	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl testutil.ml
 
-testutil2.cmo: testutil2.ml
+testutil2.cmo testutil2.cmi: testutil.cmi testutil2.ml
 	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES) -c testutil2.ml
 
 roundtrip_lexer.byte: roundtrip_lexer.ml

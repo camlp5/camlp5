@@ -54,13 +54,16 @@ main.cmx : \
 mlsyntax.cmo : \
     pp_debug.cmo \
     mLast.cmi \
+    exparser_types.cmi \
     mlsyntax.cmi
 mlsyntax.cmx : \
     pp_debug.cmx \
     mLast.cmi \
+    exparser_types.cmi \
     mlsyntax.cmi
 mlsyntax.cmi : \
-    mLast.cmi
+    mLast.cmi \
+    exparser_types.cmi
 parserify.cmo : \
     prtools.cmi \
     mLast.cmi \
@@ -90,8 +93,7 @@ pcaml.cmx : \
     pcaml.cmi
 pcaml.cmi : \
     mlsyntax.cmi \
-    mLast.cmi \
-    exparser_types.cmi
+    mLast.cmi
 pp_debug.cmo : \
     mLast.cmi
 pp_debug.cmx : \

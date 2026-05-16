@@ -63,7 +63,7 @@ type seq =
 
 end ;
 
-module PP(Base : Mlsyntax.PRBASESIG) : RSIG = struct
+module PP(Base : Mlsyntax.PRINTBASESIG) : RSIG = struct
 open Base.Printers ;
 open Base ;
 do {

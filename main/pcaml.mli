@@ -13,7 +13,8 @@ value syntax_name : ref string;
 
 (** {6 Parsers} *)
 
-type status = option Ploc.t;
+module ParseBase : Mlsyntax.PARSEBASESIG ;
+include Mlsyntax.PARSERS ;
 
 type ast_transducer_t 'a = {
   name : string ;
@@ -27,7 +28,6 @@ value transduce_interf : ast_transducer_t (list (MLast.sig_item * MLast.loc) * s
 value transduce_implem : ast_transducer_t (list (MLast.str_item * MLast.loc) * status) ;
 value transduce_top_phrase : ast_transducer_t (option MLast.str_item) ;
 value transduce_use_file : ast_transducer_t (list MLast.str_item * bool) ;
-
 
 value parse_interf :
   (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
@@ -50,55 +50,6 @@ value parse_top_phrase :
 value parse_use_file :
   (Stream.t char -> (list MLast.str_item * bool));
 
-
-value gram : Grammar.g;
-   (** Grammar variable of the OCaml language *)
-
-value attribute_body : Grammar.Entry.e MLast.attribute_body;
-value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * status);
-value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * status);
-value top_phrase : Grammar.Entry.e (option MLast.str_item);
-value use_file : Grammar.Entry.e (list MLast.str_item * bool);
-value functor_parameter : Grammar.Entry.e MLast.functor_parameter;
-value module_type : Grammar.Entry.e MLast.module_type;
-value longident : Grammar.Entry.e MLast.longid;
-value longident_lident : Grammar.Entry.e MLast.longid_lident;
-value extended_longident : Grammar.Entry.e MLast.longid;
-value module_expr : Grammar.Entry.e MLast.module_expr;
-value signature : Grammar.Entry.e (MLast.v (list MLast.sig_item));
-value structure : Grammar.Entry.e (MLast.v (list MLast.str_item));
-value sig_item : Grammar.Entry.e MLast.sig_item;
-value str_item : Grammar.Entry.e MLast.str_item;
-value expr : Grammar.Entry.e MLast.expr;
-value patt : Grammar.Entry.e MLast.patt;
-value ipatt : Grammar.Entry.e MLast.patt;
-value ctyp : Grammar.Entry.e MLast.ctyp;
-value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr * MLast.attributes);
-value type_decl : Grammar.Entry.e MLast.type_decl;
-value type_extension : Grammar.Entry.e MLast.type_extension;
-value extension_constructor : Grammar.Entry.e MLast.extension_constructor;
-value match_case :
-  Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
-value constructor_declaration : Grammar.Entry.e MLast.generic_constructor;
-value label_declaration :
-  Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp * MLast.attributes);
-value with_constr : Grammar.Entry.e MLast.with_constr;
-value poly_variant : Grammar.Entry.e MLast.poly_variant;
-value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
-value class_str_item : Grammar.Entry.e MLast.class_str_item;
-value class_expr : Grammar.Entry.e MLast.class_expr;
-value class_expr_simple : Grammar.Entry.e MLast.class_expr;
-value class_type : Grammar.Entry.e MLast.class_type;
-value alg_attribute : Grammar.Entry.e MLast.attribute;
-value alg_attributes : Grammar.Entry.e MLast.attributes;
-value ext_attributes : Grammar.Entry.e (option (Ploc.t * string) * MLast.attributes_no_anti);
-   (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
-
-open Exparser_types ;
-
-value stream_expr : Grammar.Entry.e (MLast.loc * list sexp_comp);
-value stream_parser : Grammar.Entry.e (MLast.loc * spat_parser_ast) ;
-value stream_match : Grammar.Entry.e (MLast.loc * MLast.expr * spat_parser_ast) ;
 
 value input_file : ref string;
    (** The file currently being parsed. *)
@@ -148,7 +99,7 @@ value print_interf :
 value print_implem :
   ref ((list (MLast.str_item * MLast.loc) * MLast.loc) -> unit);
 
-module Base : Mlsyntax.PRBASESIG ;
+module PrintBase : Mlsyntax.PRINTBASESIG ;
 include Mlsyntax.PRINTERS ;
 
 value inter_phrases : ref (option string);

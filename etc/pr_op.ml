@@ -15,4 +15,4 @@ open Pretty;
 open Prtools;
 
 include Print_op ;
-include (PP(Pcaml.Base)) ;
+include (PP(Pcaml.PrintBase)) ;

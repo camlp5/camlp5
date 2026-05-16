@@ -18,8 +18,8 @@ open Versdep;
 open Mlsyntax.Revised;
 open Pp_debug ;
 
-module R = Print_r.PP(Pcaml.Base) ;
+module R = Print_r.PP(Pcaml.PrintBase) ;
 include (R) ;
-Pcaml.add_options (Pcaml.Base.get_options()) ;
+Pcaml.add_options (Pcaml.PrintBase.get_options()) ;
 Pcaml.print_interf.val := R.print_interf;
 Pcaml.print_implem.val := R.print_implem;

@@ -14,7 +14,7 @@ open Parserify;
 open Pretty;
 open Prtools;
 
-module PP(Base : Mlsyntax.PRBASESIG)(Pr_r : Print_r.RSIG) = struct
+module PP(Base : Mlsyntax.PRINTBASESIG)(Pr_r : Print_r.RSIG) = struct
 open Base.Printers ;
 open Base ;
 value not_impl name pc x =

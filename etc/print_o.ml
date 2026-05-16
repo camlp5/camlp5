@@ -26,7 +26,7 @@ value flag_extensions_are_irrefutable = ref True;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
-module PP(Base : Mlsyntax.PRBASESIG) = struct
+module PP(Base : Mlsyntax.PRINTBASESIG) = struct
 open Base.Printers ;
 open Base ;
 do {

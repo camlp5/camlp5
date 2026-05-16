@@ -21,68 +21,8 @@ value ocaml_version =
       end
 ;
 
-value gram =
-  Grammar.gcreate
-    {Plexing.tok_func _ = failwith "no loaded parsing module";
-     Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
-     Plexing.tok_match = fun []; Plexing.tok_text _ = "";
-     Plexing.tok_comm = None; Plexing.kwds = Hashtbl.create 23 }
-;
-
-(*
-Camlp5 can be parsed with limited or full backtracking:
-Grammar.set_algorithm gram Grammar.Functional;
-Grammar.set_algorithm gram Grammar.Backtracking;
-or without any change in the code, by setting the environment
-variable CAMLP5PARAM to f or b.
-*)
-
-type status = option Ploc.t;
-
-value attribute_body = Grammar.Entry.create gram "attribute_body";
-value interf = Grammar.Entry.create gram "interf";
-value implem = Grammar.Entry.create gram "implem";
-value top_phrase = Grammar.Entry.create gram "top_phrase";
-value use_file = Grammar.Entry.create gram "use_file";
-value signature = Grammar.Entry.create gram "signature";
-value structure = Grammar.Entry.create gram "structure";
-value sig_item = Grammar.Entry.create gram "sig_item";
-value str_item = Grammar.Entry.create gram "str_item";
-value functor_parameter = Grammar.Entry.create gram "functor_parameter";
-value module_type = Grammar.Entry.create gram "module_type";
-value longident = Grammar.Entry.create gram "longident";
-value longident_lident = Grammar.Entry.create gram "longident_lident";
-value extended_longident = Grammar.Entry.create gram "extended_longident";
-value module_expr = Grammar.Entry.create gram "module_expr";
-value expr = Grammar.Entry.create gram "expr";
-value patt = Grammar.Entry.create gram "patt";
-value ipatt = Grammar.Entry.create gram "ipatt";
-value ctyp = Grammar.Entry.create gram "ctyp";
-value let_binding = Grammar.Entry.create gram "let_binding";
-value type_decl = Grammar.Entry.create gram "type_declaration";
-value type_extension = Grammar.Entry.create gram "type_extension";
-value extension_constructor = Grammar.Entry.create gram "extension_constructor";
-value match_case = Grammar.Entry.create gram "match_case";
-value constructor_declaration =
-  Grammar.Entry.create gram "constructor_declaration";
-value label_declaration =
-  Grammar.Entry.create gram "label_declaration";
-value with_constr = Grammar.Entry.create gram "with_constr";
-value poly_variant = Grammar.Entry.create gram "poly_variant";
-
-value class_sig_item = Grammar.Entry.create gram "class_sig_item";
-value class_str_item = Grammar.Entry.create gram "class_str_item";
-value class_type = Grammar.Entry.create gram "class_type";
-value class_expr = Grammar.Entry.create gram "class_expr";
-value class_expr_simple = Grammar.Entry.create gram "class_expr_simple";
-
-value alg_attribute = Grammar.Entry.create gram "alg_attribute";
-value alg_attributes = Grammar.Entry.create gram "alg_attributes";
-value ext_attributes = Grammar.Entry.create gram "ext_attributes";
-
-value stream_expr = Grammar.Entry.create gram "stream_expr";
-value stream_parser = Grammar.Entry.create gram "stream_parser";
-value stream_match = Grammar.Entry.create gram "stream_match";
+module ParseBase = Mlsyntax.ParseBase(struct end) ;
+include ParseBase.Parsers ;
 
 type ast_transducer_t 'a = {
     name : string
@@ -480,9 +420,9 @@ value undef x = ref (fun _ -> failwith x);
 value print_interf = undef "no printer";
 value print_implem = undef "no printer";
 
-module Base = Mlsyntax.PrBase(struct end) ;
+module PrintBase = Mlsyntax.PrintBase(struct end) ;
 
-include Base.Printers ;
+include PrintBase.Printers ;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;

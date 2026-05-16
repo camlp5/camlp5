@@ -18,7 +18,7 @@ open Mlsyntax.Original;
 open Pp_debug ;
 
 include Print_o ;
-include (PP(Pcaml.Base)) ;
-Pcaml.add_options (Pcaml.Base.get_options()) ;
+include (PP(Pcaml.PrintBase)) ;
+Pcaml.add_options (Pcaml.PrintBase.get_options()) ;
 Pcaml.print_interf.val := print_interf;
 Pcaml.print_implem.val := print_implem;

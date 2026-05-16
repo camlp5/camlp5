@@ -24,20 +24,20 @@ value pp eprinter pps x =
 end;
 
 module R = struct
-  module Base = PrBase(struct end) ;
+  module Base = PrintBase(struct end) ;
   module R = Print_r.PP(Base) ;
   module Pretty = PrettyPrint(Base.Printers) ;
 end ;
 
 module RO = struct
-  module Base = PrBase(struct end) ;
+  module Base = PrintBase(struct end) ;
   module R = Print_r.PP(Base) ;
   module RO = Print_ro.PP(Base) ;
   module Pretty = PrettyPrint(Base.Printers) ;
 end ;
 
 module RP = struct
-  module Base = PrBase(struct end) ;
+  module Base = PrintBase(struct end) ;
   module R = Print_r.PP(Base) ;
   module RO = Print_ro.PP(Base) ;
   module RP = Print_rp.PP(Base) ;
@@ -45,13 +45,13 @@ module RP = struct
 end ;
 
 module O = struct
-  module Base = PrBase(struct end) ;
+  module Base = PrintBase(struct end) ;
   module O = Print_o.PP(Base) ;
   module Pretty = PrettyPrint(Base.Printers) ;
 end ;
 
 module OP = struct
-  module Base = PrBase(struct end) ;
+  module Base = PrintBase(struct end) ;
   module O = Print_o.PP(Base) ;
   module OP = Print_op.PP(Base) ;
   module Pretty = PrettyPrint(Base.Printers) ;
