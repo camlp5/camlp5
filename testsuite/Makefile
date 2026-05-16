@@ -90,83 +90,72 @@ PACKAGES=$(PACKAGES_NOCAMLP5),camlp5,camlp5.macro
 YAWRAP=ocamlfind camlp5-buildscripts/ya-wrap-ocamlfind
 
 OCAMLC=$(LAUNCH) $(YAWRAP) ocamlfind ocamlc
+OCAMLDEP=$(LAUNCH) $(YAWRAP) ocamlfind ocamldep
 OCAMLLINKC=$(LAUNCH) $(OCAMLFIND) ocamlc
 #$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
 
 .ml.cmo:
 	$(LAUNCH) $(YAWRAP) ocamlfind ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -warn-error A -warn-error -53 -c $<
 
-pa_ounit2.cmo: pa_ounit2.ml
-#	$(OCAMLC) $(OCAMLCFLAGS) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl pa_ounit2.ml
-
-#testutil.cmo testutil.cmi: testutil.ml
-#	$(OCAMLC) $(OCAMLCFLAGS) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl testutil.ml
-
-testutil2.cmo testutil2.cmi: testutil.cmi testutil2.ml
-#	$(OCAMLC) $(OCAMLCFLAGS) -package $(PACKAGES) -c testutil2.ml
-
 roundtrip_lexer.byte: roundtrip_lexer.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg roundtrip_lexer.cmo -o roundtrip_lexer.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg $^ -o roundtrip_lexer.byte
 
 extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
-extfun_test.byte: extfun_test.cmo testutil.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo extfun_test.cmo -o extfun_test.byte
+extfun_test.byte: testutil.cmo extfun_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
 
-reloc_test.byte: reloc_test.cmo testutil.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo reloc_test.cmo -o reloc_test.byte
-
-papr_test_matrix.cmo: papr_test_matrix.ml
-#	$(OCAMLC) $(OCAMLCFLAGS) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_test_matrix.ml
+reloc_test.byte: testutil.cmo reloc_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o reloc_test.byte
 
 o2r_test:: o2r_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2r_test.byte $(TESTARGS)
 
-o2r_test.byte: o2r_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.cmo -o o2r_test.byte
+o2r_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r2r_test.byte $(TESTARGS)
 
-r2r_test.byte: r2r_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.cmo -o r2r_test.byte
+r2r_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o r2r_test.byte
 
 
 r2o_test:: r2o_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r2o_test.byte $(TESTARGS)
 
-r2o_test.byte: r2o_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.cmo -o r2o_test.byte
+r2o_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg $^ -o r2o_test.byte
 
 
 o2o_test:: o2o_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2o_test.byte $(TESTARGS)
 
-o2o_test.byte: o2o_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.cmo -o o2o_test.byte
+o2o_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg $^ -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2official_test.byte $(TESTARGS)
 
-o2official_test.byte: o2official_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.cmo -o o2official_test.byte
+o2official_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o o2official_test.byte
 
 
 r2official_test:: r2official_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r2official_test.byte $(TESTARGS)
 
-r2official_test.byte: r2official_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.cmo -o r2official_test.byte
+r2official_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o r2official_test.byte
 
 
 
@@ -174,8 +163,8 @@ official2official_test:: official2official_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./official2official_test.byte $(TESTARGS)
 
-official2official_test.byte: official2official_test.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_test.cmo -o official2official_test.byte
+official2official_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg $^ -o official2official_test.byte
 
 r2sch_test:: r2sch_test.byte
 	./r2sch_test.byte
@@ -185,9 +174,6 @@ r2sch_test.byte: r2sch_test.cmo testutil.cmo
 
 q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
-
-antiquotation_test.cmo: antiquotation_test.ml
-#	$(OCAMLC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -c $^
 
 q_MLast_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo q_MLast_test.cmo
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
@@ -222,46 +208,46 @@ o_lexer_test:: o_lexer_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o_lexer_test.byte $(TESTARGS)
 
-o_lexer_test.byte: o_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo o_lexer_test.cmo -o o_lexer_test.byte
+o_lexer_test.byte: testutil.cmo testutil2.cmo o_lexer_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o o_lexer_test.byte
 
 quotedext_test:: quotedext_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./quotedext_test.byte $(TESTARGS)
 
-quotedext_test.byte: quotedext_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo quotedext_test.cmo -o quotedext_test.byte
+quotedext_test.byte: testutil.cmo testutil2.cmo quotedext_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o quotedext_test.byte
 
 r_lexer_test:: r_lexer_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r_lexer_test.byte $(TESTARGS)
 
-r_lexer_test.byte: r_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo r_lexer_test.cmo -o r_lexer_test.byte
+r_lexer_test.byte: testutil.cmo testutil2.cmo r_lexer_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o r_lexer_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte
 
-o_top_test.byte: o_top_test.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo o_top_test.cmo -o o_top_test.byte
+o_top_test.byte: testutil.cmo testutil2.cmo o_top_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg $^ -o o_top_test.byte
 
 o_top_test2:: o_top_test2.byte
 	./o_top_test2.byte
 
-o_top_test2.byte: o_top_test2.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link,camlp5.pr_o.link -I ../etc -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo o_top_test2.cmo -o o_top_test2.byte
+o_top_test2.byte: testutil.cmo testutil2.cmo o_top_test2.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link,camlp5.pr_o.link -I ../etc -syntax camlp5r -linkall -linkpkg $^ -o o_top_test2.byte
 
 r_top_test:: r_top_test.byte
 	./r_top_test.byte
 
-r_top_test.byte: r_top_test.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_r.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo r_top_test.cmo -o r_top_test.byte
+r_top_test.byte: testutil.cmo testutil2.cmo r_top_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_r.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg $^ -o r_top_test.byte
 
 sch2r_test.pa_scheme:: sch2r_test.pa_scheme.byte
 	./sch2r_test.pa_scheme.byte
 
-sch2r_test.pa_scheme.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_scheme.byte
+sch2r_test.pa_scheme.byte: testutil.cmo testutil2.cmo sch2r_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o sch2r_test.pa_scheme.byte
 
 sch2r_test.pa_schemer:: sch2r_test.pa_schemer.byte
 	./sch2r_test.pa_schemer.byte
@@ -295,7 +281,13 @@ clean:
 
 realclean: clean
 
-o2r_test.cmo: testutil.cmo testutil2.cmo papr_test_matrix.cmo
-o2official_test.cmo: testutil.cmo testutil2.cmo papr_test_matrix.cmo
-extfun_test.cmo: testutil.cmo testutil2.cmo
-grammar_bug_test.cmo: alt_pa_o.cmo
+depend:
+	cp .depend .depend.bak || true
+	> .depend
+	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
+	echo $(OCAMLDEP) -package $(PACKAGES) $$i ; \
+	$(OCAMLDEP) -package $(PACKAGES) $$i \
+	  >> .depend; \
+	done
+
+-include .depend

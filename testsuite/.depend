@@ -1,0 +1,156 @@
+alt_pa_o.cmo :
+alt_pa_o.cmx :
+antiquotation_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+antiquotation_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+extfun_test.cmo : \
+    testutil.cmo
+extfun_test.cmx : \
+    testutil.cmx
+grammar_bug_test.cmo : \
+    alt_pa_o.cmo
+grammar_bug_test.cmx : \
+    alt_pa_o.cmx
+little_lang_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+little_lang_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+o2o_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+o2o_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+o2official_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+o2official_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+o2r_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+o2r_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+o_lexer_test.cmo :
+o_lexer_test.cmx :
+o_top_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+o_top_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+o_top_test2.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+o_top_test2.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+official2official_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+official2official_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+official_parser_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    antiquotation_test.cmo
+official_parser_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    antiquotation_test.cmx
+pa_ounit2.cmo :
+pa_ounit2.cmx :
+papr_test_matrix.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+papr_test_matrix.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+q_MLast_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    antiquotation_test.cmo
+q_MLast_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    antiquotation_test.cmx
+quotedext_test.cmo :
+quotedext_test.cmx :
+r2o_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+r2o_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+r2official_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+r2official_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+r2r_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+r2r_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+r2sch_test.cmo : \
+    testutil.cmo
+r2sch_test.cmx : \
+    testutil.cmx
+r_lexer_test.cmo :
+r_lexer_test.cmx :
+r_top_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+r_top_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+reloc_test.cmo : \
+    testutil.cmo
+reloc_test.cmx : \
+    testutil.cmx
+revised_parser_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    antiquotation_test.cmo
+revised_parser_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    antiquotation_test.cmx
+roundtrip_lexer.cmo :
+roundtrip_lexer.cmx :
+sch2r_test.cmo : \
+    testutil2.cmo \
+    testutil.cmo
+sch2r_test.cmx : \
+    testutil2.cmx \
+    testutil.cmx
+testutil.cmo :
+testutil.cmx :
+testutil2.cmo : \
+    testutil.cmo
+testutil2.cmx : \
+    testutil.cmx
