@@ -47,35 +47,6 @@ module Revised :
     value is_special_op : string → bool;
   end
 ;
-module type PRINTERS = sig
-value pr_attribute_body : Eprinter.t MLast.attribute_body;
-value pr_expr : Eprinter.t MLast.expr;
-value pr_patt : Eprinter.t MLast.patt;
-value pr_ctyp : Eprinter.t MLast.ctyp;
-value pr_str_item : Eprinter.t MLast.str_item;
-value pr_sig_item : Eprinter.t MLast.sig_item;
-value pr_longident : Eprinter.t MLast.longid;
-value pr_module_expr : Eprinter.t MLast.module_expr;
-value pr_module_type : Eprinter.t MLast.module_type;
-value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
-value pr_class_str_item : Eprinter.t MLast.class_str_item;
-value pr_class_type : Eprinter.t MLast.class_type;
-value pr_class_expr : Eprinter.t MLast.class_expr;
-   (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
-
-value pr_expr_fun_args :
-  ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
-end ;
-
-module type PRINTBASESIG = sig
-module Printers : PRINTERS ;
-value options : ref (list (string * Arg.spec * string)) ;
-value add_option : string -> Arg.spec -> string -> unit ;
-value get_options : unit -> list (string * Arg.spec * string) ;
-end
-;
-
-module PrintBase : functor () -> PRINTBASESIG ;
 
 module type PARSERS = sig
 
@@ -131,6 +102,8 @@ value stream_parser : Grammar.Entry.e (MLast.loc * spat_parser_ast) ;
 value stream_match : Grammar.Entry.e (MLast.loc * MLast.expr * spat_parser_ast) ;
 end ;
 
+module Lexer : Plexer.LEXER ;
+
 module type PARSEBASESIG = sig
 module Parsers : PARSERS ;
 end
@@ -138,3 +111,32 @@ end
 
 module ParseBase : functor () -> PARSEBASESIG ;
 
+module type PRINTERS = sig
+value pr_attribute_body : Eprinter.t MLast.attribute_body;
+value pr_expr : Eprinter.t MLast.expr;
+value pr_patt : Eprinter.t MLast.patt;
+value pr_ctyp : Eprinter.t MLast.ctyp;
+value pr_str_item : Eprinter.t MLast.str_item;
+value pr_sig_item : Eprinter.t MLast.sig_item;
+value pr_longident : Eprinter.t MLast.longid;
+value pr_module_expr : Eprinter.t MLast.module_expr;
+value pr_module_type : Eprinter.t MLast.module_type;
+value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
+value pr_class_str_item : Eprinter.t MLast.class_str_item;
+value pr_class_type : Eprinter.t MLast.class_type;
+value pr_class_expr : Eprinter.t MLast.class_expr;
+   (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
+
+value pr_expr_fun_args :
+  ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+end ;
+
+module type PRINTBASESIG = sig
+module Printers : PRINTERS ;
+value options : ref (list (string * Arg.spec * string)) ;
+value add_option : string -> Arg.spec -> string -> unit ;
+value get_options : unit -> list (string * Arg.spec * string) ;
+end
+;
+
+module PrintBase : functor () -> PRINTBASESIG ;

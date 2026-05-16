@@ -5,6 +5,7 @@
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)
 
+module type LEXER = sig
 value gmake : unit -> Plexing.lexer (string * string);
    (** [gmake ()] returns a lexer compatible with the extensible
     grammars. The returned tokens follow the normal syntax and the
@@ -95,3 +96,7 @@ value parse_antiquot : string -> option (string * string);
 (*** For system use *)
 
 value force_antiquot_loc : ref bool;
+end
+;
+
+module Make : (sig end) -> LEXER ;

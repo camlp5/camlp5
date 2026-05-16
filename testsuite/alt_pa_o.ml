@@ -15,14 +15,14 @@ value gram =
 ;
 
 do {
-  let odfa = Plexer.dollar_for_antiquotation.val in
-  let osrs = Plexer.simplest_raw_strings.val in
-  Plexer.dollar_for_antiquotation.val := False;
-  Plexer.simplest_raw_strings.val := True;
-  Plexer.utf8_lexing.val := True;
-  Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
-  Plexer.dollar_for_antiquotation.val := odfa;
-  Plexer.simplest_raw_strings.val := osrs
+  let odfa = Mlsyntax.Lexer.dollar_for_antiquotation.val in
+  let osrs = Mlsyntax.Lexer.simplest_raw_strings.val in
+  Mlsyntax.Lexer.dollar_for_antiquotation.val := False;
+  Mlsyntax.Lexer.simplest_raw_strings.val := True;
+  Mlsyntax.Lexer.utf8_lexing.val := True;
+  Grammar.Unsafe.gram_reinit gram (Mlsyntax.Lexer.gmake ());
+  Mlsyntax.Lexer.dollar_for_antiquotation.val := odfa;
+  Mlsyntax.Lexer.simplest_raw_strings.val := osrs
 };
 
 value argle1 : Grammar.Entry.e unit = Grammar.Entry.create gram "argle1";

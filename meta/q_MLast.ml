@@ -10,7 +10,7 @@
 open Asttools ;
 open Mlsyntax.Original ;
 
-value gram = Grammar.gcreate (Plexer.gmake ());
+value gram = Grammar.gcreate (Mlsyntax.Lexer.gmake ());
 
 value antiquot k loc s f =
   let shift_bp =
@@ -2141,7 +2141,7 @@ do {
     ;
   END;
   let expr s =
-    Ploc.call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Mlsyntax.Lexer.force_antiquot_loc True
       (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
   in
   let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
@@ -2165,7 +2165,7 @@ do {
     ;
   END;
   let patt s =
-    Ploc.call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Mlsyntax.Lexer.force_antiquot_loc True
       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
   in
   Quotation.add "vala" (Quotation.ExAst (expr, patt));

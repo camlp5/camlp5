@@ -406,7 +406,7 @@ value rec next_token_after_spaces kwt =
         }
       | _ → (("EOI", ""), (bp, bp + 1)) ]
 and dollar bp kwt strm =
-  if Plexer.force_antiquot_loc.val then
+  if Mlsyntax.Lexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
   else
     match strm with parser

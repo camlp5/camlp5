@@ -22,7 +22,7 @@ value eval_anti entry loc typ str =
   in
   let r =
     try
-      Ploc.call_with Plexer.force_antiquot_loc False
+      Ploc.call_with Mlsyntax.Lexer.force_antiquot_loc False
         (Grammar.Entry.parse entry) (Stream.of_string str)
     with
     [ Ploc.Exc loc1 exc ->

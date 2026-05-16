@@ -254,6 +254,8 @@ value get_options () =
 end
 ;
 
+module Lexer = Plexer.Make(struct end) ;
+
 module type PARSERS = sig
 
 type status = option Ploc.t;

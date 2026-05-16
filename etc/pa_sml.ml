@@ -14,7 +14,7 @@ value ocaml_records = ref False;
 Pcaml.syntax_name.val := "SML";
 Pcaml.no_constructors_arity.val := True;
 
-value lexer = Plexer.gmake ();
+value lexer = Mlsyntax.Lexer.gmake ();
 
 do {
   Grammar.Unsafe.gram_reinit gram lexer;
