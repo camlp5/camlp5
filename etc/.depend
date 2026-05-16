@@ -26,12 +26,18 @@ pa_mkast.cmo :
 pa_mkast.cmx :
 pa_mktest.cmo :
 pa_mktest.cmx :
-pa_o.cmo :
-pa_o.cmx :
-pa_oop.cmo :
-pa_oop.cmx :
-pa_op.cmo :
-pa_op.cmx :
+pa_o.cmo : \
+    parse_o.cmo
+pa_o.cmx : \
+    parse_o.cmx
+pa_oop.cmo : \
+    parse_oop.cmo
+pa_oop.cmx : \
+    parse_oop.cmx
+pa_op.cmo : \
+    parse_op.cmo
+pa_op.cmx : \
+    parse_op.cmx
 pa_pprintf.cmo :
 pa_pprintf.cmx :
 pa_pragma.cmo :
@@ -46,6 +52,12 @@ pa_sml.cmo :
 pa_sml.cmx :
 papr_phony_macro.cmo :
 papr_phony_macro.cmx :
+parse_o.cmo :
+parse_o.cmx :
+parse_oop.cmo :
+parse_oop.cmx :
+parse_op.cmo :
+parse_op.cmx :
 pr_depend.cmo :
 pr_depend.cmx :
 pr_extend.cmo :
