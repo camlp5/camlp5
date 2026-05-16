@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r -package camlp5.pr_official *)
 (* camlp5r *)
 (* r2official_test.ml *)
 

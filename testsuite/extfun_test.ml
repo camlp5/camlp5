@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r -package camlp5.extfun,camlp5.quotations *)
 (* camlp5r *)
 (* extfun_test.ml *)
 

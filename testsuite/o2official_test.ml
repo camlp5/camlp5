@@ -1,5 +1,8 @@
+(**pp -syntax camlp5r -package camlp5.pr_official *)
 (* camlp5r *)
 (* o2official_test.ml *)
+
+[@@@warnerror "-misplaced-attribute";] ;
 
 open Testutil;
 open Testutil2;

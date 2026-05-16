@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r *)
 (* camlp5r *)
 (* o2r_test.ml *)
 

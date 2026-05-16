@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r -package camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf *)
 (* camlp5r *)
 (* pa_o.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)

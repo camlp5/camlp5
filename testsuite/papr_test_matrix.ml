@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r *)
 (* camlp5r *)
 (* papr_matrix_test.ml *)
 

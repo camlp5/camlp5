@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r *)
 (* camlp5r *)
 (* r2o_test.ml *)
 

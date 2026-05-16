@@ -7,24 +7,24 @@
 #require "rresult";;
 #require "pcre2";;
 #require "bos";;
-(*
-#require "camlp5.pa_op";;
- *)
-#require "camlp5.pa_r";;
 
+#require "camlp5.pa_o";;
+#load "pa_oop.cmo";;
 (*
+#require "camlp5.pa_r";;
+ *)
+
 #require "camlp5.pr_o";;
 Pcaml.inter_phrases := Some ";;\n";;
- *)
-
+(*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
-(*
-#require "camlp5.parser_quotations";;
  *)
-#require "camlp5.quotations";;
 
+#require "camlp5.parser_quotations";;
+(*
+#require "camlp5.quotations";;
+ *)
 
 (*
 #require "camlp5.extfun";;
@@ -120,6 +120,8 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
 #install_printer pp_sig_item ;;
  *)
 print_string "================ START ================\n";; flush stdout ;;
+
+
 
 (*
 ;;; Local Variables: ***

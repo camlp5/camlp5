@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r -package camlp5.extend,camlp5.quotations *)
 (* camlp5r *)
 (* pa_ounit2.ml,v *)
 

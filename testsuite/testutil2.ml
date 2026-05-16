@@ -1,4 +1,4 @@
-
+(**pp -syntax camlp5o *)
 open Printf;;
 open Fmt;;
 open Testutil ;;

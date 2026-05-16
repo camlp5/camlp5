@@ -1,3 +1,4 @@
+(**pp -syntax camlp5r *)
 (* camlp5r *)
 (* Copyright (c) INRIA 2007-2017 *)
 
