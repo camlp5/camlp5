@@ -9,7 +9,9 @@
 #require "bos";;
 
 #require "camlp5.pa_o";;
+(*
 #load "pa_oop.cmo";;
+ *)
 (*
 #require "camlp5.pa_r";;
  *)

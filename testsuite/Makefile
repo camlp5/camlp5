@@ -104,13 +104,13 @@ extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
 extfun_test.byte: testutil.cmo extfun_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
 
 reloc_test.byte: testutil.cmo reloc_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o reloc_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o reloc_test.byte
 
 o2r_test:: o2r_test.byte
 	$(NOVERBOSE) mkdir -p _build

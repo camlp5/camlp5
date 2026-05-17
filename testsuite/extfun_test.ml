@@ -13,7 +13,8 @@ value pa_expr s =
 
 type t = { a : int ; b : (string * list int) } ;
 
-value pr_ctyp ty = Eprinter.apply Pcaml.pr_ctyp Pprintf.empty_pc ty ;
+open MLPrinters.R.Pretty ;
+value show_ctyp ty = Fmt.(str "%a" pp_ctyp ty) ;
 
 value tests = "extfun" >::: [
   "simplest" >:: (fun [ _ ->
@@ -51,14 +52,14 @@ value tests = "extfun" >::: [
   ])
   ; "expr-extension-1" >:: (fun [ _ ->
   let f = ref Extfun.empty in do {
-    f.val := extfun f.val with [ <:expr< [%foo:  $type:t$] >> -> pr_ctyp t ] ;
+    f.val := extfun f.val with [ <:expr< [%foo:  $type:t$] >> -> show_ctyp t ] ;
     let e = pa_expr "[%foo: _]" in
     assert_equal ~{msg="should be <<_>>"} "_" (Extfun.apply f.val e)
   }
   ])
   ; "expr-extension-2" >:: (fun [ _ ->
   let f = ref Extfun.empty in do {
-    f.val := extfun f.val with [ <:expr< [%foo:  $type:t$] >> -> pr_ctyp t ] ;
+    f.val := extfun f.val with [ <:expr< [%foo:  $type:t$] >> -> show_ctyp t ] ;
     let e = pa_expr "[%foo: result int bool]" in
     assert_equal ~{msg="should be <<result int bool>>"} "result int bool" (Extfun.apply f.val e)
   }

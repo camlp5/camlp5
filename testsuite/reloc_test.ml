@@ -11,7 +11,8 @@ value pa_expr s =
  s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr
 ;
 
-value pr_expr ty = Eprinter.apply Pcaml.pr_expr Pprintf.empty_pc ty ;
+open MLPrinters.R.Pretty ;
+value show_expr e = Fmt.(str "%a" pp_expr e) ;
 
 value suite = "reloc" >::: [
   "simplest" >:: (fun [ _ ->
