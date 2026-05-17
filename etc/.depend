@@ -1,27 +1,27 @@
 elexer.cmo :
 elexer.cmx :
-mkcamlp5.cmo :
-mkcamlp5.cmx :
-mlparsers.cmo : \
+mLParsers.cmo : \
     parse_op.cmo \
     parse_oop.cmo \
     parse_o.cmo
-mlparsers.cmx : \
+mLParsers.cmx : \
     parse_op.cmx \
     parse_oop.cmx \
     parse_o.cmx
-mlprinters.cmo : \
+mLPrinters.cmo : \
     print_rp.cmo \
     print_ro.cmo \
     print_r.cmo \
     print_op.cmo \
     print_o.cmo
-mlprinters.cmx : \
+mLPrinters.cmx : \
     print_rp.cmx \
     print_ro.cmx \
     print_r.cmx \
     print_op.cmx \
     print_o.cmx
+mkcamlp5.cmo :
+mkcamlp5.cmx :
 o_keywords.cmo :
 o_keywords.cmx :
 pa_extfold.cmo :

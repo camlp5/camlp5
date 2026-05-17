@@ -19,14 +19,14 @@ COPTLIB=mlprinters.cmxa  mlparsers.cmxa
 
 MLPARSERS_OBJS=../meta/parse_r.cmo ../meta/parse_rp.cmo \
 	parse_o.cmo parse_op.cmo parse_oop.cmo \
-	mlparsers.cmo
+	mLParsers.cmo
 
 MLPARSERS_XOBJS=$(MLPARSERS_OBJS:.cmo=.cmx)
 MLPARSERS_CMI=$(MLPARSERS_OBJS:.cmo=.cmi)
 
 MLPRINTERS_OBJS=o_keywords.cmo print_o.cmo print_op.cmo \
 	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo \
-	mlprinters.cmo
+	mLPrinters.cmo
 
 MLPRINTERS_XOBJS=$(MLPRINTERS_OBJS:.cmo=.cmx)
 MLPRINTERS_CMI=$(MLPRINTERS_OBJS:.cmo=.cmi)
@@ -57,9 +57,9 @@ pa_scheme.cmo pa_scheme.cmx: pa_scheme.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pa_extfold.cmo pa_extfold.cmx: pa_extfold.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
-mlprinters.cmo mlprinters.cmx: mlprinters.ml
+mLPrinters.cmo mLPrinters.cmx: mLPrinters.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
-mlparser.cmo mlparsers.cmx: mlparsers.ml
+mLParsers.cmo mLParsers.cmx: mLParsers.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 print_r.cmo print_r.cmx: print_r.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
@@ -169,8 +169,8 @@ pa_scheme.cmo: pa_schemer.cmo
 pr_extend.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_extfun.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_extprint.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
-mlprinters.cmo: print_r.cmo print_ro.cmo print_rp.cmo print_o.cmo print_op.cmo
-mlparsers.cmo: parse_o.cmo parse_op.cmo parse_oop.cmo
+mLPrinters.cmo: print_r.cmo print_ro.cmo print_rp.cmo print_o.cmo print_op.cmo
+mLParsers.cmo: parse_o.cmo parse_op.cmo parse_oop.cmo
 print_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 print_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_o.cmo
