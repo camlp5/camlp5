@@ -23,7 +23,8 @@ MLPARSERS_XOBJS=$(MLPARSERS_OBJS:.cmo=.cmx)
 MLPARSERS_CMI=$(MLPARSERS_OBJS:.cmo=.cmi)
 
 MLPRINTERS_OBJS=o_keywords.cmo print_o.cmo print_op.cmo \
-	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo
+	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo \
+	mlprinters.cmo
 
 MLPRINTERS_XOBJS=$(MLPRINTERS_OBJS:.cmo=.cmx)
 MLPRINTERS_CMI=$(MLPRINTERS_OBJS:.cmo=.cmi)
