@@ -8,7 +8,7 @@
 #load "pa_macro.cmo";
 
 open Asttools ;
-open Mlsyntax.Original ;
+open Mlsyntax.Revised ;
 
 value gram = Grammar.gcreate (Mlsyntax.Lexer.gmake ());
 
@@ -287,7 +287,7 @@ value generalized_type_of_type t =
   (Qast.List tl, rt)
 ;
 
-value greek_ascii_equiv s = Qast.Str (Pcaml.greek_ascii_equiv s);
+value greek_ascii_equiv s = Qast.Str (greek_ascii_equiv s);
 
 value warned = ref False;
 value warning_deprecated_since_6_00 loc =

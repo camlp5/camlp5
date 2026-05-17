@@ -160,6 +160,43 @@ end ;
 module Revised = struct
 include Original ;
 
+(* Greek Ascii equivalence for type parameters *)
+
+value start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;
+
+value greek_tab =
+  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+   "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
+;
+value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
+value greek_ascii_equiv s =
+  loop 0 greek_tab where rec loop i =
+    fun
+    [ [g :: gl] -> do {
+        if start_with s g then do {
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          loop 0 index_tab where rec loop i =
+            fun
+            [ [k :: kl] -> do {
+                if rest = k then do {
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                }
+                else loop (i + 1) kl
+              }
+            | [] -> String.make 1 c1 ^ rest ]
+        }
+        else loop (i + 1) gl
+      }
+    | [] -> s ]
+;
+
+
 value is_infixop0_2 =
   let list = ['='; '<'; '>'; '$'] in
   let excl = ["<-"] in
@@ -310,8 +347,17 @@ value stream_parser : Grammar.Entry.e (MLast.loc * spat_parser_ast) ;
 value stream_match : Grammar.Entry.e (MLast.loc * MLast.expr * spat_parser_ast) ;
 end ;
 
+type directive_fun = option MLast.expr -> unit;
+
 module type PARSEBASESIG = sig
 module Parsers : PARSERS ;
+value options : ref (list (string * Arg.spec * string)) ;
+value add_option : string -> Arg.spec -> string -> unit ;
+value get_options : unit -> list (string * Arg.spec * string) ;
+
+value directives : ref (list (string * directive_fun)) ;
+value add_directive : string -> directive_fun -> unit ;
+value get_directives : unit -> list (string * directive_fun) ;
 end
 ;
 
@@ -382,5 +428,25 @@ value stream_expr = Grammar.Entry.create gram "stream_expr";
 value stream_parser = Grammar.Entry.create gram "stream_parser";
 value stream_match = Grammar.Entry.create gram "stream_match";
 end ;
+value options = ref [] ;
+value add_option k v doc = options.val := [(k,v,doc) :: options.val] ;
+value get_options () =
+  let l = options.val in
+  do {
+    options.val := []
+  ; l
+  }
+;
+
+value directives = ref ([] : list (string * directive_fun)) ;
+value add_directive k v = directives.val := [(k,v) :: directives.val] ;
+value get_directives () =
+  let l = directives.val in
+  do {
+    directives.val := []
+  ; l
+  }
+;
+
 end
 ;

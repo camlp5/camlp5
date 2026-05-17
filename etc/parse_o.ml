@@ -8,10 +8,10 @@
 #load "pa_macro_gram.cmo"; (* REMOVE FOR COMPILE *)
 
 open Asttools;
-open Pcaml;
 open Mlsyntax.Original;
 
 module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+open Base.Parsers ;
 open Base;
 do {
   let odfa = Mlsyntax.Lexer.dollar_for_antiquotation.val in
@@ -56,6 +56,10 @@ do {
   Grammar.Unsafe.clear_entry class_sig_item;
   Grammar.Unsafe.clear_entry class_str_item
 };
+
+value uv = Pcaml.unvala ;
+value vala_map = Pcaml.vala_map ;
+value vala_it = Pcaml.vala_it ;
 
 value error loc msg = Ploc.raise loc (Failure msg);
 
@@ -446,7 +450,7 @@ value get_seq =
 ;
 
 value mem_tvar s tpl =
-  List.exists (fun (t, _) -> Pcaml.unvala t = Some s) tpl
+  List.exists (fun (t, _) -> uv t = Some s) tpl
 ;
 
 value choose_tvar loc tpl =
@@ -833,7 +837,7 @@ EXTEND
     ;
   located_rawstring: [ [
       s = V RAWSTRING ->
-      let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
+      let (delimsize,s) = Asttools.split_rawstring (uv s) in
       let loc = Asttools.narrow_loc loc (delimsize+2) (delimsize+2) in
       (loc, <:vala< s >>)
     ] ] ;
@@ -1030,8 +1034,8 @@ EXTEND
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
           let htd = {(htd) with MLast.tdAttributes = attrs } in
           let tdl = [htd :: ttd] in do {
-  if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
-            else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
+  if List.for_all (fun td -> uv td.MLast.tdIsDecl) tdl then ()
+            else if List.for_all (fun td -> not (uv td.MLast.tdIsDecl)) tdl then
               if nr then failwith "type-subst declaration must not specify <<nonrec>>" else ()
             else failwith "type-declaration cannot mix decl and subst" ;
             str_item_to_inline <:str_item< type $flag:nr$ $list:tdl$ >> ext
@@ -1218,11 +1222,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 
       | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
+          let t = match uv ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
           sig_item_to_inline <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
+          let t = match uv ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
           sig_item_to_inline <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension ; attrs = item_attributes ->
@@ -1329,15 +1333,15 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline <:expr< if $e1$ then $e2$ else () >> ext attrs
       | "for"; (ext,attrs) = ext_attributes; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
-          let el = Pcaml.vala_map get_seq e in
+          let el = vala_map get_seq e in
           expr_to_inline <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
       | "for"; (ext,attrs) = ext_attributes; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let i = Ploc.VaVal i in
-          let el = Pcaml.vala_map get_seq e in
+          let el = vala_map get_seq e in
           expr_to_inline <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
       | "while"; (ext,attrs) = ext_attributes; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
-          let el = Pcaml.vala_map get_seq e2 in
+          let el = vala_map get_seq e2 in
           expr_to_inline <:expr< while $e1$ do { $_list:el$ } >> ext attrs ]
     | "," [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
           <:expr< ( $list:[e :: el]$ ) >> ]
@@ -1965,7 +1969,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   type_parameter:
     [ [ tv = V type_variance "variance" ; p = V simple_type_parameter "var" ->
-        (p, Pcaml.vala_map Versdep.ocaml_normalize_camlp5_variance tv)
+        (p, vala_map Versdep.ocaml_normalize_camlp5_variance tv)
       ] ]
   ;
   simple_type_parameter:
@@ -2281,13 +2285,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           | (True, Left _) -> Ploc.raise loc (Stream.Error "val with definition cannot be virtual")
           | (False, Right _) -> Ploc.raise loc (Stream.Error "val without definition must be virtual")
           | (True, Right t) ->
-              if Pcaml.unvala ov then
+              if uv ov then
                 Ploc.raise loc (Stream.Error "virtual value cannot override")
               else
                 <:class_str_item< value virtual $flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
           ]
       | "method"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
-          if Pcaml.unvala ov then
+          if uv ov then
             Ploc.raise loc (Stream.Error "method without definition is not being overriden!")
           else if not vf then
             Ploc.raise loc (Stream.Error "method without definition must be virtual")
@@ -2651,7 +2655,7 @@ EXTEND
   ;
 END;
 
-Pcaml.add_option "-no_quot" (Arg.Set Mlsyntax.Lexer.no_quotations)
+add_option "-no_quot" (Arg.Set Mlsyntax.Lexer.no_quotations)
   "Don't parse quotations, allowing to use, e.g. \"<:>\" as token";
 end
 ;

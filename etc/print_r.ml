@@ -111,7 +111,7 @@ value has_special_chars s =
     match s.[0] with
     | '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
     | _ ->
-        match (Pcaml.greek_ascii_equiv s).[0] with
+        match (greek_ascii_equiv s).[0] with
         | 'A'..'Z' | 'a'..'z' → False
         | _ → True
         end

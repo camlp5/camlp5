@@ -45,6 +45,10 @@ module Revised :
     value is_infix_operator : string → bool;
     value is_dotop : string → bool;
     value is_special_op : string → bool;
+
+    value greek_ascii_equiv : string → string;
+  (* Gives an ascii equivalent to a greek letter representing a type
+     parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
   end
 ;
 
@@ -104,8 +108,17 @@ end ;
 
 module Lexer : Plexer.LEXER ;
 
+type directive_fun = option MLast.expr -> unit;
+
 module type PARSEBASESIG = sig
 module Parsers : PARSERS ;
+value options : ref (list (string * Arg.spec * string)) ;
+value add_option : string -> Arg.spec -> string -> unit ;
+value get_options : unit -> list (string * Arg.spec * string) ;
+
+value directives : ref (list (string * directive_fun)) ;
+value add_directive : string -> directive_fun -> unit ;
+value get_directives : unit -> list (string * directive_fun) ;
 end
 ;
 

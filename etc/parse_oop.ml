@@ -5,9 +5,8 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
-open Pcaml;
-
 module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+open Base.Parsers ;
 open Base;
 
 type spat_comp =

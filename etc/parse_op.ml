@@ -7,9 +7,9 @@
 
 open Asttools;
 open Exparser;
-open Pcaml;
 
 module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+open Base.Parsers ;
 open Base;
 
 (* Syntax extensions in Ocaml grammar *)

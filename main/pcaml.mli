@@ -110,6 +110,7 @@ value inter_phrases : ref (option string);
 
 type directive_fun = option MLast.expr -> unit;
 value add_directive : string -> directive_fun -> unit;
+value add_directives : list (string * directive_fun) -> unit;
 value find_directive : string -> directive_fun;
 
 (** {6 equality over abstact syntax trees (ignoring locations)} *)
@@ -129,10 +130,6 @@ value eq_class_type : MLast.class_type -> MLast.class_type -> bool;
 value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
 
 (** {6 Other} *)
-
-value greek_ascii_equiv : string → string;
-   (* Gives an ascii equivalent to a greek letter representing a type
-      parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
 
 value strict_mode : ref bool;
    (* [True] if the current mode is "strict", [False] if "transitional" *)

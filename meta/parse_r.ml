@@ -8,10 +8,10 @@
 #load "pa_macro_gram.cmo";
 
 open Asttools;
-open Pcaml;
 open Mlsyntax.Revised;
 
 module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+open Base.Parsers ;
 open Base;
 do {
   let odfa = Mlsyntax.Lexer.dollar_for_antiquotation.val in
@@ -60,9 +60,13 @@ do {
   Grammar.Unsafe.clear_entry class_str_item
 };
 
-Pcaml.add_option "-ignloaddir"
+add_option "-ignloaddir"
   (Arg.Unit (fun _ → add_directive "load" (fun _ → ())))
   "Ignore the #load directives in the input file.";
+
+value uv = Pcaml.unvala ;
+value vala_map = Pcaml.vala_map ;
+value vala_it = Pcaml.vala_it ;
 
 value mksequence2 loc =
   fun
@@ -625,7 +629,7 @@ EXTEND
     ;
   located_rawstring: [ [
       s = V RAWSTRING ->
-      let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
+      let (delimsize,s) = Asttools.split_rawstring (uv s) in
       let loc = Asttools.narrow_loc loc (delimsize+2) (delimsize+2) in
       (loc, <:vala< s >>)
     ] ] ;
@@ -775,7 +779,7 @@ EXTEND
 
   | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
       vala_it (fun tdl ->
-          if List.exists (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
+          if List.exists (fun td -> not (uv td.MLast.tdIsDecl)) tdl then
             failwith "type-declaration cannot mix decl and subst"
           else ()) tdl ;
       <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
@@ -890,8 +894,8 @@ EXTEND
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
             vala_it (fun tdl ->
-              if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
-              else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
+              if List.for_all (fun td -> uv td.MLast.tdIsDecl) tdl then ()
+              else if List.for_all (fun td -> not (uv td.MLast.tdIsDecl)) tdl then
                 vala_it (fun nrfl ->
                     if nrfl then failwith "type-subst declaration must not specify <<nonrec>>" else ()) nrfl
               else failwith "type-declaration cannot mix decl and subst") tdl ;
@@ -900,11 +904,11 @@ EXTEND
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
-        let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
+        let t = match uv ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
 
       | "value"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
-        let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
+        let t = match uv ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
           <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
 
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
@@ -1456,7 +1460,7 @@ EXTEND
   ;
   type_parameter:
     [ [ tv = V type_variance "variance" ; p = V simple_type_parameter "var" ->
-        (p, Pcaml.vala_map Versdep.ocaml_normalize_camlp5_variance tv)
+        (p, vala_map Versdep.ocaml_normalize_camlp5_variance tv)
       ] ]
   ;
   simple_type_parameter:
