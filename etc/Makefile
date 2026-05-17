@@ -14,8 +14,13 @@ SHELL=/bin/bash
 OTHEROUT=$(CAMLP5N)sch$(EXE)
 COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(OTHEROUT)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt$(EXE)
-COUTLIB=mlprinters.cma
-COPTLIB=mlprinters.cmxa
+COUTLIB=mlprinters.cma mlparsers.cma
+COPTLIB=mlprinters.cmxa  mlparsers.cmxa
+
+MLPARSERS_OBJS=../meta/parse_r.cmo ../meta/parse_rp.cmo \
+	parse_o.cmo parse_op.cmo parse_oop.cmo
+MLPARSERS_XOBJS=$(MLPARSERS_OBJS:.cmo=.cmx)
+MLPARSERS_CMI=$(MLPARSERS_OBJS:.cmo=.cmi)
 
 MLPRINTERS_OBJS=o_keywords.cmo print_o.cmo print_op.cmo \
 	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo
@@ -34,6 +39,12 @@ mlprinters.cma: $(MLPRINTERS_OBJS)
 
 mlprinters.cmxa: $(MLPRINTERS_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(MLPRINTERS_XOBJS) -a -o mlprinters.cmxa
+
+mlparsers.cma: $(MLPARSERS_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(MLPARSERS_OBJS) -a -o mlparsers.cma
+
+mlparsers.cmxa: $(MLPARSERS_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(MLPARSERS_XOBJS) -a -o mlparsers.cmxa
 
 # these ones must be compiled with new created camlp5:
 
