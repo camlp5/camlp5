@@ -617,6 +617,7 @@ and print_variance =
     (match v with [
          Covariant -> "+"
        | Contravariant -> "-"
+       | Invariant -> ""
     ])
   ELSIFDEF OCAML_VERSION < OCAML_5_4_0 THEN
   fun ppf v ->
