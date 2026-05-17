@@ -5,8 +5,8 @@ include ../config/Makefile
 INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 OTHERLANGS=pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_schemer.cmo pa_lefteval.cmo  pr_scheme.cmo pr_schemep.cmo
-OBJS=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo parse_oop.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo printers.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo  $(OTHERLANGS)
-INSTALL_CMI=print_o.cmi print_op.cmi pr_o.cmi pr_op.cmi print_r.cmi printers.cmi pr_r.cmi print_ro.cmi pr_ro.cmi print_rp.cmi pr_rp.cmi pr_depend.cmi pr_official.cmi
+OBJS=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo parse_oop.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo printers.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPRINTERS_CMO) $(OTHERLANGS)
+INSTALL_CMI=$(OBJS:.cmo=.cmi) $(MLPRINTERS_CMI)
 CAMLP5OM=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=parse_o.cmx pa_o.cmx parse_op.cmx pa_op.cmx ../meta/pr_dump.cmx
@@ -14,12 +14,26 @@ SHELL=/bin/bash
 OTHEROUT=$(CAMLP5N)sch$(EXE)
 COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(OTHEROUT)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt$(EXE)
+COUTLIB=mlprinters.cma
+COPTLIB=mlprinters.cmxa
 
-all: $(COUT) META mkcamlp5$(EXE)
-opt: $(COPT)
+MLPRINTERS_OBJS=print_o.cmo print_op.cmo \
+	print_r.cmo print_ro.cmo print_rp.cmo
+
+MLPRINTERS_XOBJS=$(MLPRINTERS_OBJS:.cmo=.cmx)
+MLPRINTERS_CMI=$(MLPRINTERS_OBJS:.cmo=.cmi)
+
+all: $(COUT) META mkcamlp5$(EXE) $(COUTLIB)
+opt: $(COPT) $(COPTLIB)
 
 mkcamlp5$(EXE): mkcamlp5.cmo
 	ocamlfind ocamlc -linkall -linkpkg -package bos,re,pcre2,rresult mkcamlp5.ml -o $@
+
+mlprinters.cma: $(MLPRINTERS_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(MLPRINTERS_OBJS) -a -o mlprinters.cma
+
+mlprinters.cmxa: $(MLPRINTERS_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(MLPRINTERS_XOBJS) -a -o mlprinters.cmxa
 
 # these ones must be compiled with new created camlp5:
 
@@ -116,25 +130,22 @@ depend:
 
 get_promote:
 
-install:
+install: $(COUT) $(COPT)
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) $(INSTALL_CMI) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(COUTLIB) $(COPTLIB) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	OVERSION=$(OVERSION) VERSION=$(VERSION) CAMLP5N="$(CAMLP5N)" ./META.pl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
 	cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
-	if test -f pa_o.cmx; then \
-	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
-	  for i in $(OBJS:.cmo=); do \
-	    cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
-	  done; \
-	  cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
-	  cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
-	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
-	fi
+	cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(COPTLIB:.cmxa=$(EXT_LIB)) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
+	cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
+	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo
