@@ -53,20 +53,9 @@ archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
 preprocessor = "camlp5 -nolib"
 
 package "parsers" (
-
-  requires(toploop) = "camlp5"
-  archive(toploop,-camlp5r)      = "mlparsers.cma"
-  archive(syntax,toploop,camlp5r)      = ""
-
-  requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "mlparsers.cma"
-  archive(syntax,preprocessor,native) = "mlparsers.cmxa"
-
-  package "link" (
     requires = "camlp5"
     archive(byte) = "mlparsers.cma"
     archive(native) = "mlparsers.cmxa"
-  )
 )
 
 package "pa_r" (
@@ -81,7 +70,7 @@ package "pa_r" (
   archive(syntax,preprocessor,native) = "pa_r.cmx pa_rp.cmx"
 
   package "link" (
-    requires = "camlp5.parsers.link"
+    requires = "camlp5.parsers"
     archive(byte) = "pa_r.cmo pa_rp.cmo"
     archive(native) = "pa_r.cmx pa_rp.cmx"
   )
@@ -99,7 +88,7 @@ package "pa_o" (
   archive(syntax,preprocessor,native) = "pa_o.cmx"
 
   package "link" (
-    requires = "camlp5,camlp5.parsers.link"
+    requires = "camlp5,camlp5.parsers"
     archive(byte) = "pa_o.cmo"
     archive(native) = "pa_o.cmx"
   )
@@ -124,18 +113,9 @@ package "pa_op" (
 )
 
 package "printers" (
-  requires(toploop) = "camlp5"
-  archive(toploop)      = "mlprinters.cma"
-
-  requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "mlprinters.cma"
-  archive(syntax,preprocessor,native) = "mlprinters.cmxa"
-
-  package "link" (
     requires = "camlp5"
     archive(byte) = "mlprinters.cma"
     archive(native) = "mlprinters.cmxa"
-  )
 )
 
 package "pr_r" (
@@ -147,7 +127,7 @@ package "pr_r" (
   archive(syntax,preprocessor,native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
 
   package "link" (
-    requires = "camlp5,camlp5.printers.link"
+    requires = "camlp5,camlp5.printers"
     archive(byte) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
     archive(native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
   )
@@ -162,7 +142,7 @@ package "pr_o" (
   archive(syntax,preprocessor,native) = "pr_o.cmx"
 
   package "link" (
-    requires = "camlp5,camlp5.printers.link"
+    requires = "camlp5,camlp5.printers"
     archive(byte) = "pr_o.cmo"
     archive(native) = "pr_o.cmx"
   )
