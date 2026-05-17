@@ -16,3 +16,8 @@ Pcaml.no_constructors_arity.val := False;
 
 include Parse_r ;
 include (PA(Mlsyntax.Lexer)(Pcaml.ParseBase)) ;
+
+Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
+Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem));
+Pcaml.(set_ast_parse transduce_top_phrase (Grammar.Entry.parse top_phrase));
+Pcaml.(set_ast_parse transduce_use_file (Grammar.Entry.parse use_file));

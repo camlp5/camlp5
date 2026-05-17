@@ -5,8 +5,8 @@ include ../config/Makefile
 INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 OTHERLANGS=pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_schemer.cmo pa_lefteval.cmo  pr_scheme.cmo pr_schemep.cmo
-OBJS=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo parse_oop.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo r_keywords.cmo print_r.cmo pr_r.cmo print_ro.cmo pr_ro.cmo print_rp.cmo pr_rp.cmo o_keywords.cmo print_o.cmo print_op.cmo mlprinters.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPRINTERS_CMO) $(OTHERLANGS)
-INSTALL_CMI=$(OBJS:.cmo=.cmi) $(MLPRINTERS_CMI)
+OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPARSERS_OBJS) $(MLPRINTERS_OBJS) $(OTHERLANGS)
+INSTALL_CMI=$(OBJS:.cmo=.cmi) $(MLPARSERS_CMI) $(MLPRINTERS_CMI)
 CAMLP5OM=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=parse_o.cmx pa_o.cmx parse_op.cmx pa_op.cmx ../meta/pr_dump.cmx
@@ -18,7 +18,9 @@ COUTLIB=mlprinters.cma mlparsers.cma
 COPTLIB=mlprinters.cmxa  mlparsers.cmxa
 
 MLPARSERS_OBJS=../meta/parse_r.cmo ../meta/parse_rp.cmo \
-	parse_o.cmo parse_op.cmo parse_oop.cmo
+	parse_o.cmo parse_op.cmo parse_oop.cmo \
+	mlparsers.cmo
+
 MLPARSERS_XOBJS=$(MLPARSERS_OBJS:.cmo=.cmx)
 MLPARSERS_CMI=$(MLPARSERS_OBJS:.cmo=.cmi)
 
@@ -56,6 +58,8 @@ pa_scheme.cmo pa_scheme.cmx: pa_scheme.ml
 pa_extfold.cmo pa_extfold.cmx: pa_extfold.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 mlprinters.cmo mlprinters.cmx: mlprinters.ml
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
+mlparser.cmo mlparsers.cmx: mlparsers.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 print_r.cmo print_r.cmx: print_r.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
@@ -166,6 +170,7 @@ pr_extend.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_extfun.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_extprint.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 mlprinters.cmo: print_r.cmo print_ro.cmo print_rp.cmo print_o.cmo print_op.cmo
+mlparsers.cmo: parse_o.cmo parse_op.cmo parse_oop.cmo
 print_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 print_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_o.cmo
