@@ -743,8 +743,15 @@ and print_out_type_decl kwd ppf x =
     ELSE
     let (vari, inj) = var_inj in
     fprintf ppf "%s%s%s%s"
-      (match vari with [ Asttypes.Covariant -> "+" | Contravariant -> "-" | NoVariance -> "" ])
-      (match inj with [ Asttypes.Injective -> "!" | NoInjectivity -> "" ])
+      (match vari with [
+           Asttypes.Covariant -> "+"
+         | Contravariant -> "-"
+         | NoVariance -> ""
+         | Bivariant -> "+-"
+      ])
+      (match inj with [
+           Asttypes.Injective -> "!"
+         | NoInjectivity -> "" ])
       q ty
     END
   in
