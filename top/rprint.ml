@@ -609,6 +609,34 @@ and print_out_signature ppf =
       fprintf ppf "%a;@ %a" print_out_sig_item item
         print_out_signature items ]
 
+and print_variance =
+  let open Asttypes in
+  IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
+  fun ppf v ->
+  fprintf ppf "%s"
+    (match v with [
+         Covariant -> "+"
+       | Contravariant -> "-"
+    ])
+  ELSIFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+  fun ppf v ->
+  fprintf ppf "%s"
+    (match v with [
+         Covariant -> "+"
+       | Contravariant -> "-"
+       | NoVariance ->  ""
+    ])
+  ELSE
+  fun ppf v ->
+  fprintf ppf "%s"
+    (match v with [
+         Covariant -> "+"
+       | Contravariant -> "-"
+       | NoVariance ->  ""
+       | Bivariant -> "+-"
+    ])
+  END
+
 and print_type_parameter =
   IFDEF OCAML_VERSION < OCAML_5_05_0 THEN
   fun ppf s ->
@@ -623,13 +651,8 @@ and print_type_parameter =
     if s = "_" then fprintf ppf "_" else ty_var ~{non_gen} ppf s in
   
   let open Asttypes in
-  fprintf ppf "%s%s%a"
-    (match var with [
-         Covariant -> "+"
-       | Contravariant -> "-"
-       | NoVariance ->  ""
-       | Bivariant -> "+-"
-    ])
+  fprintf ppf "%a%s%a"
+    print_variance var
     (match inj with [ Injective -> "!" | NoInjectivity -> "" ])
     (print_type_parameter0 ~{non_gen}) ty
   END
@@ -742,13 +765,8 @@ and print_out_type_decl kwd ppf x =
       q ty
     ELSE
     let (vari, inj) = var_inj in
-    fprintf ppf "%s%s%s%s"
-      (match vari with [
-           Asttypes.Covariant -> "+"
-         | Contravariant -> "-"
-         | NoVariance -> ""
-         | Bivariant -> "+-"
-      ])
+    fprintf ppf "%a%s%s%s"
+      print_variance vari
       (match inj with [
            Asttypes.Injective -> "!"
          | NoInjectivity -> "" ])

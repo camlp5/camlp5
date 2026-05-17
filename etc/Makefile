@@ -17,8 +17,8 @@ COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt$(EXE)
 COUTLIB=mlprinters.cma
 COPTLIB=mlprinters.cmxa
 
-MLPRINTERS_OBJS=print_o.cmo print_op.cmo \
-	print_r.cmo print_ro.cmo print_rp.cmo
+MLPRINTERS_OBJS=o_keywords.cmo print_o.cmo print_op.cmo \
+	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo
 
 MLPRINTERS_XOBJS=$(MLPRINTERS_OBJS:.cmo=.cmx)
 MLPRINTERS_CMI=$(MLPRINTERS_OBJS:.cmo=.cmi)
@@ -142,6 +142,7 @@ install: $(COUT) $(COPT)
 	cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(COPTLIB:.cmxa=$(EXT_LIB)) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
 	cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \

@@ -5,6 +5,8 @@
 #load "pa_macro.cmo";
 #load "pa_extend.cmo";
 
+[@@@warnerror "-generative-application-expects-unit";] ;
+
 open Printf;
 
 value version = "8.05.01";

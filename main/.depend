@@ -16,9 +16,11 @@ ast2pt.cmx : \
 ast2pt.cmi : \
     mLast.cmi
 asttools.cmo : \
+    mlsyntax.cmi \
     mLast.cmi \
     asttools.cmi
 asttools.cmx : \
+    mlsyntax.cmx \
     mLast.cmi \
     asttools.cmi
 asttools.cmi : \

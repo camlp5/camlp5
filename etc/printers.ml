@@ -2,6 +2,8 @@
 (* printers.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+[@@@warnerror "-generative-application-expects-unit";] ;
+
 open Mlsyntax ;
 
 module PrettyPrint (P : PRINTERS) = struct
