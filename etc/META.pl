@@ -46,25 +46,42 @@ archive(byte,toploop,camlp5lisp) = "odyl.cma camlp5.cma camlp5_top.cma pa_lisp.c
 
 # For the preprocessor itself:
 archive(syntax,preprocessor,camlp5o) = "parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo pr_dump.cmo"
-archive(syntax,preprocessor,camlp5r) = "pa_r.cmo pa_rp.cmo pr_dump.cmo"
+archive(syntax,preprocessor,camlp5r) = "parse_r.cmo pa_r.cmo parse_rp.cmo pa_rp.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5sml) = "pa_sml.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5scheme) = "pa_scheme.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
 preprocessor = "camlp5 -nolib"
 
-package "pa_r" (
-  error(syntax_camlp5o) = "camlp5.pa_r cannot be used with syntax camlp5o"
+package "parse_r" (
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5r)      = "pa_r.cmo pa_rp.cmo"
+  archive(toploop,-camlp5r)      = "parse_r.cmo parse_rp.cmo"
   archive(syntax,toploop,camlp5r)      = ""
 
   requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "parse_r.cmo parse_rp.cmo"
+  archive(syntax,preprocessor,native) = "parse_r.cmx parse_rp.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "parse_r.cmo parse_rp.cmo"
+    archive(native) = "parse_r.cmx parse_rp.cmx"
+  )
+)
+
+package "pa_r" (
+  error(syntax_camlp5o) = "camlp5.pa_r cannot be used with syntax camlp5o"
+
+  requires(toploop) = "camlp5.parse_r"
+  archive(toploop,-camlp5r)      = "pa_r.cmo pa_rp.cmo"
+  archive(syntax,toploop,camlp5r)      = ""
+
+  requires(syntax,preprocessor) = "camlp5.parse_r"
   archive(syntax,preprocessor,-native) = "pa_r.cmo pa_rp.cmo"
   archive(syntax,preprocessor,native) = "pa_r.cmx pa_rp.cmx"
 
   package "link" (
-    requires = "camlp5"
+    requires = "camlp5.parse_r.link"
     archive(byte) = "pa_r.cmo pa_rp.cmo"
     archive(native) = "pa_r.cmx pa_rp.cmx"
   )

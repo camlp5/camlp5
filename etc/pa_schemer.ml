@@ -1,4 +1,4 @@
-(* camlp5 pa_r.cmo pa_rp.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo *)
+(* camlp5 parse_r.cmo pa_r.cmo parse_rp.cmo pa_rp.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo *)
 (* pa_scheme.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
