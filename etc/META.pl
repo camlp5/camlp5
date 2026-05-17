@@ -139,16 +139,16 @@ package "parse_op" (
 package "pa_op" (
   error(syntax_camlp5r) = "camlp5.pa_op cannot be used with syntax camlp5r"
 
-  requires(toploop) = "camlp5.print_o,camlp5.pa_o,camlp5.parse_op"
+  requires(toploop) = "camlp5.parse_o,camlp5.pa_o,camlp5.parse_op"
   archive(toploop,-camlp5o)      = "pa_op.cmo"
   archive(syntax,toploop,camlp5o)      = ""
 
-  requires(syntax,preprocessor) = "camlp5.print_o,camlp5.pa_o,camlp5.parse_op"
+  requires(syntax,preprocessor) = "camlp5.parse_o,camlp5.pa_o,camlp5.parse_op"
   archive(syntax,preprocessor,-native) = "pa_op.cmo"
   archive(syntax,preprocessor,native) = "pa_op.cmx"
 
   package "link" (
-    requires = "camlp5.print_o.link,camlp5.pa_o.link,camlp5.parse_op.link"
+    requires = "camlp5.parse_o.link,camlp5.pa_o.link,camlp5.parse_op.link"
     archive(byte) = "pa_op.cmo"
     archive(native) = "pa_op.cmx"
   )
@@ -164,7 +164,7 @@ package "printers" (
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "mlprinters.cmaa"
+    archive(byte) = "mlprinters.cma"
     archive(native) = "mlprinters.cmxa"
   )
 )
