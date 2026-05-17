@@ -1,4 +1,5 @@
 *.o
+*.a
 myconfig
 */.depend.bak
 local-install
