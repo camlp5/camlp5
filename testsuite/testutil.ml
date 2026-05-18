@@ -47,10 +47,13 @@ value lex_string_loc gram s =
   tolist [] 0
 ;
 
+module PAPRGen(PB : Mlsyntax.PARSEBASESIG)(PP : Mlsyntax.PRINTERS) = struct
+module PA = PB.Parsers ;
+
 value print_location loc =
   let loc =
     if Ploc.file_name loc = "" then
-      Ploc.make_loc Pcaml.input_file.val 1 0 (0, 1) ""
+      Ploc.make_loc PB.input_file.val 1 0 (0, 1) ""
     else loc
   in
   let fname = Ploc.file_name loc in
@@ -60,7 +63,7 @@ value print_location loc =
     let line = Ploc.line_nb loc in
     let bol = Ploc.bol_pos loc in
     eprintf "%s"
-      (Pcaml.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
+      (Pcamlbase.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
   else
     eprintf "At location %d-%d\n" bp ep
 ;
@@ -88,17 +91,16 @@ try f arg with exc -> report_error_and_exit ~{exit=exit} exc
 ;
 
 value with_input_file fname f arg =
-  let oinput_file = Pcaml.input_file.val in do {
-    Pcaml.input_file.val := fname ;
-    try let rv = f arg in do { Pcaml.input_file.val := oinput_file ; rv }
+  let oinput_file = PB.input_file.val in do {
+    PB.input_file.val := fname ;
+    try let rv = f arg in do { PB.input_file.val := oinput_file ; rv }
     with exc -> do {
-      Pcaml.input_file.val := oinput_file ;
+      PB.input_file.val := oinput_file ;
       raise exc
     }
   }
 ;
 
-module PAPRGen(PA : Mlsyntax.PARSERS)(PP : Mlsyntax.PRINTERS) = struct
 module Implem = struct
 value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file (Grammar.Entry.parse PA.implem) strm in ast ;
 value pa1 ?{input_file="-"} s = let ast = pa ~{input_file=input_file} (Stream.of_string s) in ast ;
@@ -158,7 +160,7 @@ value both_pa1 = ((fun x -> Implem.pa1 x), (fun x -> Interf.pa1 x)) ;
 value both_pr = ((fun x -> Implem.pr x), (fun x -> Interf.pr x)) ;
 end;
 
-module PAPR = PAPRGen(Pcaml.ParseBase.Parsers)(Pcaml.PrintBase.Printers) ;
+module PAPR = PAPRGen(Pcaml.ParseBase)(Pcaml.PrintBase.Printers) ;
 
 value with_buffer_formatter f arg = do {
   let b = Buffer.create 23 in

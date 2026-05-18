@@ -1192,7 +1192,7 @@ and expr_se =
             let e = expr_se se in
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
-  | Squot loc typ txt → Pcaml.handle_expr_quotation loc (typ, txt)
+  | Squot loc typ txt → Pcaml.QH.handle_expr_quotation loc (typ, txt)
   | Santi loc "" s → <:expr< $xtr:s$ >>
   | Santi loc _ s → error_loc loc "expr" ]
 and begin_se loc =
@@ -1389,7 +1389,7 @@ and patt_se =
             let p = patt_se se in
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
-  | Squot loc typ txt → Pcaml.handle_patt_quotation loc (typ, txt)
+  | Squot loc typ txt → Pcaml.QH.handle_patt_quotation loc (typ, txt)
   | Santi loc "" s → <:patt< $xtr:s$ >>
   | Santi loc _ s → error_loc loc "patt" ]
 and ipatt_se se =

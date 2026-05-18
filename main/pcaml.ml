@@ -8,6 +8,7 @@
 [@@@warnerror "-generative-application-expects-unit";] ;
 
 open Printf;
+open Pcamlbase ;
 
 value version = "8.05.01";
 value syntax_name = ref "";
@@ -76,228 +77,12 @@ value rec skip_to_eol cs =
 ;
 value sync = ref skip_to_eol;
 
-value input_file = Plexing.input_file;
 value output_file = ref None;
-
-value warning_default_function loc txt = do {
-  let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
-  eprintf "<W> loc %d %d: %s\n" bp ep txt;
-  flush stderr
-};
-
-value warning = ref warning_default_function;
-value quotation_loc = ref None;
-
-List.iter (fun (n, f) -> Quotation.add n f)
-  [("id", Quotation.ExStr (fun _ s -> "$0:" ^ s ^ "$"));
-   ("string", Quotation.ExStr (fun _ s -> "\"" ^ String.escaped s ^ "\""))];
-
-value quotation_dump_file = ref (None : option string);
-
-type err_ctx =
-  [ Finding
-  | Expanding
-  | ParsingResult of Ploc.t and string ]
-;
-exception Qerror of string and string and err_ctx and exn;
-
-value quotation_location () =
-  match quotation_loc.val with
-  [ Some loc -> loc
-  | None -> failwith "Pcaml.quotation_location: not in quotation context" ]
-;
-
-value expand_quotation gloc expander shift name str = do {
-  let new_warning =
-    let warn = warning.val in
-    fun loc txt ->
-      let bp = Ploc.first_pos loc in
-      let ep = Ploc.last_pos loc in
-      let loc = Ploc.sub gloc (shift + bp) (ep - bp) in
-      warn loc txt
-  in
-  let restore =
-    let old_warning = warning.val in
-    let old_loc = quotation_loc.val in
-    fun () -> do {
-      warning.val := old_warning;
-      quotation_loc.val := old_loc;
-    }
-  in
-  warning.val := new_warning;
-  quotation_loc.val := Some (Ploc.shift shift gloc);
-  let r =
-     try
-       try expander str with
-       [ Ploc.Exc loc exc ->
-           let exc1 = Qerror name str Expanding exc in
-           let shift = Ploc.first_pos gloc + shift in
-           let loc =
-             let gloc_line_nb = Ploc.line_nb gloc in
-             let loc_line_nb = Ploc.line_nb loc in
-             if gloc_line_nb < 0 || loc_line_nb < 0 then
-               Ploc.make_unlined
-                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
-             else
-               Ploc.make_loc (Ploc.file_name loc)
-                 (gloc_line_nb + loc_line_nb - 1)
-                 (if loc_line_nb = 1 then Ploc.bol_pos gloc
-                  else shift + Ploc.bol_pos loc)
-                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc) ""
-           in
-           raise (Ploc.Exc loc exc1)
-       | exc ->
-           let exc1 = Qerror name str Expanding exc in
-           Ploc.raise gloc exc1 ]
-    with
-    [ exn -> do { restore (); raise exn } ]
-  in
-  restore ();
-  r;
-};
-
-value parse_quotation_result entry loc shift name str =
-  let cs = Stream.of_string str in
-  try Grammar.Entry.parse entry cs with
-  [ Ploc.Exc iloc (Qerror _ _ Expanding exc) ->
-      let ctx = ParsingResult iloc str in
-      let exc1 = Qerror name str ctx exc in
-      Ploc.raise loc exc1
-  | Ploc.Exc _ (Qerror _ _ _ _ as exc) ->
-      Ploc.raise loc exc
-  | Ploc.Exc iloc exc ->
-      let ctx = ParsingResult iloc str in
-      let exc1 = Qerror name str ctx exc in
-      Ploc.raise loc exc1 ]
-;
-
-value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
-  let (name, locate) =
-    let len = String.length name in
-    if len = 0 then (name, False)
-    else if name.[len-1] = ':' then (String.sub name 0 (len - 1), False)
-    else if name.[len-1] = '@' then (String.sub name 0 (len - 1), True)
-    else (name, False)
-  in
-  let shift =
-    match name with
-    [ "" -> String.length "<<"
-    | _ ->
-        if locate then
-          String.length "<:" + String.length name + String.length ":<"
-        else
-          String.length "<:" + String.length name + String.length "<" ]
-  in
-  let expander =
-    try Quotation.find name with exc ->
-      let exc1 = Qerror name str Finding exc in
-      raise (Ploc.Exc (Ploc.sub loc 0 shift) exc1)
-  in
-  let ast =
-    match expander with
-    [ Quotation.ExStr f ->
-        let new_str = expand_quotation loc (f in_expr) shift name str in
-        parse_quotation_result entry loc shift name new_str
-    | Quotation.ExAst fe_fp ->
-        let str = if locate then "@" ^ str else str in
-        expand_quotation loc (proj fe_fp) shift name str ]
-  in
-  let floc =
-    let evaluated = ref None in
-    fun _ ->
-      match evaluated.val with
-      [ Some loc -> loc
-      | None -> do {
-          evaluated.val := Some (Ploc.with_comment loc "");
-          loc
-        } ]
-  in
-  reloc floc shift ast
-;
-
-value expr_eoi = Grammar.Entry.create gram "expr_eoi";
-value patt_eoi = Grammar.Entry.create gram "patt_eoi";
-EXTEND
-  expr_eoi:
-    [ [ x = expr; EOI -> x ] ]
-  ;
-  patt_eoi:
-    [ [ x = patt; EOI -> x ] ]
-  ;
-END;
-
-value handle_expr_quotation loc x =
-  handle_quotation loc fst fst True expr_eoi Reloc.expr x
-;
-
-value handle_patt_quotation loc x =
-  handle_quotation loc snd snd False patt_eoi Reloc.patt x
-;
-
-value expr_reloc = Reloc.expr;
-value patt_reloc = Reloc.patt;
 
 value rename_id = ref (fun x -> x);
 
-value find_line loc str =
-  let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
-  find 0 1 0 where rec find i line col =
-    if i == String.length str then (line, 0, col)
-    else if i == bp then (line, col, col + ep - bp)
-    else if str.[i] == '\n' then find (succ i) (succ line) 0
-    else find (succ i) line (succ col)
-;
-
-value string_of_loc fname line bp ep =
-  match Sys.os_type with
-  [ "MacOS" ->
-      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line
-        bp ep
-  | _ ->
-      sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep ]
-;
-
-value pp_report_quotation_error pps name str ctx = do {
-  let name = if name = "" then Quotation.default.val else name in
-  Format.pp_print_flush pps ();
-  Format.pp_open_hovbox pps 2;
-  eprintf "While %s \"%s\" for string \"%s\":"
-    (match ctx with
-     [ Finding -> "finding quotation"
-     | Expanding -> "expanding quotation"
-     | ParsingResult _ _ -> "parsing result of quotation" ])
-    name str;
-  match ctx with
-  [ ParsingResult loc str ->
-      match quotation_dump_file.val with
-      [ Some dump_file -> do {
-          eprintf " dumping result...\n";
-          flush stderr;
-          try do {
-            let (line, c1, c2) = find_line loc str in
-            let oc = open_out_bin dump_file in
-            output_string oc str;
-            output_string oc "\n";
-            flush oc;
-            close_out oc;
-            eprintf "%s" (string_of_loc dump_file line c1 c2);
-            flush stderr
-          }
-          with _ -> do {
-            eprintf "Error while dumping result in file \"%s\"" dump_file;
-            eprintf "; dump aborted.\n";
-            flush stderr
-          }
-        }
-      | None -> do {
-          if input_file.val = "" then
-            eprintf
-              "\n(consider setting variable Pcaml.quotation_dump_file)\n"
-          else eprintf " (consider using option -QD)\n";
-          flush stderr
-        } ]
-  | _ -> do { eprintf "\n"; flush stderr } ]
-};
+module QuotationHelper = Quotation.QuotationExpansion(ParseBase);
+module QH = QuotationHelper ;
 
 value pp_print_format pps str = do {
   let flush ini cnt =
@@ -387,7 +172,7 @@ value pp_report_error pps exn =
       Format.pp_close_box pps ()
     }
   | Qerror name str ctx exn -> do {
-      pp_report_quotation_error pps name str ctx;
+      QH.pp_report_quotation_error pps name str ctx;
       pp_print_exn pps exn
     }
   | e -> pp_print_exn pps exn ]

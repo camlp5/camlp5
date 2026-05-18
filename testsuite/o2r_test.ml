@@ -10,7 +10,7 @@ open OUnitTest;
 
 Pcaml.inter_phrases.val := Some ";\n" ;
 
-module PAPR = PAPRGen(MLParsers.OP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR = PAPRGen(MLParsers.OP.Base)(MLPrinters.RP.Base.Printers) ;
 
 value tests = "matrix" >::: (Papr_test_matrix.o2r PAPR.both_pa1 PAPR.both_pr None ()) ;
 

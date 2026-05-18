@@ -4,6 +4,8 @@
 
 (** Quotation operations. *)
 
+open Pcamlbase ;
+
 type expander =
   [ ExStr of bool -> string -> string
   | ExAst of (string -> MLast.expr * string -> MLast.patt) ]
@@ -47,3 +49,26 @@ value default : ref string;
 
 value translate : ref (string -> string);
    (** function translating quotation names; default = identity *)
+
+module type QUOTATION_EXPANSION = sig
+  value quotation_dump_file : ref (option string);
+  (** [quotation_dump_file] optionally tells the compiler to dump the
+      result of an expander (of kind "generating a string") if this
+      result is syntactically incorrect.
+      If [None] (default), this result is not dumped. If [Some fname], the
+      result is dumped in the file [fname]. *)
+  value quotation_location : unit -> Ploc.t;
+  (** while expanding a quotation, returns the location of the quotation
+      text (between the quotation quotes) in the source; raises
+      [Failure] if not in the context of a quotation expander. *)
+  value expand_quotation : Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b ;
+  value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
+  value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
+  value expr_eoi : Grammar.Entry.e MLast.expr;
+  value patt_eoi : Grammar.Entry.e MLast.patt;
+  value pp_report_quotation_error :
+    Format.formatter -> string -> string -> err_ctx -> unit ;
+end ;
+
+open Mlsyntax ;
+module QuotationExpansion(PB : PARSEBASESIG) : QUOTATION_EXPANSION ;

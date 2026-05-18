@@ -395,7 +395,7 @@
     (lambda (e se) (let ((e1 (expr_se se))) <:expr< $e$ $e1$ >>))
     (expr_se se) sel))
   ((Squot loc typ txt)
-   (Pcaml.handle_expr_quotation loc (, typ txt))))
+   (Pcaml.QH.handle_expr_quotation loc (, typ txt))))
  progn_se
  (lambda loc
     (lambda_match
@@ -519,7 +519,7 @@
     (lambda (p se) (let ((p1 (patt_se se))) <:patt< $p$ $p1$ >>))
     (patt_se se) sel))
   ((Sexpr loc (list)) <:patt< () >>)
-  ((Squot loc typ txt) (Pcaml.handle_patt_quotation loc (, typ txt))))
+  ((Squot loc typ txt) (Pcaml.QH.handle_patt_quotation loc (, typ txt))))
  patt_ident_se
  (lambda (loc s)
   (let* ((sl (split_at_dots loc s))

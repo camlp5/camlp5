@@ -7076,7 +7076,7 @@ END
     with exn -> do {
       Printf.fprintf stderr "Exception during reparse of <<%s>>:\n\t" s ;
       flush stderr ;
-      Testutil.report_error exn ;
+      PAPR.report_error exn ;
       raise exn
     } in
 
@@ -7094,24 +7094,24 @@ END
 
     | (True, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{cmp=cmp_string} ~{printer=fmt_string}
-          outputs (wrap_err pp_implem (wrap_err pa_implem inputs)) ;
+          outputs (PAPR.wrap_err pp_implem (PAPR.wrap_err pa_implem inputs)) ;
           official_reparse True outputs
       }
 
     | (False, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{cmp=cmp_string} ~{printer=fmt_string}
-          outputs (wrap_err pp_interf (wrap_err pa_interf inputs)) ;
+          outputs (PAPR.wrap_err pp_interf (PAPR.wrap_err pa_interf inputs)) ;
           official_reparse False outputs
       }
 
     | (True, OK inputs, EXN outputs exn) -> do {
-        let ast = wrap_err pa_implem inputs in
+        let ast = PAPR.wrap_err pa_implem inputs in
         assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pp_implem ast)
       }
 
     | (False, OK inputs, EXN outputs exn) -> do {
-        let ast = wrap_err pa_interf inputs in
+        let ast = PAPR.wrap_err pa_interf inputs in
         assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pp_interf ast)
       }

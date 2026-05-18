@@ -13,7 +13,7 @@ open OUnitTest;
 Pcaml.inter_phrases.val := Some ";;\n" ;
 Pcaml.no_constructors_arity.val := True;
 
-module PAPR = PAPRGen(MLParsers.OP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR = PAPRGen(MLParsers.OP.Base)(MLPrinters.RP.Base.Printers) ;
 
 module Official = struct
 module Implem = struct

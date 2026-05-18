@@ -707,7 +707,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string a)
+                Grammar.Entry.parse Pcaml.QH.expr_eoi (Stream.of_string a)
               in
               <:expr< Ploc.VaAnt $anti:a$ >>
             else <:expr< failwith "antiquot" >>
@@ -731,7 +731,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
+                Grammar.Entry.parse Pcaml.QH.patt_eoi (Stream.of_string a)
               in
               <:patt< Ploc.VaAnt $anti:a$ >>
             else <:patt< _ >>

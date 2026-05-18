@@ -74,7 +74,7 @@ value print_location lb loc =
   else
     do {
       Format.fprintf Format.err_formatter "%s%!"
-        (Pcaml.string_of_loc Toploop.input_name.val (Ploc.line_nb loc)
+        (Pcamlbase.string_of_loc Toploop.input_name.val (Ploc.line_nb loc)
 	   (Ploc.first_pos loc - Ploc.bol_pos loc)
 	   (Ploc.last_pos loc - Ploc.bol_pos loc));
     }

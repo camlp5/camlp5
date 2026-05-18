@@ -12,7 +12,7 @@ Pcaml.inter_phrases.val := Some ";\n" ;
 
 value pa1 = PAPR.Implem.pa1 ;
 
-module PAPR_RR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR_RR = PAPRGen(MLParsers.RP.Base)(MLPrinters.RP.Base.Printers) ;
 
 value pr = PAPR_RR.Implem.pr ;
 

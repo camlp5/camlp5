@@ -14,4 +14,4 @@ Toploop.parse_toplevel_phrase.val := wrapped_toplevel_phrase ;
 
 Toploop.parse_use_file.val := wrapped_use_file ;
 
-Pcaml.warning.val := wrapped_print_warning ;
+Pcamlbase.warning.val := wrapped_print_warning ;

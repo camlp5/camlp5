@@ -7,7 +7,7 @@ open Testutil2 ;
 open OUnit2 ;
 open OUnitTest ;
 
-module PAPR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR = PAPRGen(MLParsers.RP.Base)(MLPrinters.RP.Base.Printers) ;
 
 value _ = 
 if not Sys.interactive.val then

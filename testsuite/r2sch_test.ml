@@ -8,7 +8,7 @@ open OUnitTest ;
 
 Pcaml.inter_phrases.val := Some ("\n") ;
 
-module PAPR_RR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR_RR = PAPRGen(MLParsers.RP.Base)(MLPrinters.RP.Base.Printers) ;
 
 value pa1 = PAPR_RR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;

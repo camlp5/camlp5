@@ -102,7 +102,7 @@ module Qast =
       | Record lal -> <:expr< {$list:List.map (to_expr_label m) lal$} >>
       | Loc | TrueLoc -> <:expr< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
-          let (loc, e) = antiquot k loc x Pcaml.expr_eoi in
+          let (loc, e) = antiquot k loc x Pcaml.QH.expr_eoi in
           <:expr< $anti:e$ >>
       | VaVal a ->
           let e = to_expr m a in
@@ -137,7 +137,7 @@ module Qast =
       | Loc -> <:patt< _ >>
       | TrueLoc -> <:patt< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
-          let (loc, e) = antiquot k loc x Pcaml.patt_eoi in
+          let (loc, e) = antiquot k loc x Pcaml.QH.patt_eoi in
           <:patt< $anti:e$ >>
       | VaVal a ->
           let p = to_patt m a in
@@ -292,7 +292,7 @@ value greek_ascii_equiv s = Qast.Str (greek_ascii_equiv s);
 value warned = ref False;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
-    Pcaml.warning.val loc "syntax deprecated since version 6.00";
+    Pcamlbase.warning.val loc "syntax deprecated since version 6.00";
     warned.val := True
   }
   else ()
@@ -2134,7 +2134,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string a)
+                Grammar.Entry.parse Pcaml.QH.expr_eoi (Stream.of_string a)
               in
               <:expr< Ploc.VaAnt $anti:a$ >>
             else <:expr< failwith "antiquot" >> ] ]
@@ -2158,7 +2158,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
+                Grammar.Entry.parse Pcaml.QH.patt_eoi (Stream.of_string a)
               in
               <:patt< Ploc.VaAnt $anti:a$ >>
             else <:patt< _ >> ] ]

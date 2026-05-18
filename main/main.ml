@@ -10,7 +10,7 @@ open Versdep;
 value print_location loc =
   let loc =
     if Ploc.file_name loc = "" then
-      Ploc.make_loc Pcaml.input_file.val 1 0 (0, 1) ""
+      Ploc.make_loc Pcaml.ParseBase.input_file.val 1 0 (0, 1) ""
     else loc
   in
   let fname = Ploc.file_name loc in
@@ -20,7 +20,7 @@ value print_location loc =
     let line = Ploc.line_nb loc in
     let bol = Ploc.bol_pos loc in
     eprintf "%s"
-      (Pcaml.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
+      (Pcamlbase.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
   else
     eprintf "At location %d-%d\n" bp ep
 ;
@@ -67,8 +67,8 @@ Pcaml.add_directive "directory"
    | Some _ | None -> raise Not_found ]);
 
 value rec parse_file pa getdir useast = do {
-  let name = Pcaml.input_file.val in
-  Pcaml.warning.val := print_warning;
+  let name = Pcaml.ParseBase.input_file.val in
+  Pcamlbase.warning.val := print_warning;
   let ic = if name = "-" then stdin else open_in_bin name in
   let cs = Stream.of_channel ic in
   let clear () = if name = "-" then () else close_in ic in
@@ -110,11 +110,11 @@ value rec parse_file pa getdir useast = do {
   phr
 }
 and use_file pa getdir useast s = do {
-  let v_input_file = Pcaml.input_file.val in
-  Pcaml.input_file.val := s;
+  let v_input_file = Pcaml.ParseBase.input_file.val in
+  Pcaml.ParseBase.input_file.val := s;
   try do {
     let r = parse_file pa getdir useast in
-    Pcaml.input_file.val := v_input_file;
+    Pcaml.ParseBase.input_file.val := v_input_file;
     r
   }
   with e -> report_error_and_exit e
@@ -169,11 +169,11 @@ value print_succinct_version () = do {
 value initial_spec_list =
   [("-intf",
     Arg.String
-      (fun x -> do { file_kind.val := Intf; Pcaml.input_file.val := x }),
+      (fun x -> do { file_kind.val := Intf; Pcaml.ParseBase.input_file.val := x }),
     "<file>  Parse <file> as an interface, whatever its extension.");
    ("-impl",
     Arg.String
-      (fun x -> do { file_kind.val := Impl; Pcaml.input_file.val := x }),
+      (fun x -> do { file_kind.val := Impl; Pcaml.ParseBase.input_file.val := x }),
     "<file>  Parse <file> as an implementation, whatever its extension.");
    ("-unsafe", Arg.Set Ast2pt.fast,
     "Generate unsafe accesses to array and strings.");
@@ -182,7 +182,7 @@ value initial_spec_list =
    ("-loc", Arg.String (fun x -> Ploc.name.val := x),
     "<name>   Name of the location variable (default: " ^ Ploc.name.val ^
     ")");
-   ("-QD", Arg.String (fun x -> Pcaml.quotation_dump_file.val := Some x),
+   ("-QD", Arg.String (fun x -> Pcaml.QH.quotation_dump_file.val := Some x),
     "<file> Dump quotation expander result in case of syntax error.");
    ("-o", Arg.String (fun x -> Pcaml.output_file.val := Some x),
     "<file> Output on <file> instead of standard output.");
@@ -191,7 +191,7 @@ value initial_spec_list =
 ;
 
 value anon_fun x = do {
-  Pcaml.input_file.val := x;
+  Pcaml.ParseBase.input_file.val := x;
   file_kind.val := file_kind_of_name x
 };
 
@@ -244,7 +244,7 @@ value go () = do {
       exit 2
     } ];
   try
-    if Pcaml.input_file.val <> "" then
+    if Pcaml.ParseBase.input_file.val <> "" then
       match file_kind.val with
       [ Intf -> process_intf ()
       | Impl -> process_impl () ]

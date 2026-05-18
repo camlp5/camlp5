@@ -9,7 +9,7 @@ open OUnitTest ;
 
 Pcaml.no_constructors_arity.val := False;
 Pcaml.inter_phrases.val := Some ";\n" ;
-module PAPR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+module PAPR = PAPRGen(MLParsers.RP.Base)(MLPrinters.RP.Base.Printers) ;
 
 value _ = 
 if not Sys.interactive.val then

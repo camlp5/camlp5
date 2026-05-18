@@ -351,6 +351,9 @@ type directive_fun = option MLast.expr -> unit;
 
 module type PARSEBASESIG = sig
 module Parsers : PARSERS ;
+value input_file : ref string;
+   (** The file currently being parsed. *)
+
 value options : ref (list (string * Arg.spec * string)) ;
 value add_option : string -> Arg.spec -> string -> unit ;
 value get_options : unit -> list (string * Arg.spec * string) ;
@@ -428,6 +431,9 @@ value stream_expr = Grammar.Entry.create gram "stream_expr";
 value stream_parser = Grammar.Entry.create gram "stream_parser";
 value stream_match = Grammar.Entry.create gram "stream_match";
 end ;
+
+value input_file = Plexing.input_file;
+
 value options = ref [] ;
 value add_option k v doc = options.val := [(k,v,doc) :: options.val] ;
 value get_options () =

@@ -51,20 +51,8 @@ value parse_use_file :
   (Stream.t char -> (list MLast.str_item * bool));
 
 
-value input_file : ref string;
-   (** The file currently being parsed. *)
 value output_file : ref (option string);
    (** The output file, stdout if None (default) *)
-value quotation_dump_file : ref (option string);
-   (** [quotation_dump_file] optionally tells the compiler to dump the
-       result of an expander (of kind "generating a string") if this
-       result is syntactically incorrect.
-       If [None] (default), this result is not dumped. If [Some fname], the
-       result is dumped in the file [fname]. *)
-value quotation_location : unit -> Ploc.t;
-   (** while expanding a quotation, returns the location of the quotation
-       text (between the quotation quotes) in the source; raises
-       [Failure] if not in the context of a quotation expander. *)
 value version : string;
    (** The current version of Camlp5. *)
 value ocaml_version : string;
@@ -76,21 +64,9 @@ value add_options : list (string * Arg.spec * string) -> unit;
    (** Add a list of options to the command line options. *)
 value no_constructors_arity : ref bool;
    (** [True]: dont generate constructor arity. *)
-value string_of_loc : string -> int -> int -> int -> string;
-   (** [string_of_loc fname line bp ep] returns the location string for
-       file [fname] at [line] and between character [bp] and [ep]. *)
 
-
-type err_ctx =
-  [ Finding
-  | Expanding
-  | ParsingResult of Ploc.t and string ]
-;
-exception Qerror of string and string and err_ctx and exn;
-
-value expand_quotation : Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b ;
-value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
-value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
+module QuotationHelper : Quotation.QUOTATION_EXPANSION ;
+module QH : Quotation.QUOTATION_EXPANSION ;
 
 (** {6 Printers} *)
 
@@ -149,16 +125,9 @@ value vala_mapa : ('a -> 'b) -> (string -> 'b) -> V 'a -> 'b;
 
 (* for system use *)
 
-value warning : ref (Ploc.t -> string -> unit);
-value expr_eoi : Grammar.Entry.e MLast.expr;
-value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);
 value report_error : exn -> unit;
 value sync : ref (Stream.t char -> unit);
-value patt_reloc :
-  (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
-value expr_reloc :
-  (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
 value rename_id : ref (string -> string);
 value flag_comments_in_phrases : ref bool;
 value flag_equilibrate_cases : ref bool;

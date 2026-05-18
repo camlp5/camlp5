@@ -108,7 +108,7 @@ value toplevel_phrase cs = do {
     flush stderr
   }
   else ();
-  Pcaml.input_file.val := Toploop.input_name.val;
+  Pcaml.ParseBase.input_file.val := Toploop.input_name.val;
   match Pcaml.parse_top_phrase cs with
   [ Some phr -> Ast2pt.phrase phr
   | None -> raise End_of_file ]
@@ -126,9 +126,9 @@ Pcaml.add_directive "directory"
    | Some _ | None -> raise Not_found ]);
 
 value use_file cs = do {
-  let v = Pcaml.input_file.val in
-  Pcaml.input_file.val := Toploop.input_name.val;
-  let restore () = Pcaml.input_file.val := v in
+  let v = Pcaml.ParseBase.input_file.val in
+  Pcaml.ParseBase.input_file.val := Toploop.input_name.val;
+  let restore () = Pcaml.ParseBase.input_file.val := v in
   try do {
     let (pl0, eoi) =
       (* directives at beginning of the file are executed at once,

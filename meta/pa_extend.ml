@@ -158,7 +158,7 @@ value check_use nl el = do {
   Hashtbl.iter
     (fun s (r, e) ->
        if r.val = Unused then
-         Pcaml.warning.val e.name.loc ("Unused local entry \"" ^ s ^ "\"")
+         Pcamlbase.warning.val e.name.loc ("Unused local entry \"" ^ s ^ "\"")
        else ())
     ht
 };

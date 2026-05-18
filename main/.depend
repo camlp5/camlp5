@@ -44,11 +44,13 @@ exparser_types.cmi : \
     mLast.cmi
 mLast.cmi :
 main.cmo : \
+    pcamlbase.cmi \
     pcaml.cmi \
     mLast.cmi \
     ast2pt.cmi \
     argl.cmi
 main.cmx : \
+    pcamlbase.cmx \
     pcaml.cmx \
     mLast.cmi \
     ast2pt.cmx \
@@ -83,6 +85,7 @@ pcaml.cmo : \
     reloc.cmi \
     quotation.cmi \
     prtools.cmi \
+    pcamlbase.cmi \
     mlsyntax.cmi \
     mLast.cmi \
     pcaml.cmi
@@ -90,12 +93,19 @@ pcaml.cmx : \
     reloc.cmx \
     quotation.cmx \
     prtools.cmx \
+    pcamlbase.cmx \
     mlsyntax.cmx \
     mLast.cmi \
     pcaml.cmi
 pcaml.cmi : \
+    quotation.cmi \
     mlsyntax.cmi \
     mLast.cmi
+pcamlbase.cmo : \
+    pcamlbase.cmi
+pcamlbase.cmx : \
+    pcamlbase.cmi
+pcamlbase.cmi :
 pp_debug.cmo : \
     mLast.cmi
 pp_debug.cmx : \
@@ -109,12 +119,20 @@ prtools.cmx : \
 prtools.cmi : \
     mLast.cmi
 quotation.cmo : \
+    reloc.cmi \
+    pcamlbase.cmi \
+    mlsyntax.cmi \
     mLast.cmi \
     quotation.cmi
 quotation.cmx : \
+    reloc.cmx \
+    pcamlbase.cmx \
+    mlsyntax.cmx \
     mLast.cmi \
     quotation.cmi
 quotation.cmi : \
+    pcamlbase.cmi \
+    mlsyntax.cmi \
     mLast.cmi
 quotedext.cmo :
 quotedext.cmx :

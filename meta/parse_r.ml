@@ -287,7 +287,7 @@ value rec generalized_type_of_type =
 value warned = ref False;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
-    Pcaml.warning.val loc "syntax deprecated since version 6.00";
+    Pcamlbase.warning.val loc "syntax deprecated since version 6.00";
     warned.val := True
   }
   else ()
@@ -2018,12 +2018,12 @@ EXTEND
   expr: LEVEL "simple"
     [ [ x = QUOTATION →
           let con = quotation_content x in
-          Pcaml.handle_expr_quotation loc con ] ]
+          Pcaml.QH.handle_expr_quotation loc con ] ]
   ;
   patt: LEVEL "simple"
     [ [ x = QUOTATION →
           let con = quotation_content x in
-          Pcaml.handle_patt_quotation loc con ] ]
+          Pcaml.QH.handle_patt_quotation loc con ] ]
   ;
 END;
 end

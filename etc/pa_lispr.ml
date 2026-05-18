@@ -419,7 +419,7 @@ and expr_se =
            let e1 = expr_se se in
            <:expr< $e$ $e1$ >>)
         (expr_se se) sel
-  | Squot loc typ txt → Pcaml.handle_expr_quotation loc (typ, txt) ]
+  | Squot loc typ txt → Pcaml.QH.handle_expr_quotation loc (typ, txt) ]
 and progn_se loc =
   fun
   [ [] → <:expr< () >>
@@ -541,7 +541,7 @@ and patt_se =
            <:patt< $p$ $p1$ >>)
         (patt_se se) sel
   | Sexpr loc [] → <:patt< () >>
-  | Squot loc typ txt → Pcaml.handle_patt_quotation loc (typ, txt) ]
+  | Squot loc typ txt → Pcaml.QH.handle_patt_quotation loc (typ, txt) ]
 and patt_ident_se loc s =
   let sl = split_at_dots loc s in
   let (hdl, lid) = split_last sl in do {

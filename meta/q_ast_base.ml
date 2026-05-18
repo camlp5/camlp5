@@ -148,7 +148,7 @@ module E_MetaSig = struct
       [ Ploc.VaAnt s ->
           match get_anti_loc s with
           [ Some (loc, typ, str) ->
-              let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+              let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc typ str in
               if is_anti_anti typ then <:expr< $anti:r$ >>
               else if not Pcaml.strict_mode.val then <:expr< $anti:r$ >>
               else <:expr< Ploc.VaVal $anti:r$ >>
@@ -171,7 +171,7 @@ module E_MetaSig = struct
   value xtr_typed wantty loc s =
     match get_anti_loc s with
     [ Some (_, typ, str) when typ = wantty ->
-        let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+        let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "" str in
         <:expr< $anti:r$ >>
     | _ -> assert False ]
   ;
@@ -180,7 +180,7 @@ module E_MetaSig = struct
     [ Some (_, typ, str) ->
         match typ with
         [ "" ->
-            let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+            let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "" str in
             <:expr< $anti:r$ >>
         | _ -> assert False ]
     | None -> assert False ]
@@ -190,10 +190,10 @@ module E_MetaSig = struct
     [ Some (_, typ, str) ->
         match typ with
         [ "" | "exp" ->
-            let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+            let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc typ str in
             <:expr< $anti:r$ >>
         | "anti" ->
-            let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+            let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "anti" str in
             f <:expr< $anti:r$ >>
         | _ -> assert False ]
     | None -> assert False ]
@@ -235,7 +235,7 @@ module P_MetaSig = struct
       [ Ploc.VaAnt s ->
           match get_anti_loc s with
           [ Some (loc, typ, str) ->
-              let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
+              let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc typ str in
               if is_anti_anti typ then <:patt< $anti:r$ >>
               else if not Pcaml.strict_mode.val then <:patt< $anti:r$ >>
               else <:patt< Ploc.VaVal $anti:r$ >>
@@ -258,7 +258,7 @@ module P_MetaSig = struct
   value xtr_typed wantty loc s =
     match get_anti_loc s with
     [ Some (_, typ, str) when typ = wantty ->
-        let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+        let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "" str in
         <:patt< $anti:r$ >>
     | _ -> assert False ]
   ;
@@ -267,7 +267,7 @@ module P_MetaSig = struct
     [ Some (_, typ, str) ->
         match typ with
         [ "" ->
-            let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+            let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "" str in
             <:patt< $anti:r$ >>
         | _ -> assert False ]
     | None -> assert False ]
@@ -277,10 +277,10 @@ module P_MetaSig = struct
     [ Some (_, typ, str) ->
         match typ with
         [ "" | "exp" ->
-            let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
+            let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "exp" str in
             <:patt< $anti:r$ >>
         | "anti" ->
-            let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+            let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "anti" str in
             f <:patt< $anti:r$ >>
         | _ -> assert False ]
     | None -> assert False ]
