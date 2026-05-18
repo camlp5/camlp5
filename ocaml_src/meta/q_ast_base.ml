@@ -4,6 +4,7 @@
 
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
 
 (* AST quotations that works by running the language parser (and its possible
@@ -20,7 +21,7 @@ let eval_anti entry loc typ str =
   in
   let r =
     try
-      Ploc.call_with Plexer.force_antiquot_loc false
+      Ploc.call_with Pcaml.Lexer.force_antiquot_loc false
         (Grammar.Entry.parse entry) (Stream.of_string str)
     with Ploc.Exc (loc1, exc) ->
       let shift = Ploc.first_pos loc in
@@ -183,7 +184,7 @@ module E_MetaSig =
     let xtr_typed wantty loc s =
       match get_anti_loc s with
         Some (_, typ, str) when typ = wantty ->
-          let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+          let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "" str in
           MLast.ExAnt (loc, r)
       | _ -> assert false
     ;;
@@ -192,7 +193,7 @@ module E_MetaSig =
         Some (_, typ, str) ->
           begin match typ with
             "" ->
-              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+              let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "" str in
               MLast.ExAnt (loc, r)
           | _ -> assert false
           end
@@ -203,10 +204,10 @@ module E_MetaSig =
         Some (_, typ, str) ->
           begin match typ with
             "" | "exp" ->
-              let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+              let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc typ str in
               MLast.ExAnt (loc, r)
           | "anti" ->
-              let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+              let (loc, r) = eval_anti Pcaml.QH.expr_eoi loc "anti" str in
               f (MLast.ExAnt (loc, r))
           | _ -> assert false
           end
@@ -290,7 +291,7 @@ module P_MetaSig =
     let xtr_typed wantty loc s =
       match get_anti_loc s with
         Some (_, typ, str) when typ = wantty ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+          let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "" str in
           MLast.PaAnt (loc, r)
       | _ -> assert false
     ;;
@@ -299,7 +300,7 @@ module P_MetaSig =
         Some (_, typ, str) ->
           begin match typ with
             "" ->
-              let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+              let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "" str in
               MLast.PaAnt (loc, r)
           | _ -> assert false
           end
@@ -310,10 +311,10 @@ module P_MetaSig =
         Some (_, typ, str) ->
           begin match typ with
             "" | "exp" ->
-              let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
+              let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "exp" str in
               MLast.PaAnt (loc, r)
           | "anti" ->
-              let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+              let (loc, r) = eval_anti Pcaml.QH.patt_eoi loc "anti" str in
               f (MLast.PaAnt (loc, r))
           | _ -> assert false
           end

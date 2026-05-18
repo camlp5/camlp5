@@ -4,6 +4,7 @@
 
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
 
 let split_ext = ref false;;
@@ -148,7 +149,7 @@ let check_use nl el =
   Hashtbl.iter
     (fun s (r, e) ->
        if !r = Unused then
-         !(Pcaml.warning) e.name.loc ("Unused local entry \"" ^ s ^ "\""))
+         !(Pcamlbase.warning) e.name.loc ("Unused local entry \"" ^ s ^ "\""))
     ht
 ;;
 

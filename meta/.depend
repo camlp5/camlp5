@@ -24,14 +24,18 @@ pa_rp.cmo : \
     parse_rp.cmo
 pa_rp.cmx : \
     parse_rp.cmx
+parse_q_MLast.cmo :
+parse_q_MLast.cmx :
 parse_r.cmo :
 parse_r.cmx :
 parse_rp.cmo :
 parse_rp.cmx :
 pr_dump.cmo :
 pr_dump.cmx :
-q_MLast.cmo :
-q_MLast.cmx :
+q_MLast.cmo : \
+    parse_q_MLast.cmo
+q_MLast.cmx : \
+    parse_q_MLast.cmx
 q_ast.cmo : \
     q_ast_base.cmo
 q_ast.cmx : \

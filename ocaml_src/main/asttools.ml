@@ -2,7 +2,10 @@
 (* asttools.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
+
+open Mlsyntax;;
 
 let fst3 (a, b, c) = a;;
 let snd3 (a, b, c) = b;;
@@ -219,16 +222,16 @@ let type_binder_delta =
       "", "'" -> "QUO"
     | "GIDENT", _ -> "IDS"
     | "ANTIQUOT", s
-      when Some "list" = ((s |> Plexer.parse_antiquot) |> option_map fst) ->
+      when Some "list" = ((s |> Plexing.parse_antiquot) |> option_map fst) ->
         "PREDOT"
     | "ANTIQUOT", s
-      when Some "_list" = ((s |> Plexer.parse_antiquot) |> option_map fst) ->
+      when Some "_list" = ((s |> Plexing.parse_antiquot) |> option_map fst) ->
         "PREDOT"
     | "ANTIQUOT_LOC", s
-      when Some "list" = ((s |> Plexer.parse_antiloc) |> option_map snd3) ->
+      when Some "list" = ((s |> Plexing.parse_antiloc) |> option_map snd3) ->
         "PREDOT"
     | "ANTIQUOT_LOC", s
-      when Some "_list" = ((s |> Plexer.parse_antiloc) |> option_map snd3) ->
+      when Some "_list" = ((s |> Plexing.parse_antiloc) |> option_map snd3) ->
         "PREDOT"
     | _ -> failwith "START");
    "PREDOT",

@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 #directory ".";
+#load "parse_q_MLast.cmo";
 #load "q_MLast.cmo";
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";

@@ -95,6 +95,16 @@ val make_stream_and_location :
 
 (** Useful functions and values *)
 
+val parse_antiloc : string -> (Ploc.t * string * string) option;;
+   (** breaks apart the payload of an ANTIQUOT_LOC
+       (which is <begin-pos>,<end-pos>:<type>:<token-string>)
+       into its colon-separated parts *)
+
+val parse_antiquot : string -> (string * string) option;;
+   (** breaks apart the payload of an ANTIQUOT
+       (which is <type>:<token-string>)
+       into its colon-separated parts *)
+
 val eval_char : string -> char;;
 val eval_string : Ploc.t -> string -> string;;
    (** Convert a char or a string token, where the backslashes had not

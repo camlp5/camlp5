@@ -4,6 +4,7 @@
 
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
 
 open Q_ast_base;;
@@ -846,7 +847,7 @@ let separate_locate s =
 
 let apply_entry e me mp =
   let f s =
-    Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse e)
+    Ploc.call_with Pcaml.Lexer.force_antiquot_loc true (Grammar.Entry.parse e)
       (Stream.of_string s)
   in
   let expr s = let (s, locate) = separate_locate s in me (f s) in
@@ -948,7 +949,7 @@ Grammar.safe_extend
                   let i = String.index a ':' in
                   let i = String.index_from a (i + 1) ':' in
                   let a = String.sub a (i + 1) (String.length a - i - 1) in
-                  Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string a)
+                  Grammar.Entry.parse Pcaml.QH.expr_eoi (Stream.of_string a)
                 in
                 MLast.ExApp
                   (loc,
@@ -962,8 +963,8 @@ Grammar.safe_extend
                    MLast.ExStr (loc, (loc, "antiquot"))) :
               'expr_eoi)))]]];
 let expr s =
-  Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
-    (Stream.of_string s)
+  Ploc.call_with Pcaml.Lexer.force_antiquot_loc true
+    (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
 in
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
 Grammar.safe_extend
@@ -1000,7 +1001,7 @@ Grammar.safe_extend
                   let i = String.index a ':' in
                   let i = String.index_from a (i + 1) ':' in
                   let a = String.sub a (i + 1) (String.length a - i - 1) in
-                  Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
+                  Grammar.Entry.parse Pcaml.QH.patt_eoi (Stream.of_string a)
                 in
                 MLast.PaApp
                   (loc,
@@ -1012,7 +1013,7 @@ Grammar.safe_extend
               else MLast.PaAny loc :
               'patt_eoi)))]]];
 let patt s =
-  Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse patt_eoi)
-    (Stream.of_string s)
+  Ploc.call_with Pcaml.Lexer.force_antiquot_loc true
+    (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
 in
 Quotation.add "vala" (Quotation.ExAst (expr, patt));;

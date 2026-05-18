@@ -4,6 +4,7 @@
 
 #load "pa_macro.cmo";
 #load "pa_extend.cmo";
+#load "parse_q_MLast.cmo";
 #load "q_MLast.cmo";
 
 (* AST quotations that works by running the language parser (and its possible

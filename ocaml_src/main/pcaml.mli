@@ -13,7 +13,10 @@ val syntax_name : string ref;;
 
 (** {6 Parsers} *)
 
-type status = Ploc.t option;;
+module Lexer : Plexer.LEXER;;
+module ParseBase : (Mlsyntax.PARSEBASESIG with module Lexer = Lexer);;
+open Mlsyntax;;
+include Mlsyntax.PARSERS;;
 
 type 'a ast_transducer_t =
   { name : string;
@@ -29,7 +32,6 @@ val transduce_implem :
   ((MLast.str_item * MLast.loc) list * status) ast_transducer_t;;
 val transduce_top_phrase : MLast.str_item option ast_transducer_t;;
 val transduce_use_file : (MLast.str_item list * bool) ast_transducer_t;;
-
 
 val parse_interf :
   char Stream.t -> (MLast.sig_item * MLast.loc) list * status;;
@@ -51,72 +53,8 @@ val parse_top_phrase : char Stream.t -> MLast.str_item option;;
 val parse_use_file : char Stream.t -> MLast.str_item list * bool;;
 
 
-val gram : Grammar.g;;
-   (** Grammar variable of the OCaml language *)
-
-val attribute_body : MLast.attribute_body Grammar.Entry.e;;
-val interf : ((MLast.sig_item * MLast.loc) list * status) Grammar.Entry.e;;
-val implem : ((MLast.str_item * MLast.loc) list * status) Grammar.Entry.e;;
-val top_phrase : MLast.str_item option Grammar.Entry.e;;
-val use_file : (MLast.str_item list * bool) Grammar.Entry.e;;
-val functor_parameter : MLast.functor_parameter Grammar.Entry.e;;
-val module_type : MLast.module_type Grammar.Entry.e;;
-val longident : MLast.longid Grammar.Entry.e;;
-val longident_lident : MLast.longid_lident Grammar.Entry.e;;
-val extended_longident : MLast.longid Grammar.Entry.e;;
-val module_expr : MLast.module_expr Grammar.Entry.e;;
-val signature : MLast.sig_item list MLast.v Grammar.Entry.e;;
-val structure : MLast.str_item list MLast.v Grammar.Entry.e;;
-val sig_item : MLast.sig_item Grammar.Entry.e;;
-val str_item : MLast.str_item Grammar.Entry.e;;
-val expr : MLast.expr Grammar.Entry.e;;
-val patt : MLast.patt Grammar.Entry.e;;
-val ipatt : MLast.patt Grammar.Entry.e;;
-val ctyp : MLast.ctyp Grammar.Entry.e;;
-val let_binding :
-  (MLast.patt * MLast.expr * MLast.attributes) Grammar.Entry.e;;
-val type_decl : MLast.type_decl Grammar.Entry.e;;
-val type_extension : MLast.type_extension Grammar.Entry.e;;
-val extension_constructor : MLast.extension_constructor Grammar.Entry.e;;
-val match_case :
-  (MLast.patt * MLast.expr option MLast.v * MLast.expr) Grammar.Entry.e;;
-val constructor_declaration : MLast.generic_constructor Grammar.Entry.e;;
-val label_declaration :
-  (MLast.loc * string * bool * MLast.ctyp * MLast.attributes) Grammar.Entry.e;;
-val with_constr : MLast.with_constr Grammar.Entry.e;;
-val poly_variant : MLast.poly_variant Grammar.Entry.e;;
-val class_sig_item : MLast.class_sig_item Grammar.Entry.e;;
-val class_str_item : MLast.class_str_item Grammar.Entry.e;;
-val class_expr : MLast.class_expr Grammar.Entry.e;;
-val class_expr_simple : MLast.class_expr Grammar.Entry.e;;
-val class_type : MLast.class_type Grammar.Entry.e;;
-val alg_attribute : MLast.attribute Grammar.Entry.e;;
-val alg_attributes : MLast.attributes Grammar.Entry.e;;
-val ext_attributes :
-  ((Ploc.t * string) option * MLast.attributes_no_anti) Grammar.Entry.e;;
-   (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
-
-open Exparser_types;;
-
-val stream_expr : (MLast.loc * sexp_comp list) Grammar.Entry.e;;
-val stream_parser : (MLast.loc * spat_parser_ast) Grammar.Entry.e;;
-val stream_match :
-  (MLast.loc * MLast.expr * spat_parser_ast) Grammar.Entry.e;;
-
-val input_file : string ref;;
-   (** The file currently being parsed. *)
 val output_file : string option ref;;
    (** The output file, stdout if None (default) *)
-val quotation_dump_file : string option ref;;
-   (** [quotation_dump_file] optionally tells the compiler to dump the
-       result of an expander (of kind "generating a string") if this
-       result is syntactically incorrect.
-       If [None] (default), this result is not dumped. If [Some fname], the
-       result is dumped in the file [fname]. *)
-val quotation_location : unit -> Ploc.t;;
-   (** while expanding a quotation, returns the location of the quotation
-       text (between the quotation quotes) in the source; raises
-       [Failure] if not in the context of a quotation expander. *)
 val version : string;;
    (** The current version of Camlp5. *)
 val ocaml_version : string;;
@@ -124,24 +62,13 @@ val ocaml_version : string;;
        e.g. if OCaml version is "4.05.0+beta3", it is "4.05.0" *)
 val add_option : string -> Arg.spec -> string -> unit;;
    (** Add an option to the command line options. *)
+val add_options : (string * Arg.spec * string) list -> unit;;
+   (** Add a list of options to the command line options. *)
 val no_constructors_arity : bool ref;;
    (** [True]: dont generate constructor arity. *)
-val string_of_loc : string -> int -> int -> int -> string;;
-   (** [string_of_loc fname line bp ep] returns the location string for
-       file [fname] at [line] and between character [bp] and [ep]. *)
 
-
-type err_ctx =
-    Finding
-  | Expanding
-  | ParsingResult of Ploc.t * string
-;;
-exception Qerror of string * string * err_ctx * exn;;
-
-val expand_quotation :
-  Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b;;
-val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
-val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
+module QuotationHelper : Quotation.QUOTATION_EXPANSION;;
+module QH : Quotation.QUOTATION_EXPANSION;;
 
 (** {6 Printers} *)
 
@@ -150,22 +77,8 @@ val print_interf :
 val print_implem :
   ((MLast.str_item * MLast.loc) list * MLast.loc -> unit) ref;;
 
-val pr_expr : MLast.expr Eprinter.t;;
-val pr_patt : MLast.patt Eprinter.t;;
-val pr_ctyp : MLast.ctyp Eprinter.t;;
-val pr_str_item : MLast.str_item Eprinter.t;;
-val pr_sig_item : MLast.sig_item Eprinter.t;;
-val pr_longident : MLast.longid Eprinter.t;;
-val pr_module_expr : MLast.module_expr Eprinter.t;;
-val pr_module_type : MLast.module_type Eprinter.t;;
-val pr_class_sig_item : MLast.class_sig_item Eprinter.t;;
-val pr_class_str_item : MLast.class_str_item Eprinter.t;;
-val pr_class_type : MLast.class_type Eprinter.t;;
-val pr_class_expr : MLast.class_expr Eprinter.t;;
-   (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
-
-val pr_expr_fun_args :
-  (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
+module PrintBase : Mlsyntax.PRINTBASESIG;;
+include Mlsyntax.PRINTERS;;
 
 val inter_phrases : string option ref;;
    (** String displayed between two consecutive phrases. If [None], the
@@ -175,6 +88,7 @@ val inter_phrases : string option ref;;
 
 type directive_fun = MLast.expr option -> unit;;
 val add_directive : string -> directive_fun -> unit;;
+val add_directives : (string * directive_fun) list -> unit;;
 val find_directive : string -> directive_fun;;
 
 (** {6 equality over abstact syntax trees (ignoring locations)} *)
@@ -193,10 +107,6 @@ val eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;;
 
 (** {6 Other} *)
 
-val greek_ascii_equiv : string -> string;;
-   (* Gives an ascii equivalent to a greek letter representing a type
-      parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
-
 val strict_mode : bool ref;;
    (* [True] if the current mode is "strict", [False] if "transitional" *)
 
@@ -211,14 +121,9 @@ val vala_mapa : ('a -> 'b) -> (string -> 'b) -> 'a -> 'b;;
 
 (* for system use *)
 
-val warning : (Ploc.t -> string -> unit) ref;;
-val expr_eoi : MLast.expr Grammar.Entry.e;;
-val patt_eoi : MLast.patt Grammar.Entry.e;;
 val arg_spec_list : unit -> (string * Arg.spec * string) list;;
 val report_error : exn -> unit;;
 val sync : (char Stream.t -> unit) ref;;
-val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
-val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val rename_id : (string -> string) ref;;
 val flag_comments_in_phrases : bool ref;;
 val flag_equilibrate_cases : bool ref;;

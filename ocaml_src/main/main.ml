@@ -2,6 +2,7 @@
 (* main.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
 
 open Printf;;
@@ -10,7 +11,7 @@ open Versdep;;
 let print_location loc =
   let loc =
     if Ploc.file_name loc = "" then
-      Ploc.make_loc !(Pcaml.input_file) 1 0 (0, 1) ""
+      Ploc.make_loc !(Pcaml.ParseBase.input_file) 1 0 (0, 1) ""
     else loc
   in
   let fname = Ploc.file_name loc in
@@ -20,7 +21,7 @@ let print_location loc =
     let line = Ploc.line_nb loc in
     let bol = Ploc.bol_pos loc in
     eprintf "%s"
-      (Pcaml.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
+      (Pcamlbase.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
   else eprintf "At location %d-%d\n" bp ep
 ;;
 
@@ -60,8 +61,8 @@ Pcaml.add_directive "directory"
    | Some _ | None -> raise Not_found);;
 
 let rec parse_file pa getdir useast =
-  let name = !(Pcaml.input_file) in
-  Pcaml.warning := print_warning;
+  let name = !(Pcaml.ParseBase.input_file) in
+  Pcamlbase.warning := print_warning;
   let ic = if name = "-" then stdin else open_in_bin name in
   let cs = Stream.of_channel ic in
   let clear () = if name = "-" then () else close_in ic in
@@ -100,10 +101,11 @@ let rec parse_file pa getdir useast =
   in
   clear (); phr
 and use_file pa getdir useast s =
-  let v_input_file = !(Pcaml.input_file) in
-  Pcaml.input_file := s;
+  let v_input_file = !(Pcaml.ParseBase.input_file) in
+  Pcaml.ParseBase.input_file := s;
   try
-    let r = parse_file pa getdir useast in Pcaml.input_file := v_input_file; r
+    let r = parse_file pa getdir useast in
+    Pcaml.ParseBase.input_file := v_input_file; r
   with e -> report_error_and_exit e
 ;;
 
@@ -152,9 +154,11 @@ let print_succinct_version () =
 ;;
 
 let initial_spec_list =
-  ["-intf", Arg.String (fun x -> file_kind := Intf; Pcaml.input_file := x),
+  ["-intf",
+   Arg.String (fun x -> file_kind := Intf; Pcaml.ParseBase.input_file := x),
    "<file>  Parse <file> as an interface, whatever its extension.";
-   "-impl", Arg.String (fun x -> file_kind := Impl; Pcaml.input_file := x),
+   "-impl",
+   Arg.String (fun x -> file_kind := Impl; Pcaml.ParseBase.input_file := x),
    "<file>  Parse <file> as an implementation, whatever its extension.";
    "-unsafe", Arg.Set Ast2pt.fast,
    "Generate unsafe accesses to array and strings.";
@@ -162,7 +166,7 @@ let initial_spec_list =
    "More verbose in parsing errors.";
    "-loc", Arg.String (fun x -> Ploc.name := x),
    "<name>   Name of the location variable (default: " ^ !(Ploc.name) ^ ")";
-   "-QD", Arg.String (fun x -> Pcaml.quotation_dump_file := Some x),
+   "-QD", Arg.String (fun x -> Pcaml.QH.quotation_dump_file := Some x),
    "<file> Dump quotation expander result in case of syntax error.";
    "-o", Arg.String (fun x -> Pcaml.output_file := Some x),
    "<file> Output on <file> instead of standard output.";
@@ -172,7 +176,9 @@ let initial_spec_list =
    "Print verbose Camlp5 version and exit."]
 ;;
 
-let anon_fun x = Pcaml.input_file := x; file_kind := file_kind_of_name x;;
+let anon_fun x =
+  Pcaml.ParseBase.input_file := x; file_kind := file_kind_of_name x
+;;
 
 let parse_options sl =
   let ext_spec_list = Pcaml.arg_spec_list () in
@@ -221,7 +227,7 @@ let go () =
     exit 2
   end;
   try
-    if !(Pcaml.input_file) <> "" then
+    if !(Pcaml.ParseBase.input_file) <> "" then
       match !file_kind with
         Intf -> process_intf ()
       | Impl -> process_impl ()

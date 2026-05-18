@@ -2,6 +2,7 @@
 (* main.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+#load "parse_q_MLast.cmo";
 #load "q_MLast.cmo";
 
 open Printf;

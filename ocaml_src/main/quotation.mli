@@ -4,6 +4,8 @@
 
 (** Quotation operations. *)
 
+open Pcamlbase;;
+
 type expander =
     ExStr of (bool -> string -> string)
   | ExAst of ((string -> MLast.expr) * (string -> MLast.patt))
@@ -47,3 +49,21 @@ val default : string ref;;
 
 val translate : (string -> string) ref;;
    (** function translating quotation names; default = identity *)
+
+module type QUOTATION_EXPANSION =
+  sig
+    val quotation_dump_file : string option ref;;
+    val quotation_location : unit -> Ploc.t;;
+    val expand_quotation :
+      Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b;;
+    val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
+    val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
+    val expr_eoi : MLast.expr Grammar.Entry.e;;
+    val patt_eoi : MLast.patt Grammar.Entry.e;;
+    val pp_report_quotation_error :
+      Format.formatter -> string -> string -> err_ctx -> unit;;
+  end
+;;
+
+open Mlsyntax;;
+module QuotationExpansion (PB : PARSEBASESIG) : QUOTATION_EXPANSION;;

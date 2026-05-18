@@ -1,6 +1,7 @@
 (* camlp5r *)
 (* ast2pt.ml,v *)
 
+(* #load "parse_q_MLast.cmo" *)
 (* #load "q_MLast.cmo" *)
 
 open Parsetree;;

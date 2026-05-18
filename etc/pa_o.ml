@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 #load "pa_extend.cmo"; (* REMOVE FOR COMPILE *)
+#load "parse_q_MLast.cmo";  (* REMOVE FOR COMPILE *)
 #load "q_MLast.cmo"; (* REMOVE FOR COMPILE *)
 #load "pa_macro.cmo"; (* REMOVE FOR COMPILE *)
 #load "pa_macro_gram.cmo"; (* REMOVE FOR COMPILE *)

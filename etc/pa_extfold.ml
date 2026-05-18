@@ -2,6 +2,7 @@
 (* pa_extfold.ml,v *)
 
 #load "pa_extend.cmo";
+#load "parse_q_MLast.cmo";
 #load "q_MLast.cmo";
 
 open Pcaml;

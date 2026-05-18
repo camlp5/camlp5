@@ -1,4 +1,4 @@
-; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
+; camlp5 ./pa_schemer.cmo pa_extend.cmo parse_q_MLast.cmo q_MLast.cmo pr_dump.cmo
 ; pa_scheme.ml,v
 ; Copyright (c) INRIA 2007-2017
 

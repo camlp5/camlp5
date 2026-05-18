@@ -1,4 +1,4 @@
-;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
+;; camlp5 ./pa_lispr.cmo pa_extend.cmo parse_q_MLast.cmo q_MLast.cmo pr_dump.cmo
 ;; pa_lisp.ml,v
 ;; Copyright (c) INRIA 2007-2017
 
