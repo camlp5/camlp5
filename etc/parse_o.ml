@@ -10,18 +10,18 @@
 open Asttools;
 open Mlsyntax.Original;
 
-module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG) = struct
 open Base.Parsers ;
 open Base;
 do {
-  let odfa = Mlsyntax.Lexer.dollar_for_antiquotation.val in
-  let osrs = Mlsyntax.Lexer.simplest_raw_strings.val in
-  Mlsyntax.Lexer.dollar_for_antiquotation.val := False;
-  Mlsyntax.Lexer.simplest_raw_strings.val := True;
-  Mlsyntax.Lexer.utf8_lexing.val := True;
-  Grammar.Unsafe.gram_reinit gram (Mlsyntax.Lexer.gmake ());
-  Mlsyntax.Lexer.dollar_for_antiquotation.val := odfa;
-  Mlsyntax.Lexer.simplest_raw_strings.val := osrs ;
+  let odfa = Lexer.dollar_for_antiquotation.val in
+  let osrs = Lexer.simplest_raw_strings.val in
+  Lexer.dollar_for_antiquotation.val := False;
+  Lexer.simplest_raw_strings.val := True;
+  Lexer.utf8_lexing.val := True;
+  Grammar.Unsafe.gram_reinit gram (Lexer.gmake ());
+  Lexer.dollar_for_antiquotation.val := odfa;
+  Lexer.simplest_raw_strings.val := osrs ;
   Grammar.Unsafe.clear_entry attribute_body;
   Grammar.Unsafe.clear_entry interf;
   Grammar.Unsafe.clear_entry implem;
@@ -605,7 +605,7 @@ value check_dot_uid_f strm =
     | [("",".") ] -> crec (n+1)
     | [("",".") ; ("UIDENT",_)] -> ()
     | [("",".") ; ("ANTIQUOT_LOC",s)]
-      when (match Mlsyntax.Lexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
+      when (match Plexing.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
     | [("",".") ; ("","$")] -> crec (n+1)
     | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"))] -> crec (n+1)
     | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":")] -> ()
@@ -757,7 +757,7 @@ value check_v_lident_colon_f strm =
     | [("ANTIQUOT", qs); ("",":")]
       when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
     | [("ANTIQUOT_LOC", s); ("",":")]
-      when (match Mlsyntax.Lexer.parse_antiloc s with [ Some(_, ("lid"|"_lid"), _) -> True | _ -> False ]) -> ()
+      when (match Plexing.parse_antiloc s with [ Some(_, ("lid"|"_lid"), _) -> True | _ -> False ]) -> ()
     | _ -> raise Stream.Failure
     ]
 ;
@@ -773,7 +773,7 @@ value check_v_uident_colon_f strm =
     | [("ANTIQUOT", qs); ("",":")]
       when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
     | [("ANTIQUOT_LOC", s); ("",":")]
-      when (match Mlsyntax.Lexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
+      when (match Plexing.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
     | _ -> raise Stream.Failure
     ]
 ;
@@ -2655,7 +2655,7 @@ EXTEND
   ;
 END;
 
-add_option "-no_quot" (Arg.Set Mlsyntax.Lexer.no_quotations)
+add_option "-no_quot" (Arg.Set Lexer.no_quotations)
   "Don't parse quotations, allowing to use, e.g. \"<:>\" as token";
 end
 ;

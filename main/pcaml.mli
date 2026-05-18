@@ -13,7 +13,9 @@ value syntax_name : ref string;
 
 (** {6 Parsers} *)
 
-module ParseBase : Mlsyntax.PARSEBASESIG ;
+module Lexer : Plexer.LEXER ;
+module ParseBase : (Mlsyntax.PARSEBASESIG with module Lexer = Lexer) ;
+open Mlsyntax ;
 include Mlsyntax.PARSERS ;
 
 type ast_transducer_t 'a = {

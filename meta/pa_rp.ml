@@ -10,4 +10,4 @@ open Exparser;
 open Pcaml;
 
 include Parse_rp ;
-include (PA(Mlsyntax.Lexer)(Pcaml.ParseBase)) ;
+include (PA(Pcaml.ParseBase)) ;

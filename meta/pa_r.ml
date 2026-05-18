@@ -15,7 +15,7 @@ Pcaml.syntax_name.val := "Revised";
 Pcaml.no_constructors_arity.val := False;
 
 include Parse_r ;
-include (PA(Mlsyntax.Lexer)(Pcaml.ParseBase)) ;
+include (PA(Pcaml.ParseBase)) ;
 
 Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
 Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem));

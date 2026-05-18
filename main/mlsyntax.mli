@@ -52,9 +52,9 @@ module Revised :
   end
 ;
 
-module type PARSERS = sig
-
 type status = option Ploc.t;
+
+module type PARSERS = sig
 
 value gram : Grammar.g;
    (** Grammar variable of the OCaml language *)
@@ -106,11 +106,10 @@ value stream_parser : Grammar.Entry.e (MLast.loc * spat_parser_ast) ;
 value stream_match : Grammar.Entry.e (MLast.loc * MLast.expr * spat_parser_ast) ;
 end ;
 
-module Lexer : Plexer.LEXER ;
-
 type directive_fun = option MLast.expr -> unit;
 
 module type PARSEBASESIG = sig
+module Lexer : Plexer.LEXER ;
 module Parsers : PARSERS ;
 value input_file : ref string;
    (** The file currently being parsed. *)
@@ -125,7 +124,7 @@ value get_directives : unit -> list (string * directive_fun) ;
 end
 ;
 
-module ParseBase : functor () -> PARSEBASESIG ;
+module ParseBase : functor (Lexer : Plexer.LEXER) -> (PARSEBASESIG with module Lexer = Lexer) ;
 
 module type PRINTERS = sig
 value pr_attribute_body : Eprinter.t MLast.attribute_body;

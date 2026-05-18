@@ -13,7 +13,7 @@ type expr =
 ;
 
 module Pa = struct
-value gram = Grammar.gcreate (Mlsyntax.Lexer.gmake ());
+value gram = Grammar.gcreate (Pcaml.Lexer.gmake ());
 
 value expression = Grammar.Entry.create gram "expression";
 

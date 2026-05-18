@@ -8,33 +8,33 @@ open Mlsyntax ;
 
 module R = struct
   module Lexer = Plexer.Make(struct end) ;
-  module Base = ParseBase(struct end) ;
-  module R = Parse_r.PA(Lexer)(Base) ;
+  module Base = ParseBase(Lexer) ;
+  module R = Parse_r.PA(Base) ;
 end ;
 
 module RP = struct
   module Lexer = Plexer.Make(struct end) ;
-  module Base = ParseBase(struct end) ;
-  module R = Parse_r.PA(Lexer)(Base) ;
-  module RP = Parse_rp.PA(Lexer)(Base) ;
+  module Base = ParseBase(Lexer) ;
+  module R = Parse_r.PA(Base) ;
+  module RP = Parse_rp.PA(Base) ;
 end ;
 
 module O = struct
   module Lexer = Plexer.Make(struct end) ;
-  module Base = ParseBase(struct end) ;
-  module O = Parse_o.PA(Lexer)(Base) ;
+  module Base = ParseBase(Lexer) ;
+  module O = Parse_o.PA(Base) ;
 end ;
 
 module OP = struct
   module Lexer = Plexer.Make(struct end) ;
-  module Base = ParseBase(struct end) ;
-  module O = Parse_o.PA(Lexer)(Base) ;
-  module OP = Parse_op.PA(Lexer)(Base) ;
+  module Base = ParseBase(Lexer) ;
+  module O = Parse_o.PA(Base) ;
+  module OP = Parse_op.PA(Base) ;
 end ;
 
 module OOP = struct
   module Lexer = Plexer.Make(struct end) ;
-  module Base = ParseBase(struct end) ;
-  module O = Parse_o.PA(Lexer)(Base) ;
-  module OOP = Parse_oop.PA(Lexer)(Base) ;
+  module Base = ParseBase(Lexer) ;
+  module O = Parse_o.PA(Base) ;
+  module OOP = Parse_oop.PA(Base) ;
 end ;

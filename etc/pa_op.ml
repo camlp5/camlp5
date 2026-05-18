@@ -6,4 +6,4 @@
 #load "q_MLast.cmo";
 
 include Parse_op ;
-include (PA(Mlsyntax.Lexer)(Pcaml.ParseBase)) ;
+include (PA(Pcaml.ParseBase)) ;

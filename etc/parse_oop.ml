@@ -5,7 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
-module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG) = struct
 open Base.Parsers ;
 open Base;
 

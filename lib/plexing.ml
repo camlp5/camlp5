@@ -175,6 +175,41 @@ value skip_opt_linefeed s i =
   if i = String.length s then i else if s.[i] = '\010' then i + 1 else i
 ;
 
+value parse_antiquot s =
+  try
+    let i = String.index s ':' in
+    let kind = String.sub s 0 i in
+    let name = String.sub s (i+1) (String.length s - (i+1)) in
+    Some (kind, name)
+  with [ Not_found | Failure _ -> None ]
+;
+
+value skip_to_next_colon s i =
+  loop (i + 1) where rec loop j =
+    if j = String.length s then (i, 0)
+    else
+      match s.[j] with
+      [ ':' -> (j, j - i - 1)
+      | 'a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' -> loop (j + 1)
+      | _ -> (i, 0) ]
+;
+
+value parse_antiloc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) = skip_to_next_colon s i in
+    let kind = String.sub s (i + 1) len in
+    let loc =
+      let k = String.index s ',' in
+      let bp = int_of_string (String.sub s 0 k) in
+      let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
+      Ploc.make_unlined (bp, ep)
+    in
+    Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
+  with
+  [ Not_found | Failure _ -> None ]
+;
+
 value eval_char s =
   if String.length s = 1 then s.[0]
   else if String.length s = 0 then failwith "invalid char token"

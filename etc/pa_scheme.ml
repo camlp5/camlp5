@@ -200,7 +200,7 @@
     (values (identifier kwt (Buff.get len)) (values bp ep)))
    (() (values (values "EOI" "") (values bp (+ bp 1))))))
  ((dollar bp kwt strm)
-  (if Mlsyntax.Lexer.force_antiquot_loc.val
+  (if Pcaml.Lexer.force_antiquot_loc.val
    (values "ANTIQUOT_LOC" (antiquot_loc bp 0 strm))
    (match_with_parser strm
     (((len (ident (Buff.store 0 '$')))) (identifier kwt (Buff.get len))))))

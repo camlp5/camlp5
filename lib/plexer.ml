@@ -82,16 +82,6 @@ value utf8_lexing : ref bool;
        to specify letters and punctuation marks. Default is False (all
        characters between '\128' and '\255' are considered as letters) *)
 
-value parse_antiloc : string -> option (Ploc.t * string * string);
-   (** breaks apart the payload of an ANTIQUOT_LOC
-       (which is <begin-pos>,<end-pos>:<type>:<token-string>)
-       into its colon-separated parts *)
-
-value parse_antiquot : string -> option (string * string);
-   (** breaks apart the payload of an ANTIQUOT
-       (which is <type>:<token-string>)
-       into its colon-separated parts *)
-
 (*** For system use *)
 
 value force_antiquot_loc : ref bool;
@@ -411,43 +401,8 @@ value rec antiquot ctx bp =
 value antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;
 
 
-value skip_to_next_colon s i =
-  loop (i + 1) where rec loop j =
-    if j = String.length s then (i, 0)
-    else
-      match s.[j] with
-      [ ':' -> (j, j - i - 1)
-      | 'a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' -> loop (j + 1)
-      | _ -> (i, 0) ]
-;
-
-value parse_antiquot s =
-  try
-    let i = String.index s ':' in
-    let kind = String.sub s 0 i in
-    let name = String.sub s (i+1) (String.length s - (i+1)) in
-    Some (kind, name)
-  with [ Not_found | Failure _ -> None ]
-;
-
 value int_of_string_result s =
   try Some(int_of_string s) with [ Failure _ -> None ]
-;
-
-value parse_antiloc s =
-  try
-    let i = String.index s ':' in
-    let (j, len) = skip_to_next_colon s i in
-    let kind = String.sub s (i + 1) len in
-    let loc =
-      let k = String.index s ',' in
-      let bp = int_of_string (String.sub s 0 k) in
-      let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
-      Ploc.make_unlined (bp, ep)
-    in
-    Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
-  with
-  [ Not_found | Failure _ -> None ]
 ;
 
 value rec antiquot_loc ctx bp =

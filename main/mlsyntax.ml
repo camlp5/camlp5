@@ -291,11 +291,9 @@ value get_options () =
 end
 ;
 
-module Lexer = Plexer.Make(struct end) ;
+type status = option Ploc.t;
 
 module type PARSERS = sig
-
-type status = option Ploc.t;
 
 value gram : Grammar.g;
    (** Grammar variable of the OCaml language *)
@@ -350,6 +348,8 @@ end ;
 type directive_fun = option MLast.expr -> unit;
 
 module type PARSEBASESIG = sig
+module Lexer : Plexer.LEXER ;
+
 module Parsers : PARSERS ;
 value input_file : ref string;
    (** The file currently being parsed. *)
@@ -365,9 +365,9 @@ end
 ;
 
 
-module ParseBase() : PARSEBASESIG = struct
+module ParseBase(Lexer : Plexer.LEXER) : PARSEBASESIG = struct
+module Lexer = Lexer ;
 module Parsers = struct
-
 value gram =
   Grammar.gcreate
     {Plexing.tok_func _ = failwith "no loaded parsing module";

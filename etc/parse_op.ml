@@ -8,7 +8,7 @@
 open Asttools;
 open Exparser;
 
-module PA(Lexer : Plexer.LEXER)(Base : Mlsyntax.PARSEBASESIG) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG) = struct
 open Base.Parsers ;
 open Base;
 

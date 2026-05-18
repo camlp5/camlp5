@@ -130,6 +130,16 @@ value make_stream_and_location :
 
 (** Useful functions and values *)
 
+value parse_antiloc : string -> option (Ploc.t * string * string);
+   (** breaks apart the payload of an ANTIQUOT_LOC
+       (which is <begin-pos>,<end-pos>:<type>:<token-string>)
+       into its colon-separated parts *)
+
+value parse_antiquot : string -> option (string * string);
+   (** breaks apart the payload of an ANTIQUOT
+       (which is <type>:<token-string>)
+       into its colon-separated parts *)
+
 value eval_char : string -> char;
 value eval_string : Ploc.t -> string -> string;
    (** Convert a char or a string token, where the backslashes had not

@@ -311,22 +311,22 @@ value set_syntax s = syntax.val := s ;
 value setup_syntax () =
   match syntax.val with [
     "revised" -> do {
-  Mlsyntax.Lexer.dollar_for_antiquotation.val := False;
-  Mlsyntax.Lexer.simplest_raw_strings.val := False;
-  Mlsyntax.Lexer.utf8_lexing.val := True
+  Pcaml.Lexer.dollar_for_antiquotation.val := False;
+  Pcaml.Lexer.simplest_raw_strings.val := False;
+  Pcaml.Lexer.utf8_lexing.val := True
     }
   | "original" -> do {
-  Mlsyntax.Lexer.dollar_for_antiquotation.val := False;
-  Mlsyntax.Lexer.simplest_raw_strings.val := True;
-  Mlsyntax.Lexer.utf8_lexing.val := True ;
-  Mlsyntax.Lexer.no_quotations.val := True
+  Pcaml.Lexer.dollar_for_antiquotation.val := False;
+  Pcaml.Lexer.simplest_raw_strings.val := True;
+  Pcaml.Lexer.utf8_lexing.val := True ;
+  Pcaml.Lexer.no_quotations.val := True
     }
   | _ -> failwith (Printf.sprintf "syntax <<%s>> not recognized" syntax.val)
 ];
 
 value lex_stream1 is = do {
   setup_syntax() ;
-  let lexer = Mlsyntax.Lexer.gmake() in
+  let lexer = Pcaml.Lexer.gmake() in
   let (strm, loct) = lexer.Plexing.tok_func is in
   let rec addloc i =
     parser

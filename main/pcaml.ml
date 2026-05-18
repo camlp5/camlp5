@@ -24,7 +24,9 @@ value ocaml_version =
       end
 ;
 
-module ParseBase = Mlsyntax.ParseBase(struct end) ;
+module Lexer = Plexer.Make(struct end) ;
+
+module ParseBase = Mlsyntax.ParseBase(Lexer) ;
 include ParseBase.Parsers ;
 
 type ast_transducer_t 'a = {
