@@ -7,9 +7,11 @@ open Testutil2 ;
 open OUnit2 ;
 open OUnitTest ;
 
+module PAPR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+
 value _ = 
 if not Sys.interactive.val then
-  run_test_tt_main Antiquotation_test.revised_parser_tests
+  run_test_tt_main (Antiquotation_test.revised_parser_tests ~{pa=PAPR.Implem.pa1} ~{pr=PAPR.Implem.pr})
 else ()
 ;
   

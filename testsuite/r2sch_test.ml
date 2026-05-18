@@ -8,7 +8,9 @@ open OUnitTest ;
 
 Pcaml.inter_phrases.val := Some ("\n") ;
 
-value pa1 = PAPR.Implem.pa1 ;
+module PAPR_RR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
+
+value pa1 = PAPR_RR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;
 
 value stripws s = Pcre2.(replace ~{pat="[ \n\t\r]"} ~{itempl=subst ""} s) ;

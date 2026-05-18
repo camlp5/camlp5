@@ -34,15 +34,15 @@ end ;
 module RO = struct
   module Base = PrintBase(struct end) ;
   module R = Print_r.PP(Base) ;
-  module RO = Print_ro.PP(Base) ;
+  module RO = Print_ro.PP(Base)(R) ;
   module Pretty = PrettyPrint(Base.Printers) ;
 end ;
 
 module RP = struct
   module Base = PrintBase(struct end) ;
   module R = Print_r.PP(Base) ;
-  module RO = Print_ro.PP(Base) ;
-  module RP = Print_rp.PP(Base) ;
+  module RO = Print_ro.PP(Base)(R) ;
+  module RP = Print_rp.PP(Base)(R) ;
   module Pretty = PrettyPrint(Base.Printers) ;
 end ;
 

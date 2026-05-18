@@ -7,8 +7,9 @@ open Testutil;
 open OUnit2;
 open OUnitTest;
 
+open MLParsers.RP.Base.Parsers ;
 value pa_expr s =
- s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr
+ s |> Stream.of_string |> Grammar.Entry.parse expr
 ;
 
 type t = { a : int ; b : (string * list int) } ;

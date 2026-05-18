@@ -7,8 +7,9 @@ open Testutil;
 open OUnit2;
 open OUnitTest;
 
+open MLParsers.RP.Base.Parsers ;
 value pa_expr s =
- s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr
+ s |> Stream.of_string |> Grammar.Entry.parse expr
 ;
 
 open MLPrinters.R.Pretty ;
@@ -16,8 +17,8 @@ value show_expr e = Fmt.(str "%a" pp_expr e) ;
 
 value suite = "reloc" >::: [
   "simplest" >:: (fun [ _ ->
-    let a = {foo| [%"nterm"] |foo} |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr in
-    let b = {foo|   [%"nterm"] |foo} |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr in
+    let a = {foo| [%"nterm"] |foo} |> pa_expr in
+    let b = {foo|   [%"nterm"] |foo} |> pa_expr in
     assert_equal ~{msg="should be equal"} ~{cmp=Reloc.eq_expr} a b
   ])
 ]

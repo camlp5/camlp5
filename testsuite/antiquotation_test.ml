@@ -9,7 +9,7 @@ open OUnitTest ;
 
 Pcaml.inter_phrases.val := Some (";\n") ;
 
-value pa1 = PAPR.Implem.pa1 ;
+value pa = PAPR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
@@ -32,7 +32,7 @@ type instance = {
 }
 ;
 
-value mktest ~{revised} i = 
+value mktest ~{pa} ~{pr} ~{revised} i = 
 i.name >:: (fun  [ _ ->
         let code = if revised then
             match (i.revised, i.official) with [
@@ -48,12 +48,12 @@ i.name >:: (fun  [ _ ->
                    code in
         assert_equal ~{msg=msg} ~{cmp=cmp_string} ~{printer=fmt_string}
           i.expect
-          (pr (pa1 code))
+          (pr (pa code))
                         ]
 ])
 ;
 
-value shared_syntax_tests ~{revised} = "shared-syntax" >::: (List.map (mktest ~{revised})
+value shared_syntax_tests ~{pa} ~{pr} ~{revised} = "shared-syntax" >::: (List.map (mktest ~{pa} ~{pr} ~{revised})
     [
       {
         name = "prototype"
@@ -590,7 +590,7 @@ value shared_syntax_tests ~{revised} = "shared-syntax" >::: (List.map (mktest ~{
     ])
  ;
 
-value type_functor_syntax_tests ~{revised} = "type_functor-syntax" >::: (List.map (mktest ~{revised=revised})
+value type_functor_syntax_tests ~{pa} ~{pr} ~{revised} = "type_functor-syntax" >::: (List.map (mktest ~{pa} ~{pr} ~{revised=revised})
     [
       {
         name = "prototype";
@@ -671,21 +671,21 @@ MLast.TyFun loc (Ploc.VaVal (Some (Ploc.VaVal "m"))) (Ploc.VaVal "M")
     ])
  ;
 
-value q_MLast_parser_tests = "q_MLast parser" >::: [
-    "shared syntax" >: shared_syntax_tests ~{revised=True}
-  ; "type_functor-syntax" >: type_functor_syntax_tests ~{revised=True}
+value q_MLast_parser_tests ~{pa} ~{pr} = "q_MLast parser" >::: [
+    "shared syntax" >: shared_syntax_tests ~{pa} ~{pr} ~{revised=True}
+  ; "type_functor-syntax" >: type_functor_syntax_tests ~{pa} ~{pr} ~{revised=True}
 ]
 ;
 
-value revised_parser_tests = "revised parser" >::: [
-    "shared syntax" >: shared_syntax_tests ~{revised=True}
-  ; "type_functor-syntax" >: type_functor_syntax_tests ~{revised=True}
+value revised_parser_tests ~{pa} ~{pr} = "revised parser" >::: [
+    "shared syntax" >: shared_syntax_tests ~{pa} ~{pr} ~{revised=True}
+  ; "type_functor-syntax" >: type_functor_syntax_tests ~{pa} ~{pr} ~{revised=True}
 ]
 ;
 
-value official_parser_tests = "official parser" >::: [
-    "shared syntax" >: shared_syntax_tests ~{revised=False}
-  ; "type_functor-syntax" >: type_functor_syntax_tests ~{revised=False}
+value official_parser_tests ~{pa} ~{pr} = "official parser" >::: [
+    "shared syntax" >: shared_syntax_tests ~{pa} ~{pr} ~{revised=False}
+  ; "type_functor-syntax" >: type_functor_syntax_tests ~{pa} ~{pr} ~{revised=False}
 ]
 ;
   

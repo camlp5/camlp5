@@ -104,27 +104,27 @@ extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
 extfun_test.byte: testutil.cmo extfun_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
 
 reloc_test.byte: testutil.cmo reloc_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o reloc_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o reloc_test.byte
 
 o2r_test:: o2r_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2r_test.byte $(TESTARGS)
 
 o2r_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o o2r_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r2r_test.byte $(TESTARGS)
 
 r2r_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o r2r_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o r2r_test.byte
 
 
 r2o_test:: r2o_test.byte
@@ -132,7 +132,7 @@ r2o_test:: r2o_test.byte
 	./r2o_test.byte $(TESTARGS)
 
 r2o_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg $^ -o r2o_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o r2o_test.byte
 
 
 o2o_test:: o2o_test.byte
@@ -140,14 +140,14 @@ o2o_test:: o2o_test.byte
 	./o2o_test.byte $(TESTARGS)
 
 o2o_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg $^ -o o2o_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2official_test.byte $(TESTARGS)
 
 o2official_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o o2official_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o o2official_test.byte
 
 
 r2official_test:: r2official_test.byte
@@ -155,7 +155,7 @@ r2official_test:: r2official_test.byte
 	./r2official_test.byte $(TESTARGS)
 
 r2official_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o r2official_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc $^ -o r2official_test.byte
 
 
 
@@ -170,25 +170,25 @@ r2sch_test:: r2sch_test.byte
 	./r2sch_test.byte
 
 r2sch_test.byte: r2sch_test.cmo testutil.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_scheme.link -syntax camlp5r -linkall -linkpkg testutil.cmo r2sch_test.cmo -o r2sch_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.pr_scheme.link -syntax camlp5r -linkall -linkpkg testutil.cmo r2sch_test.cmo -o r2sch_test.byte
 
 q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
 q_MLast_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo q_MLast_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
 
 revised_parser_test:: revised_parser_test.byte
 	./revised_parser_test.byte
 
 revised_parser_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo revised_parser_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o revised_parser_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o revised_parser_test.byte
 
 official_parser_test:: official_parser_test.byte
 	./official_parser_test.byte
 
 official_parser_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo official_parser_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_o.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o official_parser_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_o.link,camlp5.printers,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg $^ -o official_parser_test.byte
 
 grammar_bug_test:: grammar_bug_test.byte
 	$(NOVERBOSE) mkdir -p _build
@@ -247,13 +247,13 @@ sch2r_test.pa_scheme:: sch2r_test.pa_scheme.byte
 	./sch2r_test.pa_scheme.byte
 
 sch2r_test.pa_scheme.byte: testutil.cmo testutil2.cmo sch2r_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg $^ -o sch2r_test.pa_scheme.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o sch2r_test.pa_scheme.byte
 
 sch2r_test.pa_schemer:: sch2r_test.pa_schemer.byte
 	./sch2r_test.pa_schemer.byte
 
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
 	$(MKCAMLP5) -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@

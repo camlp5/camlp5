@@ -10,6 +10,7 @@ open OUnitTest;
 
 Pcaml.inter_phrases.val := Some ";;\n" ;
 
+module PAPR = PAPRGen(MLParsers.RP.Base.Parsers)(MLPrinters.RP.Base.Printers) ;
 
 module Official = struct
 module Implem = struct

@@ -98,9 +98,9 @@ value with_input_file fname f arg =
   }
 ;
 
-module PAPR = struct
+module PAPRGen(PA : Mlsyntax.PARSERS)(PP : Mlsyntax.PRINTERS) = struct
 module Implem = struct
-value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file Pcaml.parse_implem strm in ast ;
+value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file (Grammar.Entry.parse PA.implem) strm in ast ;
 value pa1 ?{input_file="-"} s = let ast = pa ~{input_file=input_file} (Stream.of_string s) in ast ;
 value pa_all s =
   let strm = Stream.of_string s in
@@ -116,7 +116,7 @@ value pr l = do {
   let sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] in
   let b = Buffer.create 23 in
     List.iter (fun (ast, _) -> 
-      let s = Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc ast in do {
+      let s = Eprinter.apply PP.pr_str_item Pprintf.empty_pc ast in do {
         Buffer.add_string b s ;
         Buffer.add_string b sep ;
       }) l ;
@@ -128,7 +128,7 @@ value to_official x =
 end;
 
 module Interf = struct
-value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file Pcaml.parse_interf strm in ast ;
+value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file (Grammar.Entry.parse PA.interf) strm in ast ;
 value pa1 ?{input_file="-"} s = let ast = pa ~{input_file=input_file} (Stream.of_string s) in ast ;
 value pa_all s =
   let strm = Stream.of_string s in
@@ -144,7 +144,7 @@ value pr l = do {
   let sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] in
   let b = Buffer.create 23 in
     List.iter (fun (ast, _) -> 
-      let s = Eprinter.apply Pcaml.pr_sig_item Pprintf.empty_pc ast in do {
+      let s = Eprinter.apply PP.pr_sig_item Pprintf.empty_pc ast in do {
         Buffer.add_string b s ;
         Buffer.add_string b sep ;
       }) l ;
@@ -157,6 +157,8 @@ end;
 value both_pa1 = ((fun x -> Implem.pa1 x), (fun x -> Interf.pa1 x)) ;
 value both_pr = ((fun x -> Implem.pr x), (fun x -> Interf.pr x)) ;
 end;
+
+module PAPR = PAPRGen(Pcaml.ParseBase.Parsers)(Pcaml.PrintBase.Printers) ;
 
 value with_buffer_formatter f arg = do {
   let b = Buffer.create 23 in
