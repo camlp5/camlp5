@@ -8,7 +8,13 @@
 open Asttools;
 open Exparser;
 
-module PA(Base : Mlsyntax.PARSEBASESIG) = struct
+module type PARSE_RP_SIG = sig
+  module Base : Mlsyntax.PARSEBASESIG ;
+end
+;
+
+module PA(Base : Mlsyntax.PARSEBASESIG) : (PARSE_RP_SIG with module Base = Base) = struct
+module Base = Base ;
 open Base.Parsers ;
 open Base;
 

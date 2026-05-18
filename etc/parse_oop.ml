@@ -5,7 +5,13 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
-module PA(Base : Mlsyntax.PARSEBASESIG) = struct
+module type PARSE_OOP_SIG = sig
+  module Base : Mlsyntax.PARSEBASESIG ;
+end
+;
+
+module PA(Base : Mlsyntax.PARSEBASESIG) : (PARSE_OOP_SIG with module Base = Base) = struct
+module Base = Base ;
 open Base.Parsers ;
 open Base;
 
