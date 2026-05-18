@@ -51,6 +51,7 @@ value translate : ref (string -> string);
    (** function translating quotation names; default = identity *)
 
 module type QUOTATION_EXPANSION = sig
+  module Base : Mlsyntax.PARSEBASESIG ;
   value quotation_dump_file : ref (option string);
   (** [quotation_dump_file] optionally tells the compiler to dump the
       result of an expander (of kind "generating a string") if this

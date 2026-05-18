@@ -17,7 +17,9 @@ module type PARSE_Q_MLAST_SIG = sig
 end
 ;
 
-module PA(Base : Mlsyntax.PARSEBASESIG) : (PARSE_Q_MLAST_SIG with module Base = Base) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG)
+         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
+          : (PARSE_Q_MLAST_SIG with module Base = Base) = struct
 module Base = Base ;
 
 value gram = Grammar.gcreate (Base.Lexer.gmake ());
@@ -112,7 +114,7 @@ module Qast =
       | Record lal -> <:expr< {$list:List.map (to_expr_label m) lal$} >>
       | Loc | TrueLoc -> <:expr< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
-          let (loc, e) = antiquot k loc x Pcaml.QH.expr_eoi in
+          let (loc, e) = antiquot k loc x QH.expr_eoi in
           <:expr< $anti:e$ >>
       | VaVal a ->
           let e = to_expr m a in
@@ -147,7 +149,7 @@ module Qast =
       | Loc -> <:patt< _ >>
       | TrueLoc -> <:patt< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
-          let (loc, e) = antiquot k loc x Pcaml.QH.patt_eoi in
+          let (loc, e) = antiquot k loc x QH.patt_eoi in
           <:patt< $anti:e$ >>
       | VaVal a ->
           let p = to_patt m a in
@@ -2130,10 +2132,10 @@ do {
 };
 
 do {
-  let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
+  let expr_eoi = Grammar.Entry.create Base.Parsers.gram "expr_eoi" in
   EXTEND
     expr_eoi:
-      [ [ e = Pcaml.expr; EOI ->
+      [ [ e = Base.Parsers.expr; EOI ->
             let loc = Ploc.make_unlined (0, 0) in
             if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $anti:e$ >>
             else <:expr< $anti:e$ >>
@@ -2144,7 +2146,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.QH.expr_eoi (Stream.of_string a)
+                Grammar.Entry.parse QH.expr_eoi (Stream.of_string a)
               in
               <:expr< Ploc.VaAnt $anti:a$ >>
             else <:expr< failwith "antiquot" >> ] ]
@@ -2154,10 +2156,10 @@ do {
     Ploc.call_with Base.Lexer.force_antiquot_loc True
       (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
   in
-  let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
+  let patt_eoi = Grammar.Entry.create Base.Parsers.gram "patt_eoi" in
   EXTEND
     patt_eoi:
-      [ [ p = Pcaml.patt; EOI ->
+      [ [ p = Base.Parsers.patt; EOI ->
             let loc = Ploc.make_unlined (0, 0) in
             if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
             else <:patt< $anti:p$ >>
@@ -2168,7 +2170,7 @@ do {
                 let i = String.index a ':' in
                 let i = String.index_from a (i + 1) ':' in
                 let a = String.sub a (i + 1) (String.length a - i - 1) in
-                Grammar.Entry.parse Pcaml.QH.patt_eoi (Stream.of_string a)
+                Grammar.Entry.parse QH.patt_eoi (Stream.of_string a)
               in
               <:patt< Ploc.VaAnt $anti:a$ >>
             else <:patt< _ >> ] ]

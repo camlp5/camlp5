@@ -43,6 +43,7 @@ value upsert name f = do {
 }
 ;
 module type QUOTATION_EXPANSION = sig
+  module Base : Mlsyntax.PARSEBASESIG ;
   value quotation_dump_file : ref (option string);
   (** [quotation_dump_file] optionally tells the compiler to dump the
       result of an expander (of kind "generating a string") if this
@@ -63,8 +64,9 @@ module type QUOTATION_EXPANSION = sig
 end ;
 
 open Mlsyntax ;
-module QuotationExpansion(PB : PARSEBASESIG) : QUOTATION_EXPANSION = struct
-module PA = PB.Parsers ;
+module QuotationExpansion(Base : PARSEBASESIG) : QUOTATION_EXPANSION = struct
+module Base = Base ;
+module PA = Base.Parsers ;
 value quotation_loc = ref None;
 
 List.iter (fun (n, f) -> add n f)
@@ -250,7 +252,7 @@ value pp_report_quotation_error pps name str ctx = do {
           }
         }
       | None -> do {
-          if PB.input_file.val = "" then
+          if Base.input_file.val = "" then
             eprintf
               "\n(consider setting variable Pcaml.quotation_dump_file)\n"
           else eprintf " (consider using option -QD)\n";
