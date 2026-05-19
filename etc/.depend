@@ -1,20 +1,20 @@
 elexer.cmo :
 elexer.cmx :
-mLParsers.cmo : \
+MLParsers.cmo : \
     parse_op.cmo \
     parse_oop.cmo \
     parse_o.cmo
-mLParsers.cmx : \
+MLParsers.cmx : \
     parse_op.cmx \
     parse_oop.cmx \
     parse_o.cmx
-mLPrinters.cmo : \
+MLPrinters.cmo : \
     print_rp.cmo \
     print_ro.cmo \
     print_r.cmo \
     print_op.cmo \
     print_o.cmo
-mLPrinters.cmx : \
+MLPrinters.cmx : \
     print_rp.cmx \
     print_ro.cmx \
     print_r.cmx \
