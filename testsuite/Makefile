@@ -104,7 +104,7 @@ extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
 extfun_test.byte: testutil.cmo extfun_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -syntax camlp5r -linkall -linkpkg $^ -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
@@ -195,7 +195,7 @@ grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte $(TESTARGS)
 
 grammar_bug_test.byte: grammar_bug_test.cmo alt_pa_o.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.quotations,camlp5.macro_gram -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.cmo grammar_bug_test.cmo -o grammar_bug_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.macro_gram -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.cmo grammar_bug_test.cmo -o grammar_bug_test.byte
 
 little_lang_test:: little_lang_test.byte
 	$(NOVERBOSE) mkdir -p _build
@@ -209,21 +209,21 @@ o_lexer_test:: o_lexer_test.byte
 	./o_lexer_test.byte $(TESTARGS)
 
 o_lexer_test.byte: testutil.cmo testutil2.cmo o_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o o_lexer_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link -syntax camlp5r -I ../main -linkall -linkpkg $^ -o o_lexer_test.byte
 
 quotedext_test:: quotedext_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./quotedext_test.byte $(TESTARGS)
 
 quotedext_test.byte: testutil.cmo testutil2.cmo quotedext_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o quotedext_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link -syntax camlp5r -I ../main -linkall -linkpkg $^ -o quotedext_test.byte
 
 r_lexer_test:: r_lexer_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r_lexer_test.byte $(TESTARGS)
 
 r_lexer_test.byte: testutil.cmo testutil2.cmo r_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg $^ -o r_lexer_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link -syntax camlp5r -I ../main -linkall -linkpkg $^ -o r_lexer_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte
