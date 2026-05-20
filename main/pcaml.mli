@@ -16,7 +16,11 @@ value syntax_name : ref string;
 module Lexer : Plexer.LEXER ;
 module ParseBase : (Mlsyntax.PARSEBASESIG with module Lexer = Lexer) ;
 open Mlsyntax ;
+
 include Mlsyntax.PARSERS ;
+
+value input_file : ref string;
+   (** The file currently being parsed. *)
 
 type ast_transducer_t 'a = {
   name : string ;
