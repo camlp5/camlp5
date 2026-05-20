@@ -11,6 +11,8 @@ open Printf;
 
 include Pcamlbase ;
 
+type status = option Ploc.t;
+
 value version = "8.05.01";
 value syntax_name = ref "";
 

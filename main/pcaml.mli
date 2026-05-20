@@ -6,6 +6,8 @@
 
 include (module type of Pcamlbase) ;
 
+type status = option Ploc.t;
+
 (** Language grammar, entries and printers.
 
    Hold variables to be set by language syntax extensions. Some of them
