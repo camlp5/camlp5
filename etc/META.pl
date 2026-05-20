@@ -54,8 +54,8 @@ preprocessor = "camlp5 -nolib"
 
 package "parsers" (
     requires = "camlp5"
-    archive(byte) = "parse_q_MLast.cmo mlparsers.cma"
-    archive(native) = "parse_q_MLast.cmx mlparsers.cmxa"
+    archive(byte) = "parse_q_MLast.cmo parse_q_ast_base.cmo parse_q_ast.cmo mlparsers.cma"
+    archive(native) = "parse_q_MLast.cmx parse_q_ast_base.cmx parse_q_ast.cmx mlparsers.cmxa"
 )
 
 package "pa_r" (
