@@ -1,11 +1,14 @@
-(**pp -syntax camlp5r  -package camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations *)
+(**pp -syntax camlp5r  -package camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.quotations *)
 (* camlp5r *)
 (* o_lexer_test.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-open Pcaml ;
-
 Printf.printf "Syntax: %s\n%!" Pcaml.syntax_name.val ;
+
+open MLParsers.OP.Base.Parsers ;
+value expr_top s =
+ s |> Stream.of_string |> Grammar.Entry.parse expr
+;
 
 EXTEND
   GLOBAL: expr
@@ -19,8 +22,6 @@ EXTEND
 END
 ;
 
-value expr_top s = s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr ;
-
 value materialize (ts, loct) =
   let rec mrec i =
     let tok = Stream.next ts in
@@ -32,7 +33,7 @@ value materialize (ts, loct) =
 
 value lex_string s =
   let cs = Stream.of_string s in
-  let lexer = Grammar.glexer Pcaml.gram in
+  let lexer = Grammar.glexer gram in
   let (ts, loct) = lexer.Plexing.tok_func cs in
   materialize (ts,loct)
 ;

@@ -209,7 +209,7 @@ o_lexer_test:: o_lexer_test.byte
 	./o_lexer_test.byte $(TESTARGS)
 
 o_lexer_test.byte: testutil.cmo testutil2.cmo o_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link -syntax camlp5r -I ../main -linkall -linkpkg $^ -o o_lexer_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers -syntax camlp5r -I ../main -linkall -linkpkg $^ -o o_lexer_test.byte
 
 quotedext_test:: quotedext_test.byte
 	$(NOVERBOSE) mkdir -p _build
