@@ -4,6 +4,8 @@
 
 #load "pa_macro.cmo";
 
+include (module type of Pcamlbase) ;
+
 (** Language grammar, entries and printers.
 
    Hold variables to be set by language syntax extensions. Some of them

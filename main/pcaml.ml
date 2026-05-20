@@ -8,7 +8,8 @@
 [@@@warnerror "-generative-application-expects-unit";] ;
 
 open Printf;
-open Pcamlbase ;
+
+include Pcamlbase ;
 
 value version = "8.05.01";
 value syntax_name = ref "";
