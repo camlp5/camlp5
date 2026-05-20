@@ -16,7 +16,7 @@ Pcaml.syntax_name.val := "OCaml";
 Pcaml.no_constructors_arity.val := True;
 
 include Parse_o ;
-include (PA(Pcaml.ParseBase)) ;
+include (PA(Pcaml.ParseBase)(Pcaml.QH)) ;
 
 Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
 Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem)); (* REMOVE FOR COMPILE *)

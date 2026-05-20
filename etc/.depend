@@ -1,5 +1,3 @@
-elexer.cmo :
-elexer.cmx :
 MLParsers.cmo : \
     parse_op.cmo \
     parse_oop.cmo \
@@ -20,6 +18,8 @@ MLPrinters.cmx : \
     print_r.cmx \
     print_op.cmx \
     print_o.cmx
+elexer.cmo :
+elexer.cmx :
 mkcamlp5.cmo :
 mkcamlp5.cmx :
 o_keywords.cmo :

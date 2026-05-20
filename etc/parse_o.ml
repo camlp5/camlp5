@@ -16,7 +16,9 @@ module type PARSE_O_SIG = sig
 end
 ;
 
-module PA(Base : Mlsyntax.PARSEBASESIG) : (PARSE_O_SIG with module Base = Base) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG)
+         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
+       : (PARSE_O_SIG with module Base = Base) = struct
 module Base = Base ;
 open Base.Parsers ;
 open Base;
@@ -1518,7 +1520,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline <:expr< $uid:"()"$ >> ext attrs
       | x = QUOTATION ->
           let con = quotation_content x in
-          Pcaml.QH.handle_expr_quotation loc con ] ]
+          QH.handle_expr_quotation loc con ] ]
   ;
   let_binding:
     [ [ alg_attrs = alg_attributes_no_anti ;
@@ -1838,7 +1840,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
           let con = quotation_content x in
-          Pcaml.QH.handle_patt_quotation loc con ] ]
+          QH.handle_patt_quotation loc con ] ]
   ;
   patt_semi_list:
     [ [ p = patt; ";"; pl = SELF -> [p :: pl]

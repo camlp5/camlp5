@@ -43,19 +43,32 @@ end ;
 module O = struct
   module Lexer = Plexer.Make(struct end) ;
   module Base = ParseBase(Lexer) ;
-  module O = Parse_o.PA(Base) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module O = Parse_o.PA(Base)(QH) ;
 end ;
 
 module OP = struct
   module Lexer = Plexer.Make(struct end) ;
   module Base = ParseBase(Lexer) ;
-  module O = Parse_o.PA(Base) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module O = Parse_o.PA(Base)(QH) ;
   module OP = Parse_op.PA(Base) ;
+end ;
+
+module OP_PAQ = struct
+  module Lexer = Plexer.Make(struct end) ;
+  module Base = ParseBase(Lexer) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module O = Parse_o.PA(Base)(QH) ;
+  module OP = Parse_op.PA(Base) ;
+  module Q_ast_base = Parse_q_ast_base.PA(Base)(QH) ;
+  module Q_ast = Parse_q_ast.PA(Base)(QH)(Q_ast_base) ;
 end ;
 
 module OOP = struct
   module Lexer = Plexer.Make(struct end) ;
   module Base = ParseBase(Lexer) ;
-  module O = Parse_o.PA(Base) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module O = Parse_o.PA(Base)(QH) ;
   module OOP = Parse_oop.PA(Base) ;
 end ;
