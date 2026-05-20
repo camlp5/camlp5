@@ -223,7 +223,7 @@ r_lexer_test:: r_lexer_test.byte
 	./r_lexer_test.byte $(TESTARGS)
 
 r_lexer_test.byte: testutil.cmo testutil2.cmo r_lexer_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link -syntax camlp5r -I ../main -linkall -linkpkg $^ -o r_lexer_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers -syntax camlp5r -I ../main -linkall -linkpkg $^ -o r_lexer_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte

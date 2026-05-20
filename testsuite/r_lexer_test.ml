@@ -1,10 +1,17 @@
-(**pp -syntax camlp5r  -package camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations *)
+(**pp -syntax camlp5r  -package camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.quotations *)
 (* camlp5r *)
 (* r_lexer_test.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-open Pcaml ;
 
+open MLParsers.RP.Base.Parsers ;
+value expr_top s =
+ s |> Stream.of_string |> Grammar.Entry.parse expr
+;
+(*
+open Pcaml ;
+value expr_top s = s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr ;
+ *)
 EXTEND
   GLOBAL: expr
   ;
@@ -17,8 +24,6 @@ EXTEND
 
 END
 ;
-
-value expr_top s = s |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr ;
 
 open OUnit2;
 
