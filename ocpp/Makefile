@@ -12,7 +12,7 @@ OBJS=ocpp.cmo
 all: ocpp$(EXE)
 
 ocpp$(EXE): $(OBJS)
-	$(OCAMLC) $(LINKFLAGS) ../lib/gramlib.cma ../main/pcamlbase.cmo ../main/reloc.cmo ../main/quotation.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -linkpkg -o ocpp$(EXE)
+	$(OCAMLC) $(LINKFLAGS) ../lib/gramlib.cma ../main/pp_debug.cmo ../main/mlsyntax.cmo ../main/pcamlbase.cmo ../main/reloc.cmo ../main/quotation.cmo ../main/prtools.cmo ../main/pcaml.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -linkpkg -o ocpp$(EXE)
 
 clean::
 	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.out *.bak .*.bak

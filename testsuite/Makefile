@@ -176,7 +176,8 @@ q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
 q_MLast_test.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo q_MLast_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
+#	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.printers,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg $^ -o q_MLast_test.byte
 
 revised_parser_test:: revised_parser_test.byte
 	./revised_parser_test.byte

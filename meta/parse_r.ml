@@ -16,7 +16,9 @@ module type PARSE_R_SIG = sig
 end
 ;
 
-module PA(Base : Mlsyntax.PARSEBASESIG) : (PARSE_R_SIG with module Base = Base) = struct
+module PA(Base : Mlsyntax.PARSEBASESIG)
+         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
+       : (PARSE_R_SIG with module Base = Base) = struct
 module Base = Base ;
 open Base.Parsers ;
 open Base;
@@ -2025,12 +2027,12 @@ EXTEND
   expr: LEVEL "simple"
     [ [ x = QUOTATION →
           let con = quotation_content x in
-          Pcaml.QH.handle_expr_quotation loc con ] ]
+          QH.handle_expr_quotation loc con ] ]
   ;
   patt: LEVEL "simple"
     [ [ x = QUOTATION →
           let con = quotation_content x in
-          Pcaml.QH.handle_patt_quotation loc con ] ]
+          QH.handle_patt_quotation loc con ] ]
   ;
 END;
 end

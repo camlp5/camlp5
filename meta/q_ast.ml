@@ -668,11 +668,11 @@ value apply_entry e me mp =
       | _ -> ast ]
     else ast
   in
-  Quotation.ExAst (expr, patt)
+  Pcaml.QH.ExAst (expr, patt)
 ;
 
 List.iter
-  (fun (q, f) -> Quotation.add q f)
+  (fun (q, f) -> Pcaml.QH.add q f)
   [
     ("attribute_body", apply_entry attribute_body_eoi Meta_E.attribute_body Meta_P.attribute_body);
     ("class_expr", apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr);
@@ -746,5 +746,5 @@ do {
     Ploc.call_with Pcaml.Lexer.force_antiquot_loc True
       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
   in
-  Quotation.add "vala" (Quotation.ExAst (expr, patt));
+  Pcaml.QH.add "vala" (Pcaml.QH.ExAst (expr, patt));
 };

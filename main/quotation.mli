@@ -6,6 +6,12 @@
 
 open Pcamlbase ;
 
+value default : ref string;
+   (** [default] holds the default quotation name. *)
+
+module type QUOTATION_EXPANSION = sig
+  module Base : Mlsyntax.PARSEBASESIG ;
+
 type expander =
   [ ExStr of bool -> string -> string
   | ExAst of (string -> MLast.expr * string -> MLast.patt) ]
@@ -44,14 +50,9 @@ value upsert : string -> expander -> unit;
 value find : string -> expander;
    (** [find name] returns the expander of the given quotation name. *)
 
-value default : ref string;
-   (** [default] holds the default quotation name. *)
-
 value translate : ref (string -> string);
    (** function translating quotation names; default = identity *)
 
-module type QUOTATION_EXPANSION = sig
-  module Base : Mlsyntax.PARSEBASESIG ;
   value quotation_dump_file : ref (option string);
   (** [quotation_dump_file] optionally tells the compiler to dump the
       result of an expander (of kind "generating a string") if this

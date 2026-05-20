@@ -54,8 +54,8 @@ preprocessor = "camlp5 -nolib"
 
 package "parsers" (
     requires = "camlp5"
-    archive(byte) = "mlparsers.cma"
-    archive(native) = "mlparsers.cmxa"
+    archive(byte) = "parse_q_MLast.cmo mlparsers.cma"
+    archive(native) = "parse_q_MLast.cmx mlparsers.cmxa"
 )
 
 package "pa_r" (
@@ -256,17 +256,17 @@ package "quotations" (
   version = "${version}"
   description = "Syntax extension: Quotations to create AST nodes"
 
-  requires(toploop) = "camlp5"
-  archive(toploop) = "parse_q_MLast.cmo q_MLast.cmo"
+  requires(toploop) = "camlp5,camlp5.parsers"
+  archive(toploop) = "q_MLast.cmo"
 
-  requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "parse_q_MLast.cmo q_MLast.cmo"
-  archive(syntax,preprocessor,native) = "parse_q_MLast.cmx q_MLast.cmx"
+  requires(syntax,preprocessor) = "camlp5,camlp5.parsers"
+  archive(syntax,preprocessor,-native) = "q_MLast.cmo"
+  archive(syntax,preprocessor,native) = "q_MLast.cmx"
 
   package "link" (
-    requires = "camlp5"
-    archive(byte) = "parse_q_MLast.cmo q_MLast.cmo"
-    archive(native) = "parse_q_MLast.cmx q_MLast.cmx"
+    requires = "camlp5,camlp5.parsers"
+    archive(byte) = "q_MLast.cmo"
+    archive(native) = "q_MLast.cmx"
   )
 )
 

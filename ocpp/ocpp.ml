@@ -42,8 +42,8 @@ value quot name pos str =
   let loc = Ploc.make_unlined (pos, pos + String.length str) in
   let exp =
     try
-      match Quotation.find name with
-      [ Quotation.ExStr f -> f
+      match Pcaml.QH.find name with
+      [ Pcaml.QH.ExStr f -> f
       | _ -> raise Not_found ]
     with
     [ Not_found -> Ploc.raise loc Not_found ]

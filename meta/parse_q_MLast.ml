@@ -2060,7 +2060,7 @@ value apply_entry e q =
     in
     Qast.to_patt (m ()) qast
   in
-  Quotation.ExAst (expr, patt)
+  QH.ExAst (expr, patt)
 ;
 
 let attribute_body_eoi = Grammar.Entry.create gram "attribute_body_eoi" in
@@ -2106,7 +2106,7 @@ do {
     type_extension_eoi: [ [ x = type_extension; EOI -> x ] ];
     with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
   END;
-  List.iter (fun (q, f) -> Quotation.add q (f q))
+  List.iter (fun (q, f) -> QH.add q (f q))
     [
       ("attribute_body", apply_entry attribute_body_eoi);
       ("class_expr", apply_entry class_expr_eoi);
@@ -2180,7 +2180,7 @@ do {
     Ploc.call_with Base.Lexer.force_antiquot_loc True
       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
   in
-  Quotation.add "vala" (Quotation.ExAst (expr, patt));
+  QH.add "vala" (QH.ExAst (expr, patt));
 };
 end
 ;

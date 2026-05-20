@@ -33,12 +33,12 @@ value patt_fun = fun s ->
         <:patt< $uid:t$ >> ;
 
 
-Quotation.add ""
-  (Quotation.ExAst
+Pcaml.QH.add ""
+  (Pcaml.QH.ExAst
      (expr_fun,
       patt_fun))
 ;
 
 Quotation.default.val := "";
-Quotation.translate.val := fun s -> do { t.val := s; "" };
+Pcaml.QH.translate.val := fun s -> do { t.val := s; "" };
 

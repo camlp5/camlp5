@@ -62,6 +62,9 @@ type seq =
     (Pprintf.pr_context -> unit -> string) ->
     Prtools.pr_context -> seq -> string ;
 
+  (* For Debug *)
+  value utf8 : bool ;
+
 end ;
 
 module PP(Base : Mlsyntax.PRINTBASESIG) : RSIG = struct

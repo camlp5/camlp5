@@ -9,14 +9,25 @@ open Mlsyntax ;
 module R = struct
   module Lexer = Plexer.Make(struct end) ;
   module Base = ParseBase(Lexer) ;
-  module R = Parse_r.PA(Base) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module R = Parse_r.PA(Base)(QH) ;
 end ;
 
 module RP = struct
   module Lexer = Plexer.Make(struct end) ;
   module Base = ParseBase(Lexer) ;
-  module R = Parse_r.PA(Base) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module R = Parse_r.PA(Base)(QH) ;
   module RP = Parse_rp.PA(Base) ;
+end ;
+
+module RP_Q = struct
+  module Lexer = Plexer.Make(struct end) ;
+  module Base = ParseBase(Lexer) ;
+  module QH = Quotation.QuotationExpansion(Base);
+  module R = Parse_r.PA(Base)(QH) ;
+  module RP = Parse_rp.PA(Base) ;
+  module Q = Parse_q_MLast.PA(Base)(QH) ;
 end ;
 
 module O = struct
