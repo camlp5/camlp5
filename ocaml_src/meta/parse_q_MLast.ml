@@ -16,7 +16,7 @@ module type PARSE_Q_MLAST_SIG =
   sig module Base : Mlsyntax.PARSEBASESIG;; end
 ;;
 
-module PA (Base : Mlsyntax.PARSEBASESIG) :
+module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION with module Base = Base) :
   PARSE_Q_MLAST_SIG with module Base = Base =
   struct
     module Base = Base;;
@@ -128,7 +128,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
               MLast.ExRec (loc, List.map (to_expr_label m) lal, None)
           | Loc | TrueLoc -> MLast.ExLid (loc, !(Ploc.name))
           | VaAnt (k, loc, x) ->
-              let (loc, e) = antiquot k loc x Pcaml.QH.expr_eoi in
+              let (loc, e) = antiquot k loc x QH.expr_eoi in
               MLast.ExAnt (loc, e)
           | VaVal a ->
               let e = to_expr m a in
@@ -193,7 +193,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
           | Loc -> MLast.PaAny loc
           | TrueLoc -> MLast.PaLid (loc, !(Ploc.name))
           | VaAnt (k, loc, x) ->
-              let (loc, e) = antiquot k loc x Pcaml.QH.patt_eoi in
+              let (loc, e) = antiquot k loc x QH.patt_eoi in
               MLast.PaAnt (loc, e)
           | VaVal a ->
               let p = to_patt m a in
@@ -14823,7 +14823,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
         in
         Qast.to_patt (m ()) qast
       in
-      Quotation.ExAst (expr, patt)
+      QH.ExAst (expr, patt)
     ;;
     let attribute_body_eoi = Grammar.Entry.create gram "attribute_body_eoi" in
     let class_expr_eoi = Grammar.Entry.create gram "class_expr_eoi" in
@@ -15079,7 +15079,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
               "194fe98d",
               (fun _ (x : 'with_constr) (loc : Ploc.t) ->
                  (x : 'with_constr_eoi)))]]];
-    List.iter (fun (q, f) -> Quotation.add q (f q))
+    List.iter (fun (q, f) -> QH.add q (f q))
       ["attribute_body", apply_entry attribute_body_eoi;
        "class_expr", apply_entry class_expr_eoi;
        "class_sig_item", apply_entry class_sig_item_eoi;
@@ -15099,7 +15099,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
        "type_decl", apply_entry type_decl_eoi;
        "type_extension", apply_entry type_extension_eoi;
        "with_constr", apply_entry with_constr_eoi];;
-    let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
+    let expr_eoi = Grammar.Entry.create Base.Parsers.gram "expr_eoi" in
     Grammar.safe_extend
       [Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
          [None, None,
@@ -15118,8 +15118,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
                       let a =
                         String.sub a (i + 1) (String.length a - i - 1)
                       in
-                      Grammar.Entry.parse Pcaml.QH.expr_eoi
-                        (Stream.of_string a)
+                      Grammar.Entry.parse QH.expr_eoi (Stream.of_string a)
                     in
                     MLast.ExApp
                       (loc,
@@ -15137,10 +15136,11 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm
-                      (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e)))
+                      (Base.Parsers.expr :
+                       'Base__Parsers__expr Grammar.Entry.e)))
                 (Grammar.s_token ("EOI", "")),
               "194fe98d",
-              (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
+              (fun _ (e : 'Base__Parsers__expr) (loc : Ploc.t) ->
                  (let loc = Ploc.make_unlined (0, 0) in
                   if !(Pcaml.strict_mode) then
                     MLast.ExApp
@@ -15156,7 +15156,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
       Ploc.call_with Base.Lexer.force_antiquot_loc true
         (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
     in
-    let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
+    let patt_eoi = Grammar.Entry.create Base.Parsers.gram "patt_eoi" in
     Grammar.safe_extend
       [Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
          [None, None,
@@ -15175,8 +15175,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
                       let a =
                         String.sub a (i + 1) (String.length a - i - 1)
                       in
-                      Grammar.Entry.parse Pcaml.QH.patt_eoi
-                        (Stream.of_string a)
+                      Grammar.Entry.parse QH.patt_eoi (Stream.of_string a)
                     in
                     MLast.PaApp
                       (loc,
@@ -15192,10 +15191,11 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm
-                      (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e)))
+                      (Base.Parsers.patt :
+                       'Base__Parsers__patt Grammar.Entry.e)))
                 (Grammar.s_token ("EOI", "")),
               "194fe98d",
-              (fun _ (p : 'Pcaml__patt) (loc : Ploc.t) ->
+              (fun _ (p : 'Base__Parsers__patt) (loc : Ploc.t) ->
                  (let loc = Ploc.make_unlined (0, 0) in
                   if !(Pcaml.strict_mode) then
                     MLast.PaApp
@@ -15212,7 +15212,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
       Ploc.call_with Base.Lexer.force_antiquot_loc true
         (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
     in
-    Quotation.add "vala" (Quotation.ExAst (expr, patt));;
+    QH.add "vala" (QH.ExAst (expr, patt));;
   end
 ;;
 

@@ -52,7 +52,7 @@ module type PARSE_Q_AST_BASE_SIG = sig
       ?prefix:MLast.longid → string → list MLast.expr → MLast.expr;
     value list : (α → MLast.expr) → list α → MLast.expr;
     value option : (α → MLast.expr) → option α → MLast.expr;
-    value vala : (α → MLast.expr) → Ploc.vala α → MLast.expr;
+    value vala : (α → MLast.expr) → MLast.v α → MLast.expr;
     value char : char → MLast.expr;
     value bool : bool → MLast.expr;
     value int : int → MLast.expr;
@@ -78,7 +78,7 @@ module type PARSE_Q_AST_BASE_SIG = sig
       ?prefix:MLast.longid → string → list MLast.patt → MLast.patt;
     value list : (α → MLast.patt) → list α → MLast.patt;
     value option : (α → MLast.patt) → option α → MLast.patt;
-    value vala : (α → MLast.patt) → Ploc.vala α → MLast.patt;
+    value vala : (α → MLast.patt) → MLast.v α → MLast.patt;
     value char : char → MLast.patt;
     value bool : bool → MLast.patt;
     value int : int → MLast.patt;

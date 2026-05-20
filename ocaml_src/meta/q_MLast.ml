@@ -12,4 +12,4 @@ open Asttools;;
 open Mlsyntax.Revised;;
 
 include Parse_q_MLast;;
-include PA (Pcaml.ParseBase);;
+include PA (Pcaml.ParseBase) (Pcaml.QuotationHelper);;

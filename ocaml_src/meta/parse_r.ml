@@ -13,7 +13,7 @@ open Mlsyntax.Revised;;
 
 module type PARSE_R_SIG = sig module Base : Mlsyntax.PARSEBASESIG;; end;;
 
-module PA (Base : Mlsyntax.PARSEBASESIG) :
+module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION with module Base = Base) :
   PARSE_R_SIG with module Base = Base =
   struct
     module Base = Base;;
@@ -7837,7 +7837,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
                "194fe98d",
                (fun (x : string) (loc : Ploc.t) ->
                   (let con = quotation_content x in
-                   Pcaml.QH.handle_expr_quotation loc con :
+                   QH.handle_expr_quotation loc con :
                    'expr)))]];
         Grammar.extension (patt : 'patt Grammar.Entry.e)
           (Some (Gramext.Level "simple"))
@@ -7848,7 +7848,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) :
                "194fe98d",
                (fun (x : string) (loc : Ploc.t) ->
                   (let con = quotation_content x in
-                   Pcaml.QH.handle_patt_quotation loc con :
+                   QH.handle_patt_quotation loc con :
                    'patt)))]]]);;
   end
 ;;

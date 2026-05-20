@@ -1,3 +1,5 @@
+boo.cmi :
+foo.cmi :
 pa_extend.cmo :
 pa_extend.cmx :
 pa_extend_m.cmo : \
@@ -26,6 +28,12 @@ pa_rp.cmx : \
     parse_rp.cmx
 parse_q_MLast.cmo :
 parse_q_MLast.cmx :
+parse_q_ast.cmo : \
+    parse_q_ast_base.cmo
+parse_q_ast.cmx : \
+    parse_q_ast_base.cmx
+parse_q_ast_base.cmo :
+parse_q_ast_base.cmx :
 parse_r.cmo :
 parse_r.cmx :
 parse_rp.cmo :
@@ -37,8 +45,12 @@ q_MLast.cmo : \
 q_MLast.cmx : \
     parse_q_MLast.cmx
 q_ast.cmo : \
-    q_ast_base.cmo
+    q_ast_base.cmo \
+    parse_q_ast.cmo
 q_ast.cmx : \
-    q_ast_base.cmx
-q_ast_base.cmo :
-q_ast_base.cmx :
+    q_ast_base.cmx \
+    parse_q_ast.cmx
+q_ast_base.cmo : \
+    parse_q_ast_base.cmo
+q_ast_base.cmx : \
+    parse_q_ast_base.cmx

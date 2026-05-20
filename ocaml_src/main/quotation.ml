@@ -8,47 +8,19 @@
 open Printf;;
 open Pcamlbase;;
 
-type expander =
-    ExStr of (bool -> string -> string)
-  | ExAst of ((string -> MLast.expr) * (string -> MLast.patt))
-;;
-
-let expanders_table = ref [];;
-
 let default = ref "";;
-let translate = ref (fun x -> x);;
 
-let expander_name name =
-  match !translate name with
-    "" -> !default
-  | name -> name
-;;
-
-let find name = List.assoc (expander_name name) !expanders_table;;
-
-let add name f =
-  if List.mem_assoc name !expanders_table then
-    begin
-      Printf.fprintf stderr
-        "Failure: Quotation.add: cannot add the quotation \"%s\" twice\n%!"
-        name;
-      Ploc.raise Ploc.dummy
-        (Failure
-           Printf.
-           (sprintf "Quotation.add: cannot add the quotation \"%s\" twice"
-             name))
-    end
-  else expanders_table := (name, f) :: !expanders_table
-;;
-
-let upsert name f =
-  if List.mem_assoc name !expanders_table then
-    Printf.fprintf stderr
-      "Warning: Quotation.upsert: overwriting the quotation \"%s\"\n%!" name;
-  expanders_table := (name, f) :: !expanders_table
-;;
 module type QUOTATION_EXPANSION =
   sig
+    module Base : Mlsyntax.PARSEBASESIG;;
+    type expander =
+        ExStr of (bool -> string -> string)
+      | ExAst of ((string -> MLast.expr) * (string -> MLast.patt))
+    ;;
+    val add : string -> expander -> unit;;
+    val upsert : string -> expander -> unit;;
+    val find : string -> expander;;
+    val translate : (string -> string) ref;;
     val quotation_dump_file : string option ref;;
     val quotation_location : unit -> Ploc.t;;
     val expand_quotation :
@@ -63,9 +35,43 @@ module type QUOTATION_EXPANSION =
 ;;
 
 open Mlsyntax;;
-module QuotationExpansion (PB : PARSEBASESIG) : QUOTATION_EXPANSION =
+module QuotationExpansion (Base : PARSEBASESIG) : QUOTATION_EXPANSION =
   struct
-    module PA = PB.Parsers;;
+    module Base = Base;;
+    module PA = Base.Parsers;;
+    type expander =
+        ExStr of (bool -> string -> string)
+      | ExAst of ((string -> MLast.expr) * (string -> MLast.patt))
+    ;;
+    let expanders_table = ref [];;
+    let translate = ref (fun x -> x);;
+    let expander_name name =
+      match !translate name with
+        "" -> !default
+      | name -> name
+    ;;
+    let find name = List.assoc (expander_name name) !expanders_table;;
+    let add name f =
+      if List.mem_assoc name !expanders_table then
+        begin
+          Printf.fprintf stderr
+            "Failure: Quotation.add: cannot add the quotation \"%s\" twice\n%!"
+            name;
+          Ploc.raise Ploc.dummy
+            (Failure
+               Printf.
+               (sprintf "Quotation.add: cannot add the quotation \"%s\" twice"
+                 name))
+        end
+      else expanders_table := (name, f) :: !expanders_table
+    ;;
+    let upsert name f =
+      if List.mem_assoc name !expanders_table then
+        Printf.fprintf stderr
+          "Warning: Quotation.upsert: overwriting the quotation \"%s\"\n%!"
+          name;
+      expanders_table := (name, f) :: !expanders_table
+    ;;
     let quotation_loc = ref None;;
     List.iter (fun (n, f) -> add n f)
       ["id", ExStr (fun _ s -> "$0:" ^ s ^ "$");
@@ -237,7 +243,7 @@ module QuotationExpansion (PB : PARSEBASESIG) : QUOTATION_EXPANSION =
                 flush stderr
               end
           | None ->
-              if !(PB.input_file) = "" then
+              if !(Base.input_file) = "" then
                 eprintf
                   "\n(consider setting variable Pcaml.quotation_dump_file)\n"
               else eprintf " (consider using option -QD)\n";
