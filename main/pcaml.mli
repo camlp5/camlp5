@@ -77,6 +77,7 @@ value no_constructors_arity : ref bool;
 
 module QuotationHelper : Quotation.QUOTATION_EXPANSION ;
 module QH : Quotation.QUOTATION_EXPANSION ;
+include (module type of QH) ;
 
 (** {6 Printers} *)
 

@@ -89,6 +89,7 @@ value rename_id = ref (fun x -> x);
 
 module QuotationHelper = Quotation.QuotationExpansion(ParseBase);
 module QH = QuotationHelper ;
+include QH ;
 
 value pp_print_format pps str = do {
   let flush ini cnt =
