@@ -47,6 +47,7 @@ module type RSIG = sig
   value pr_attribute : string -> Pprintf.pr_context -> Ploc.vala MLast.attribute_body -> string ;
   value longident_lident : Pprintf.pr_context -> (option (Ploc.vala MLast.longid) * Ploc.vala string) -> string ;
   value longident : Eprinter.pr_context -> MLast.longid -> string ;
+  value type_decl : Eprinter.pr_context -> MLast.type_decl -> string ;
   value attribute_body : Eprinter.pr_context -> MLast.attribute_body -> string ;
   value pr_extension : string -> Pprintf.pr_context -> (Ploc.vala MLast.attribute_body) -> string ;
 
