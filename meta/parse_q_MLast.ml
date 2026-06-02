@@ -12,14 +12,8 @@ open Asttools ;
 open Mlsyntax.Revised ;
 
 
-module type PARSE_Q_MLAST_SIG = sig
-  module Base : Mlsyntax.PARSEBASESIG ;
-end
-;
-
 module PA(Base : Mlsyntax.PARSEBASESIG)
-         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
-          : (PARSE_Q_MLAST_SIG with module Base = Base) = struct
+         (QH : module type of Quotation.QuotationExpansion(Base)) = struct
 module Base = Base ;
 
 value gram = Grammar.gcreate (Base.Lexer.gmake ());

@@ -8,8 +8,8 @@
 #load "q_MLast.cmo";
 
 module PA(Base : Mlsyntax.PARSEBASESIG)
-         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
-         (Q_ast_base : Parse_q_ast_base.PARSE_Q_AST_BASE_SIG with module Base = Base and module QH = QH)
+         (QH : module type of Quotation.QuotationExpansion(Base))
+         (Q_ast_base : module type of Parse_q_ast_base.PA(Base)(QH))
   = struct
 module Base = Base ;
 module QH = QH ;

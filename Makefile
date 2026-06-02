@@ -64,8 +64,8 @@ install:
 	$(NOVERBOSE) if test -z "$(CAMLP5N)"; then \
 	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
-	for i in $(DIRS) compile; do \
-	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR="$(LIBDIR)" BINDIR="$(BINDIR)" MANDIR="$(MANDIR)"; cd ..); \
+	set -e ; for i in $(DIRS) compile; do \
+	  $(MAKE) -C $$i install DESTDIR=$(DESTDIR) LIBDIR="$(LIBDIR)" BINDIR="$(BINDIR)" MANDIR="$(MANDIR)" ; \
 	done
 	cp etc/topfind.camlp5 "$(DESTDIR)$(LIBDIR)/$(OCAMLN)/." || true
 

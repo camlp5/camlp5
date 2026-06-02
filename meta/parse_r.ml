@@ -11,14 +11,8 @@
 open Asttools;
 open Mlsyntax.Revised;
 
-module type PARSE_R_SIG = sig
-  module Base : Mlsyntax.PARSEBASESIG ;
-end
-;
-
 module PA(Base : Mlsyntax.PARSEBASESIG)
-         (QH : Quotation.QUOTATION_EXPANSION with module Base = Base)
-       : (PARSE_R_SIG with module Base = Base) = struct
+         (QH : module type of Quotation.QuotationExpansion(Base)) = struct
 module Base = Base ;
 open Base.Parsers ;
 open Base;

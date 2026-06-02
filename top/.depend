@@ -1,6 +1,8 @@
-camlp5_top.cmo: ../main/pcaml.cmi camlp5_top_funs.cmo
-camlp5_top.cmx: ../main/pcaml.cmx camlp5_top_funs.cmx
-camlp5_top_funs.cmo: ../main/ast2pt.cmi ../main/mLast.cmi ../main/pcaml.cmi
-camlp5_top_funs.cmx: ../main/ast2pt.cmx ../main/mLast.cmi ../main/pcaml.cmx
-rprint.cmo: ../main/pp_debug.cmo
-rprint.cmx: ../main/pp_debug.cmx
+camlp5_top.cmo : \
+    camlp5_top_funs.cmo
+camlp5_top.cmx : \
+    camlp5_top_funs.cmx
+camlp5_top_funs.cmo :
+camlp5_top_funs.cmx :
+rprint.cmo :
+rprint.cmx :

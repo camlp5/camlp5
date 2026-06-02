@@ -19,7 +19,6 @@ value syntax_name : ref string;
 
 module Lexer : Plexer.LEXER ;
 module ParseBase : (Mlsyntax.PARSEBASESIG with module Lexer = Lexer) ;
-open Mlsyntax ;
 
 include Mlsyntax.PARSERS ;
 
@@ -75,8 +74,9 @@ value add_options : list (string * Arg.spec * string) -> unit;
 value no_constructors_arity : ref bool;
    (** [True]: dont generate constructor arity. *)
 
-module QuotationHelper : Quotation.QUOTATION_EXPANSION ;
-module QH : Quotation.QUOTATION_EXPANSION ;
+module QuotationHelper : module type of Quotation.QuotationExpansion(ParseBase) ;
+module QH : module type of QuotationHelper ;
+
 include (module type of QH) ;
 
 (** {6 Printers} *)

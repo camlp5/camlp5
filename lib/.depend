@@ -1,36 +1,129 @@
-diff.cmo: diff.cmi versdep.cmo
-diff.cmx: diff.cmi versdep.cmx
-eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi
-eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx
-eprinter.cmi: extfun.cmi pprintf.cmi
-extfold.cmo: extfold.cmi gramext.cmi grammar.cmi
-extfold.cmx: extfold.cmi gramext.cmx grammar.cmx
-extfold.cmi: gramext.cmi
-extfun.cmo: extfun.cmi
-extfun.cmx: extfun.cmi
-fstream.cmo: fstream.cmi
-fstream.cmx: fstream.cmi
-gramext.cmo: fstream.cmi gramext.cmi plexing.cmi
-gramext.cmx: fstream.cmx gramext.cmi plexing.cmx
-gramext.cmi: fstream.cmi plexing.cmi
-grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
-grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
-grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
-plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmo
-plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
-plexer.cmi: plexing.cmi ploc.cmi
-plexing.cmo: plexing.cmi ploc.cmi versdep.cmo
-plexing.cmx: plexing.cmi ploc.cmx versdep.cmx
-plexing.cmi: ploc.cmi
-ploc.cmo: ploc.cmi
-ploc.cmx: ploc.cmi
-pprintf.cmo: pprintf.cmi pretty.cmi
-pprintf.cmx: pprintf.cmi pretty.cmx
-pretty.cmo: ploc.cmi pretty.cmi versdep.cmo
-pretty.cmx: ploc.cmx pretty.cmi versdep.cmx
-stdpp.cmo: ploc.cmi stdpp.cmi
-stdpp.cmx: ploc.cmx stdpp.cmi
-stdpp.cmi: ploc.cmi
-token.cmo: plexing.cmi ploc.cmi token.cmi
-token.cmx: plexing.cmx ploc.cmx token.cmi
-token.cmi: plexing.cmi ploc.cmi
+diff.cmo : \
+    versdep.cmo \
+    diff.cmi
+diff.cmx : \
+    versdep.cmx \
+    diff.cmi
+diff.cmi :
+eprinter.cmo : \
+    pprintf.cmi \
+    extfun.cmi \
+    eprinter.cmi
+eprinter.cmx : \
+    pprintf.cmx \
+    extfun.cmx \
+    eprinter.cmi
+eprinter.cmi : \
+    pprintf.cmi \
+    extfun.cmi
+extfold.cmo : \
+    grammar.cmi \
+    gramext.cmi \
+    extfold.cmi
+extfold.cmx : \
+    grammar.cmx \
+    gramext.cmx \
+    extfold.cmi
+extfold.cmi : \
+    gramext.cmi
+extfun.cmo : \
+    extfun.cmi
+extfun.cmx : \
+    extfun.cmi
+extfun.cmi :
+fstream.cmo : \
+    fstream.cmi
+fstream.cmx : \
+    fstream.cmi
+fstream.cmi :
+gramext.cmo : \
+    plexing.cmi \
+    fstream.cmi \
+    gramext.cmi
+gramext.cmx : \
+    plexing.cmx \
+    fstream.cmx \
+    gramext.cmi
+gramext.cmi : \
+    plexing.cmi \
+    fstream.cmi
+grammar.cmo : \
+    ploc.cmi \
+    plexing.cmi \
+    gramext.cmi \
+    fstream.cmi \
+    grammar.cmi
+grammar.cmx : \
+    ploc.cmx \
+    plexing.cmx \
+    gramext.cmx \
+    fstream.cmx \
+    grammar.cmi
+grammar.cmi : \
+    ploc.cmi \
+    plexing.cmi \
+    gramext.cmi
+plexer.cmo : \
+    versdep.cmo \
+    ploc.cmi \
+    plexing.cmi \
+    plexer.cmi
+plexer.cmx : \
+    versdep.cmx \
+    ploc.cmx \
+    plexing.cmx \
+    plexer.cmi
+plexer.cmi : \
+    plexing.cmi
+plexing.cmo : \
+    versdep.cmo \
+    ploc.cmi \
+    plexing.cmi
+plexing.cmx : \
+    versdep.cmx \
+    ploc.cmx \
+    plexing.cmi
+plexing.cmi : \
+    ploc.cmi
+ploc.cmo : \
+    ploc.cmi
+ploc.cmx : \
+    ploc.cmi
+ploc.cmi :
+pprintf.cmo : \
+    pretty.cmi \
+    pprintf.cmi
+pprintf.cmx : \
+    pretty.cmx \
+    pprintf.cmi
+pprintf.cmi :
+pretty.cmo : \
+    versdep.cmo \
+    ploc.cmi \
+    pretty.cmi
+pretty.cmx : \
+    versdep.cmx \
+    ploc.cmx \
+    pretty.cmi
+pretty.cmi :
+stdpp.cmo : \
+    ploc.cmi \
+    stdpp.cmi
+stdpp.cmx : \
+    ploc.cmx \
+    stdpp.cmi
+stdpp.cmi : \
+    ploc.cmi
+token.cmo : \
+    ploc.cmi \
+    plexing.cmi \
+    token.cmi
+token.cmx : \
+    ploc.cmx \
+    plexing.cmx \
+    token.cmi
+token.cmi : \
+    ploc.cmi \
+    plexing.cmi
+versdep.cmo :
+versdep.cmx :

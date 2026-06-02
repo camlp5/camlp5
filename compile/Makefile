@@ -51,8 +51,8 @@ clean::
 depend:
 	cp .depend .depend.bak
 	> .depend
-	@export LC_ALL=C; for i in *.ml; do \
-	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i \
+	@export LC_ALL=C; for i in $$(ls *.mli *.ml | grep -v tmp); do \
+	  ../tools/depend2.pl -v $$i \
 	  >> .depend; \
 	done
 

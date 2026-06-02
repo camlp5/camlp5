@@ -21,8 +21,8 @@ echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 echo "ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -c tmp.mli" 1>&2
 ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -c tmp.mli
-echo "${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
-${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
+echo "${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo q_MLast.cmo parse_q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
+${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo parse_q_MLast.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
 echo "ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -I ../lib -I ../main -c -impl tmp.ppo" 1>&2
 ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -I ../lib -I ../main -c -impl tmp.ppo
 echo "${RM} tmp.ppo" 1>&2
