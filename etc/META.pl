@@ -45,8 +45,8 @@ archive(byte,toploop,camlp5sml) = "odyl.cma camlp5.cma camlp5_top.cma pa_sml.cmo
 archive(byte,toploop,camlp5lisp) = "odyl.cma camlp5.cma camlp5_top.cma pa_lisp.cmo"
 
 # For the preprocessor itself:
-archive(syntax,preprocessor,camlp5o) = "parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo pr_dump.cmo"
-archive(syntax,preprocessor,camlp5r) = "parse_r.cmo pa_r.cmo parse_rp.cmo pa_rp.cmo pr_dump.cmo"
+archive(syntax,preprocessor,camlp5o) = "parse_q_MLast.cmo parse_q_ast_base.cmo parse_q_ast.cmo  mlparsers.cma pa_o.cmo pa_op.cmo pr_dump.cmo"
+archive(syntax,preprocessor,camlp5r) = "parse_q_MLast.cmo parse_q_ast_base.cmo parse_q_ast.cmo  mlparsers.cma pa_r.cmo pa_rp.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5sml) = "pa_sml.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5scheme) = "pa_scheme.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
