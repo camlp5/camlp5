@@ -110,7 +110,7 @@ value toplevel_phrase cs = do {
   }
   else ();
   Pcaml.ParseBase.input_file.val := Toploop.input_name.val;
-  match Pcaml.parse_top_phrase cs with
+  match Pcaml.Base.parse_top_phrase cs with
   [ Some phr -> Ast2pt.phrase phr
   | None -> raise End_of_file ]
 };
@@ -136,7 +136,7 @@ value use_file cs = do {
          to allow them to do possible syntax extensions *)
       loop () where rec loop () =
         let (pl, stopped_at_directive) =
-          Pcaml.parse_use_file cs
+          Pcaml.Base.parse_use_file cs
         in
         if stopped_at_directive then
           match pl with
@@ -160,7 +160,7 @@ value use_file cs = do {
         loop () where rec loop () =
           (* in the middle of the file, directives are treated by ocaml *)
           let (pl, stopped_at_directive) =
-            Pcaml.parse_use_file cs
+            Pcaml.Base.parse_use_file cs
           in
           if stopped_at_directive then pl @ loop () else pl
     in

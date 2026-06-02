@@ -233,4 +233,4 @@ value left_eval_transform (r,b) =
   (List.map (fun (si, loc) -> (str_item si, loc)) r, b)
 ;
 
-Pcaml.(set_ast_transform transduce_implem left_eval_transform);
+Pcaml.Base.(Mlsyntax.set_ast_transform transduce_implem left_eval_transform);

@@ -294,7 +294,7 @@ value implem_gen_ast (l, status) = do {
   }
 ;
 
-Pcaml.(set_ast_transform transduce_implem implem_gen_ast);
+Pcaml.Base.(Mlsyntax.set_ast_transform transduce_implem implem_gen_ast);
 
 Pcaml.add_option "-pa_mktest-ignore-type" (Arg.String add_ignored_type)
   "ignore specified type";

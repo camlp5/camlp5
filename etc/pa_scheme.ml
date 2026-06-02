@@ -1374,10 +1374,10 @@
  (Grammar.Unsafe.clear_entry class_sig_item)
  (Grammar.Unsafe.clear_entry class_str_item))
 
-(Pcaml.set_ast_parse Pcaml.transduce_interf (Grammar.Entry.parse interf))
-(Pcaml.set_ast_parse Pcaml.transduce_implem (Grammar.Entry.parse implem))
-(Pcaml.set_ast_parse Pcaml.transduce_top_phrase (Grammar.Entry.parse top_phrase))
-(Pcaml.set_ast_parse Pcaml.transduce_use_file (Grammar.Entry.parse use_file))
+(Mlsyntax.set_ast_parse Pcaml.Base.transduce_interf (Grammar.Entry.parse interf))
+(Mlsyntax.set_ast_parse Pcaml.Base.transduce_implem (Grammar.Entry.parse implem))
+(Mlsyntax.set_ast_parse Pcaml.Base.transduce_top_phrase (Grammar.Entry.parse top_phrase))
+(Mlsyntax.set_ast_parse Pcaml.Base.transduce_use_file (Grammar.Entry.parse use_file))
 
 (define sexpr (Grammar.Entry.create gram "sexpr"))
 

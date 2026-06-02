@@ -347,6 +347,38 @@ end ;
 
 type directive_fun = option MLast.expr -> unit;
 
+type ast_transducer_t 'a = {
+    name : string
+  ; parse : ref (option (Stream.t char -> 'a))
+  ; transform : ref (option ('a -> 'a))
+  } ;
+
+value set_ast_parse att pf =
+  match att.parse.val with [
+      Some _ -> failwith (Printf.sprintf "Pcaml.set_ast_parse: transducer \"%s\" already has a parse(r)" att.name)
+    | None -> att.parse.val := Some pf
+    ]
+;
+
+value set_ast_transform att tf =
+  match att.transform.val with [
+      Some _ -> failwith (Printf.sprintf "Pcaml.set_ast_transform: transducer \"%s\" already has a tranform(er)" att.name)
+    | None -> att.transform.val := Some tf
+    ]
+;
+
+value transduce att x =
+  let parse = match att.parse.val with [
+        None -> failwith (Printf.sprintf "Pcaml.transduce: transducer \"%s\" has no configured parser" att.name)
+      | Some x -> x
+      ] in
+  let x = parse x in
+  match att.transform.val with [
+      None -> x
+    | Some f -> f x
+    ]
+;
+
 module type PARSEBASESIG = sig
 module Lexer : Plexer.LEXER ;
 
@@ -361,9 +393,34 @@ value get_options : unit -> list (string * Arg.spec * string) ;
 value directives : ref (list (string * directive_fun)) ;
 value add_directive : string -> directive_fun -> unit ;
 value get_directives : unit -> list (string * directive_fun) ;
+
+value transduce_interf : ast_transducer_t (list (MLast.sig_item * MLast.loc) * status) ;
+value transduce_implem : ast_transducer_t (list (MLast.str_item * MLast.loc) * status) ;
+value transduce_top_phrase : ast_transducer_t (option MLast.str_item) ;
+value transduce_use_file : ast_transducer_t (list MLast.str_item * bool) ;
+
+value parse_interf :
+  (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
+value parse_implem :
+  (Stream.t char -> (list (MLast.str_item * MLast.loc) * status));
+   (** Called when parsing an interface (mli file) or an implementation
+       (ml file) to build the syntax tree; the returned list contains the
+       phrases (signature items or structure items) and their locations;
+       the boolean tells that the parser has encountered a directive; in
+       this case, since the directive may change the syntax, the parsing
+       stops, the directive is evaluated, and this function is called
+       again.
+       These functions are references, because they can be changed to
+       use another technology than the Camlp5 extended grammars. By
+       default, they use the grammars entries [implem] and [interf]
+       defined below. *)
+
+value parse_top_phrase :
+  (Stream.t char -> (option MLast.str_item));
+value parse_use_file :
+  (Stream.t char -> (list MLast.str_item * bool));
 end
 ;
-
 
 module ParseBase(Lexer : Plexer.LEXER) : PARSEBASESIG = struct
 module Lexer = Lexer ;
@@ -453,6 +510,16 @@ value get_directives () =
   ; l
   }
 ;
+
+value transduce_interf = { name = "interf" ; parse = ref None ; transform = ref None } ;
+value transduce_implem = { name = "implem" ; parse = ref None ; transform = ref None } ;
+value transduce_top_phrase = { name = "top_phrase" ; parse = ref None ; transform = ref None } ;
+value transduce_use_file = { name = "use_file" ; parse = ref None ; transform = ref None } ;
+
+value parse_interf x = transduce transduce_interf x ;
+value parse_implem x = transduce transduce_implem x ;
+value parse_top_phrase x = transduce transduce_top_phrase x ;
+value parse_use_file x = transduce transduce_use_file x ;
 
 end
 ;
