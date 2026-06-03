@@ -98,6 +98,22 @@ pr_op.cmo : \
     print_op.cmo
 pr_op.cmx : \
     print_op.cmx
+pr_patr.cmo : \
+    print_patr.cmo
+pr_patr.cmx : \
+    print_patr.cmx
+pr_patro.cmo : \
+    print_patro.cmo \
+    pr_patr.cmo
+pr_patro.cmx : \
+    print_patro.cmx \
+    pr_patr.cmx
+pr_patrp.cmo : \
+    print_patrp.cmo \
+    pr_patr.cmo
+pr_patrp.cmx : \
+    print_patrp.cmx \
+    pr_patr.cmx
 pr_r.cmo : \
     print_r.cmo
 pr_r.cmx : \
@@ -124,6 +140,18 @@ print_o.cmx : \
     o_keywords.cmx
 print_op.cmo :
 print_op.cmx :
+print_patr.cmo : \
+    r_keywords.cmo
+print_patr.cmx : \
+    r_keywords.cmx
+print_patro.cmo : \
+    print_patr.cmo
+print_patro.cmx : \
+    print_patr.cmx
+print_patrp.cmo : \
+    print_patr.cmo
+print_patrp.cmx : \
+    print_patr.cmx
 print_r.cmo : \
     r_keywords.cmo
 print_r.cmx : \

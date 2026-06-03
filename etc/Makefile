@@ -5,7 +5,12 @@ include ../config/Makefile
 INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 OTHERLANGS=pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_schemer.cmo pa_lefteval.cmo  pr_scheme.cmo pr_schemep.cmo
-OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPARSERS_OBJS) $(MLPRINTERS_OBJS) $(OTHERLANGS)
+OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo \
+	print_patr.cmo print_patro.cmo print_patrp.cmo \
+	pr_patr.cmo pr_patro.cmo pr_patrp.cmo \
+	pr_r.cmo pr_ro.cmo pr_rp.cmo \
+	pr_o.cmo pr_op.cmo \
+	pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPARSERS_OBJS) $(MLPRINTERS_OBJS) $(OTHERLANGS)
 INSTALL_CMI=$(OBJS:.cmo=.cmi) $(MLPARSERS_CMI) $(MLPRINTERS_CMI)
 CAMLP5OM=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
@@ -175,12 +180,12 @@ print_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 print_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_o.cmo
 pr_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_op.cmo
-print_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
-pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_r.cmo
-print_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
-print_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
-pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_ro.cmo
-pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_rp.cmo
+print_patr.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
+pr_patr.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_patr.cmo
+print_patro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+print_patrp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_patro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_patro.cmo
+pr_patrp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_patrp.cmo
 pr_scheme.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_schemep.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
