@@ -180,7 +180,41 @@ value expand_lprintf pc loc f =
 ;
 
 
-value string pc s = pprintf pc "\"%s\"" s;
+value qstring pc s = pprintf pc "\"%s\"" s;
+
+value pr_xtr pc s =
+  match Plexing.parse_antiloc s with [
+      None ->
+      error Ploc.dummy Fmt.(str "Print_patr.pr_xtr: unrecognized Xtr payload %a@."
+                              string s)
+    | Some (_,"",txt) ->
+       pprintf pc "$%s$" txt
+    | Some (_,kind,_) ->
+      error Ploc.dummy Fmt.(str "Print_patr.pr_xtr: Xtr should not have kind %a@."
+                              string s)
+    ]
+;
+
+value pr_vala_with ~{vaval} ~{vaant} pc = fun [
+  Ploc.VaVal x -> vaval pc x
+| VaAnt s ->
+   match Plexing.parse_antiloc s with [
+       None ->
+       error Ploc.dummy Fmt.(str "Print_patr.pr_vala: unrecognized VaAnt payload %a@."
+                               string s)
+     | Some (_,kind,txt) ->
+        vaant pc (Printf.sprintf "$%s:%s$" kind txt)
+     ]
+] ;
+
+value pr_vala prvaval pc x =
+  pr_vala_with ~{vaval=prvaval} ~{vaant=(fun pc anti -> pprintf pc "%s" anti)} pc x
+;
+
+value pr_string pc s = pprintf pc "%s" s ;
+value pr_bool (tv,fv) pc b =
+  pprintf pc "%s" (if b then tv else fv)
+;
 
 value lident pc v =
   if is_keyword v then pprintf pc "\\#%s@ " v
@@ -253,11 +287,7 @@ value right_operator pc sh unfold next x =
 value uidopt_to_maybe_blank = fun [
   Some s -> uv s
 |  None ->
-  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    invalid_arg "pr_o.ml: uidopt_to_blank: blank module-names not supported"
-  ELSE
     "_"
-  END
 ]
 ;
 
@@ -280,23 +310,26 @@ value module_type_level_sig = Eprinter.apply_level pr_module_type "sig";
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 value attribute_body = Eprinter.apply pr_attribute_body;
 value pr_attribute atstring pc attr =
-  pprintf pc "[%s%p]" atstring attribute_body (uv attr)
+  pprintf pc "[%s%p]" atstring (pr_vala attribute_body) attr
 ;
 value pr_extension atstring pc attr =
-  pprintf pc "[%s%p]" atstring attribute_body (uv attr)
+  pprintf pc "[%s%p]" atstring (pr_vala attribute_body) attr
 ;
 
-value labeled_ctyp pc (lab, ct) =
-  match (uv lab) with [
-      None -> pprintf pc "%p" ctyp ct
-    | Some l -> pprintf pc "%s:%p" (uv l) ctyp ct
+value label_of_ctyp pc lab =
+  match lab with [
+      None -> pprintf pc ""
+    | Some l -> pprintf pc "%p:" (pr_vala pr_string) l
     ]
+;
+value labeled_ctyp pc (lab, ct) =
+  pprintf pc "%p%p" (pr_vala label_of_ctyp) lab ctyp ct
 ;
 
 value longident_lident pc (lio, id) =
   match lio with
-  [ None -> pprintf pc "%p" lident (uv id)
-  | Some li -> pprintf pc "%p.%p" longident (uv li) lident (uv id)
+  [ None -> pprintf pc "%p" (pr_vala lident) id
+  | Some li -> pprintf pc "%p.%p" (pr_vala longident) li (pr_vala lident) id
   ]
 ;
 
@@ -429,8 +462,8 @@ pr_expr_fun_args.val :=
 ;
 
 type seq =
-  [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr * MLast.attributes) and seq
-  | SE_let_str_item of MLast.str_item and seq
+  [ SE_let of Ploc.t and Ploc.vala bool and Ploc.vala (list (MLast.patt * MLast.expr * MLast.attributes)) and seq
+  | SE_let_str_item of Ploc.vala MLast.str_item and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
 ;
@@ -439,9 +472,9 @@ value rec seq_of_expr e =
   match e with
   [ <:expr< do { $list:[e :: el]$ } >> ->
       seq_of_expr_ne_list e el
-  | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+  | <:expr:< let $_flag:rf$ $_list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
-  | <:expr< let $stri:si$ in $e$ >> ->
+  | <:expr< let $_stri:si$ in $e$ >> ->
       SE_let_str_item si (seq_of_expr e)
   | e ->
       SE_other e None ]
@@ -449,11 +482,11 @@ and seq_of_expr_ne_list e1 el =
   match e1 with
   [ <:expr< do { $list:[e2 :: el]$ } >> ->
       seq_of_expr_ne_list e2 el
-  | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+  | <:expr:< let $_flag:rf$ $_list:pel$ in $e$ >> ->
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | <:expr< let $stri:si$ in $e$ >> ->
+  | <:expr< let $_stri:si$ in $e$ >> ->
       match el with
       [ [] -> SE_let_str_item si (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
@@ -488,6 +521,8 @@ value sequencify e =
    - test a "let" binding can be displayed as "where"
  *)
 value can_be_displayed_as_where rf pel e =
+  Pcaml.vala_mapa
+    (fun pel ->
   match pel with
   [ [(p, body, _)] ->
       let e1 =
@@ -501,7 +536,9 @@ value can_be_displayed_as_where rf pel e =
          <:expr< fun [ $list:_$ ] >>) ->
           if f = g then Some (rf, p, e, body) else None
       | _ -> None ]
-  | [_ :: _] | [] -> None ]
+  | [_ :: _] | [] -> None ])
+    (fun _ -> None)
+    pel
 ;
 
 value forward_expr_wh = ref (fun []);
@@ -554,7 +591,7 @@ value value_or_let_binding sequence_box pc (p, e, attrs) =
   horiz_vertic
     (fun () ->
        pprintf pc "%p = %p%p%s" (hlistl patt patt_tycon) pl (comm_expr expr_wh)
-         e (hlist (pr_attribute "@@")) (uv attrs)
+         e (pr_vala (hlist (pr_attribute "@@"))) attrs
          (if pc.aft = "in" then " " else ""))
     (fun () ->
        let patt_eq pc () =
@@ -565,14 +602,14 @@ value value_or_let_binding sequence_box pc (p, e, attrs) =
        [ Some se ->
            pprintf pc "%p%p"
              (sequence_box (fun pc () -> pprintf pc "%p " patt_eq ())) se
-             (hlist (pr_attribute "@@")) (uv attrs)
+             (pr_vala (hlist (pr_attribute "@@"))) attrs
        | None ->
            if pc.aft = "" then
              pprintf pc "%p@;%p%p" patt_eq () (comm_expr expr_wh) e
-               (hlist (pr_attribute "@@")) (uv attrs)
+               (pr_vala (hlist (pr_attribute "@@"))) attrs
            else
              pprintf pc "@[<a>%p@;%p%p@ @]" patt_eq () (comm_expr expr_wh) e
-               (hlist (pr_attribute "@@")) (uv attrs) ])
+               (pr_vala (hlist (pr_attribute "@@"))) attrs ])
 ;
 
 (* Pretty printing improvement (optional):
@@ -608,19 +645,19 @@ and hvseq pc se =
         [ Some params ->
             sprintf "%s%s" (comm_bef pc loc) (where_binding pc params)
         | None ->
-           let pel = List.map (fun x -> ("and",x)) pel in
+           let pel = Pcaml.vala_map (List.map (fun x -> ("and",x))) pel in
             sprintf "%s%s" (comm_bef pc loc)
               (pprintf pc "@[<i>%p@ %p@]" force_vertic (letop_up_to_in "let")
                  (rf, pel) (comm_expr expr_wh) e) ]
     | SE_let loc rf pel se ->
-       let pel = List.map (fun x -> ("and",x)) pel in
+       let pel = Pcaml.vala_map (List.map (fun x -> ("and",x))) pel in
         sprintf "%s%s" (comm_bef pc loc)
           (pprintf pc "@[<i>%p@ %p@]" force_vertic (letop_up_to_in "let") (rf, pel)
             loop se)
     | SE_let_str_item si se ->
-       let loc = MLast.loc_of_str_item si in
+       let loc = Pcaml.vala_mapa MLast.loc_of_str_item (fun _ -> Ploc.dummy) si in
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>let %p@ in %p@]" force_vertic str_item si loop se)
+          (pprintf pc "@[<i>let %p@ in %p@]" force_vertic (pr_vala str_item) si loop se)
     | SE_closed e se ->
         pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
           e loop se
@@ -640,11 +677,11 @@ and letop_up_to_in letop pc (rf, pel) =
   let pc = {(pc) with aft = ""} in
   horiz_vertic_if True
     (fun () ->
-       pprintf pc "%s %s%p in" letop (if rf then "rec " else "")
-         (hlist2 letop_binding (andop_before letop_binding)) pel)
+       pprintf pc "%s %p%p in" letop (pr_vala (pr_bool ("rec ",""))) rf
+         (pr_vala (hlist2 letop_binding (andop_before letop_binding))) pel)
     (fun () ->
-       pprintf pc "%s %s%pin" letop (if rf then "rec " else "")
-         (vlist2 letop_binding (andop_before letop_binding)) pel)
+       pprintf pc "%s %p%pin" letop (pr_vala (pr_bool ("rec ",""))) rf
+         (pr_vala (vlist2 letop_binding (andop_before letop_binding))) pel)
 and let_module_up_to_in pc (s, me) =
     let s = uidopt_to_maybe_blank s in
     pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
@@ -662,19 +699,19 @@ and where_binding pc (rf, p, e, body) =
   match sequencify body with
   [ Some se ->
       let bef pc () =
-        pprintf pc "%p@ where%s %p = " expr e (if rf then " rec" else "")
+        pprintf pc "%p@ where%p %p = " expr e (pr_vala (pr_bool (" rec", ""))) rf
           (hlist patt) pl
       in
       sequence_box bef pc se
   | None ->
-      pprintf pc "%p@ where%s %p =@;%p" expr e (if rf then " rec" else "")
+      pprintf pc "%p@ where%p %p =@;%p" expr e (pr_vala (pr_bool (" rec", ""))) rf
         (hlist patt) pl (comm_expr expr) body ]
 ;
 
 value expr_wh pc e =
   match
     match e with
-    [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+    [ <:expr< let $_flag:rf$ $_list:pel$ in $e$ >> ->
         can_be_displayed_as_where rf pel e
     | _ -> None ]
   with
@@ -688,11 +725,16 @@ value value_binding pc pe = value_or_let_binding sequence_box pc pe;
 value match_assoc force_vertic pc (p, w, e) =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   let patt_arrow pc (p, w) =
-    match w with
-    [ <:vala< Some e >> ->
-        pprintf pc "%p@ @[when@;%p %s@]" patt_as p expr e (arrow ())
-    | _ ->
-        pprintf pc "%p %s" patt_as p (arrow ()) ]
+    pr_vala_with
+      ~{vaant=(fun pc anti ->
+          pprintf pc "%p@ @[when@;%s %s@]" patt_as p anti (arrow ()))}
+      ~{vaval=(fun pc w ->
+          match w with
+            [ Some e ->
+              pprintf pc "%p@ @[when@;%p %s@]" patt_as p expr e (arrow ())
+            | _ ->
+               pprintf pc "%p %s" patt_as p (arrow ()) ])}
+      pc w
   in
   horiz_vertic_if force_vertic
     (fun () -> pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
@@ -830,59 +872,71 @@ value typevar pc s =
 ;
 
 value type_param pc (tv, vastr) =
-  let tv = uv tv in
-  let vastr = uv vastr in
   let tv_or_blank pc = fun [
     Some tv -> pprintf pc "%p" typevar tv
   | None -> pprintf pc "_" ] in
-  pprintf pc "%s%p"
-    vastr
-    tv_or_blank tv
+  pprintf pc "%p%p"
+    (pr_vala pr_string) vastr
+    (pr_vala tv_or_blank) tv
 ;
 
 value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
 ;
 
+value tdname pc (loc,v) =
+  pr_vala (fun pc v -> var_escaped pc (loc, v)) pc v
+;
+
+value prepend_nelist s pf pc l =
+  if l = [] then
+    pprintf pc "%p" pf l
+  else
+    pprintf pc "%s%p" s pf l
+;
+
+value prepend_space_nelist pf pc l =
+  prepend_nelist " " pf pc l
+;
+
 value type_decl pc td =
-  let ((_, tn), is_decl, tp, pf, te, cl, attrs) =
-    (uv td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, uv td.MLast.tdPrv,
+  let (tn, is_decl, tp, pf, te, cl, attrs) =
+    (td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
-  let asgn = if uv is_decl then "=" else ":=" in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p %s %s%p%p%p" var_escaped (loc, uv tn)
-         (if uv tp = [] then "" else " ")
-         (hlist type_param) (uv tp)
-         asgn
-         (if pf then "private " else "") ctyp te
-         (hlist type_constraint) (uv cl)
-        (hlist (pr_attribute "@@")) (uv attrs))
+       pprintf pc "%p%p %p %p%p%p%p" (pr_vala tdname) tn
+         (pr_vala (prepend_space_nelist (hlist type_param))) tp
+         (pr_vala (pr_bool ("=",":="))) is_decl
+         (pr_vala (pr_bool ("private ",""))) pf
+         ctyp te
+         (pr_vala (hlist type_constraint)) cl
+        (pr_vala (hlist (pr_attribute "@@"))) attrs)
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p %s@;%s%p%p%p" var_escaped (loc, uv tn)
-           (if uv tp = [] then "" else " ")
-           (hlist type_param) (uv tp)
-           asgn
-           (if pf then "private " else "") ctyp te
-           (hlist type_constraint) (uv cl)
-           (hlist (pr_attribute "@@")) (uv attrs)
+         pprintf pc "%p%p %p@;%p%p%p%p" (pr_vala tdname) tn
+           (pr_vala (prepend_space_nelist (hlist type_param))) tp
+           (pr_vala (pr_bool ("=",":="))) is_decl
+           (pr_vala (pr_bool ("private ",""))) pf
+           ctyp te
+           (pr_vala (hlist type_constraint)) cl
+           (pr_vala (hlist (pr_attribute "@@"))) attrs
        else
-         pprintf pc "@[<a>%p%s%p %s@;%s%p%p%p@ @]" var_escaped
-           (loc, uv tn) (if uv tp = [] then "" else " ")
-           (hlist type_param) (uv tp)
-           asgn
-           (if pf then "private " else "") ctyp te
-           (hlist type_constraint) (uv cl)
-           (hlist (pr_attribute "@@")) (uv attrs))
+         pprintf pc "@[<a>%p%p %p@;%p%p%p%p@ @]" (pr_vala tdname) tn
+           (pr_vala (prepend_space_nelist (hlist type_param))) tp
+           (pr_vala (pr_bool ("=",":="))) is_decl
+           (pr_vala (pr_bool ("private ",""))) pf
+           ctyp te
+           (pr_vala (hlist type_constraint)) cl
+           (pr_vala (hlist (pr_attribute "@@"))) attrs)
 ;
 
 value label_decl pc (loc, l, m, t, attrs) =
   pprintf pc "%p :%s@;%p%p" var_escaped (loc, l)
     (if m then " mutable" else "") ctyp_below_alg_attribute t
-    (hlist (pr_attribute "@")) (uv attrs)
+    (pr_vala (hlist (pr_attribute "@"))) attrs
 ;
 
 value typevars_binder pc = fun [
@@ -891,39 +945,38 @@ value typevars_binder pc = fun [
 ]
 ;
 
+value pr_rto pc rto =
+  match rto with [
+      None -> pprintf pc ""
+    | Some rt -> pprintf pc ": %p" ctyp_below_alg_attribute rt
+    ]
+;
+
+value pr_list_vala pr_nil pr_cons pc x =
+  if Pcaml.vala_mapa (fun [ [] -> True | _ -> False ]) (fun _ -> False) x then
+    pr_nil pc ()
+  else pr_cons pc x
+;
+
 value cons_decl pc = fun [
   <:constructor< $_uid:c$ of $_list:tyvars$ . $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
  ->
-  let c = uv c in
-  let tl = uv tl in
-  if tl = [] then do {
-    match (uv tyvars, uv rto) with
-      [ ([], Some rt) -> pprintf pc "%p : %p%p" cons_escaped c ctyp_below_alg_attribute rt
-                     (hlist (pr_attribute "@")) (uv alg_attrs)
-      | (l, Some rt) -> pprintf pc "%p : %p%p%p" cons_escaped c typevars_binder l ctyp_below_alg_attribute rt
-                     (hlist (pr_attribute "@")) (uv alg_attrs)
-      | (_, None) -> pprintf pc "%p%p" cons_escaped c
-                  (hlist (pr_attribute "@")) (uv alg_attrs)
-    ]
-  }
-  else do {
-    match (uv tyvars, uv rto) with
-      [ ([], Some rt) ->
-        let tl = List.map (fun t -> (t, " and")) tl in
-        pprintf pc "%p of@;<1 4>%p : %p%p" cons_escaped c (plist ctyp_below_alg_attribute 2) tl
-          ctyp_below_alg_attribute rt
-          (hlist (pr_attribute "@")) (uv alg_attrs)
-      | (l, Some rt) ->
-        let tl = List.map (fun t -> (t, " and")) tl in
-        pprintf pc "%p of@;<1 4>%p%p : %p%p" cons_escaped c typevars_binder l (plist ctyp_below_alg_attribute 2) tl
-          ctyp_below_alg_attribute rt
-          (hlist (pr_attribute "@")) (uv alg_attrs)
-      | (_, None) ->
-         let tl = List.map (fun t -> (t, " and")) tl in
-         pprintf pc "%p of@;<1 4>%p%p" cons_escaped c (plist ctyp_below_alg_attribute 2) tl
-           (hlist (pr_attribute "@")) (uv alg_attrs)
-      ]
-  }
+ pr_list_vala
+   (fun pc () ->
+     pprintf pc "%p %p%p%p"
+       (pr_vala cons_escaped) c
+       (pr_vala typevars_binder) tyvars
+       (pr_vala pr_rto) rto
+       (pr_vala (hlist (pr_attribute "@"))) alg_attrs)
+   (fun pc tl ->
+     let tl = Pcaml.vala_map (List.map (fun t -> (t, " and"))) tl in
+     pprintf pc "%p of@;<1 4>%p%p %p%p"
+       (pr_vala cons_escaped) c
+       (pr_vala typevars_binder) tyvars
+       (pr_vala (plist ctyp_below_alg_attribute 2)) tl
+       (pr_vala pr_rto) rto
+       (pr_vala (hlist (pr_attribute "@"))) alg_attrs)
+  pc tl
 ]
 ;
 
@@ -961,32 +1014,30 @@ value extension_constructors loc pc vdl =
 
 value type_extension loc pc te =
   let (tn, tp, pf, ecstrs, attrs) =
-    (uv te.MLast.teNam, te.MLast.tePrm, uv te.MLast.tePrv,
+    (te.MLast.teNam, te.MLast.tePrm, te.MLast.tePrv,
      te.MLast.teECs, te.MLast.teAttributes)
   in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p += %s[ %p ]%p" longident_lident tn
-         (if uv tp = [] then "" else " ")
-         (hlist type_param) (uv tp)
-         (if pf then "private " else "")
-         (extension_constructors loc) (uv ecstrs)
-         (hlist (pr_attribute "@@")) (uv attrs))
+       pprintf pc "%p%p += %p[ %p ]%p"
+         (pr_vala longident_lident) tn
+         (pr_vala (prepend_space_nelist (hlist type_param))) tp
+         (pr_vala (pr_bool ("private ",""))) pf
+         (pr_vala (extension_constructors loc)) ecstrs
+         (pr_vala (hlist (pr_attribute "@@"))) attrs)
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p +=@;%s[ %p ]%p" longident_lident tn
-           (if uv tp = [] then "" else " ")
-           (hlist type_param) (uv tp)
-           (if pf then "private " else "")
-           (extension_constructors loc) (uv ecstrs)
-           (hlist (pr_attribute "@@")) (uv attrs)
+         pprintf pc "%p%p +=@;%p[ %p ]%p" (pr_vala longident_lident) tn
+           (pr_vala (prepend_space_nelist (hlist type_param))) tp
+           (pr_vala (pr_bool ("private ",""))) pf
+           (pr_vala (extension_constructors loc)) ecstrs
+           (pr_vala (hlist (pr_attribute "@@"))) attrs
        else
-         pprintf pc "@[<a>%p%s%p +=@;%s[ %p ]%p@ @]" longident_lident
-           tn (if uv tp = [] then "" else " ")
-           (hlist type_param) (uv tp)
-           (if pf then "private " else "")
-           (extension_constructors loc) (uv ecstrs)
-           (hlist (pr_attribute "@@")) (uv attrs))
+         pprintf pc "@[<a>%p%p +=@;%p[ %p ]%p@ @]" (pr_vala longident_lident) tn
+           (pr_vala (prepend_space_nelist (hlist type_param))) tp
+           (pr_vala (pr_bool ("private ",""))) pf
+           (pr_vala (extension_constructors loc)) ecstrs
+           (pr_vala (hlist (pr_attribute "@@"))) attrs)
 ;
 
 value has_cons_with_params vdl =
@@ -1165,15 +1216,23 @@ value expr_short pc x =
 (* definitions of printers *)
 
 value external_decl pc (loc, n, tyvars, t, sl, attrs) =
-  pprintf pc "external %p :@;%p%p = %s%p" var_escaped (loc, n) typevars_binder tyvars ctyp t
-    (hlist string {(pc) with bef = ""; aft = ""} sl)
-    (hlist (pr_attribute "@@")) attrs
+  pprintf pc "external %p :@;%p%p = %s%p" (pr_vala var_escaped_noloc) n
+    (pr_vala_with
+       ~{vaant=(fun pc anti -> pprintf pc "%s" anti)}
+       ~{vaval=typevars_binder}) tyvars
+    ctyp t
+    (pr_vala (hlist qstring) {(pc) with bef = ""; aft = ""} sl)
+    (pr_vala (hlist (pr_attribute "@@"))) attrs
 ;
 
 value external_decl_original pc (loc, n, tyvars, t, sl, attrs) =
-  pprintf pc "external ( %s ) :@;%p%p = %s%p" n typevars_binder tyvars ctyp t
-    (hlist string {(pc) with bef = ""; aft = ""} sl)
-    (hlist (pr_attribute "@@")) attrs
+  pprintf pc "external ( %p ) :@;%p%p = %s%p" (pr_vala pr_string) n
+    (pr_vala_with
+       ~{vaant=(fun pc anti -> pprintf pc "%s" anti)}
+       ~{vaval=typevars_binder}) tyvars
+    ctyp t
+    (pr_vala (hlist qstring) {(pc) with bef = ""; aft = ""} sl)
+    (pr_vala (hlist (pr_attribute "@@"))) attrs
 ;
 
 value exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs) =
@@ -1212,30 +1271,28 @@ value functor_parameter_unvala arg =
   ]
 ;
 
+value pr_opt somepr noneval pc x =
+  match x with [
+      None -> pprintf pc "%s" noneval
+    | Some x -> pprintf pc "%p" somepr x
+    ]
+;
+
+
 value str_module pref pc (m, me, item_attrs) =
-  let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, me) =
     loop me where rec loop =
       fun
-      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
+      [ <:module_expr< functor $_fp:arg$ -> $me$ >> ->
           let (mal, me) = loop me in
-          ([functor_parameter_unvala arg :: mal], me)
+          ([arg :: mal], me)
       | me -> ([], me) ]
   in
-  let module_arg pc = fun [
-    Some (Some s, mt) -> pprintf pc "(%s :@;<1 1>%p)" s module_type mt
-  | Some (None, mt) ->
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-      invalid_arg "pr_r.ml: str_module_pref: blank module-name in functor module-type is unsupported"
-    ELSE
-      pprintf pc "(_ :@;<1 1>%p)" module_type mt
-    END
+  let module_arg pc x = match x with [
+    Some (idopt, mt) ->
+     pprintf pc "(%p :@;<1 1>%p)" (pr_vala (pr_opt (pr_vala pr_string) "_")) idopt module_type mt
   | None -> 
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-      invalid_arg "pr_r.ml: str_module_pref: empty module-arg () in functor-expression is unsupported"
-    ELSE
-      pprintf pc "()"
-    END
+     pprintf pc "()"
   ] in
   let (me, mto) =
     match me with
@@ -1245,93 +1302,78 @@ value str_module pref pc (m, me, item_attrs) =
   if pc.aft = "" then
     match mto with
     [ Some mt ->
-        pprintf pc "%s %s%s%p :@;%p =@;%p%p" pref m
-          (if mal = [] then "" else " ") (hlist module_arg) mal
+        pprintf pc "%s %p%s%p :@;%p =@;%p%p" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m
+          (if mal = [] then "" else " ") (hlist (pr_vala module_arg)) mal
           module_type mt module_expr me
-          (hlist (pr_attribute "@@")) (uv item_attrs)
+          (pr_vala (hlist (pr_attribute "@@"))) item_attrs
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
-        pprintf pc "%s %s%p =@;%p%p" pref m (plistb module_arg 2) mal
+        pprintf pc "%s %p%p =@;%p%p" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m (plistb (pr_vala module_arg) 2) mal
           module_expr me
-          (hlist (pr_attribute "@@")) (uv item_attrs)
+          (pr_vala (hlist (pr_attribute "@@"))) item_attrs
     ]
   else
     match mto with
     [ Some mt ->
-        pprintf pc "%s %s%s%p :@;%p =@;%p%p@;<0 0>" pref m
-          (if mal = [] then "" else " ") (hlist module_arg) mal
+        pprintf pc "%s %p%s%p :@;%p =@;%p%p@;<0 0>" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m
+          (if mal = [] then "" else " ") (hlist (pr_vala module_arg)) mal
           module_type mt module_expr me
-          (hlist (pr_attribute "@@")) (uv item_attrs)
+          (pr_vala (hlist (pr_attribute "@@"))) item_attrs
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
-        pprintf pc "@[<a>%s %s%p =@;%p%p@;<0 0>@]" pref m (plistb module_arg 2)
+        pprintf pc "@[<a>%s %p%p =@;%p%p@;<0 0>@]" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m (plistb (pr_vala module_arg) 2)
           mal module_expr me
-          (hlist (pr_attribute "@@")) (uv item_attrs)
+          (pr_vala (hlist (pr_attribute "@@"))) item_attrs
     ]
 ;
 
-value sig_module_or_module_type pref defs pc ((m : option string), mt, item_attrs) =
-  let m = match m with [ None -> "_" | Some s -> s ] in
+value sig_module_or_module_type pref defs pc ((m : Ploc.vala (option (Ploc.vala string))), mt, item_attrs) =
   let (mal, mt) =
     loop mt where rec loop =
       fun
-      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
+      [ <:module_type< functor $_fp:arg$ -> $mt2$ >> ->
           let (mal, mt) = loop mt2 in
-          ([functor_parameter_unvala arg :: mal], mt)
+          ([arg :: mal], mt)
       | mt -> ([], mt) ]
   in
-  let module_arg pc = fun [
-    Some (Some s, mt) ->
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-      invalid_arg "pr_r.ml: sig_module_or_module_type: blank module-name in functor module-type is unsupported"
-    ELSE
-      pprintf pc "(%s :@;<1 1>%p)" s module_type mt
-    END
-  | Some (None, mt) ->
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-      invalid_arg "pr_r.ml: sig_module_or_module_type: empty module-arg () in functor module-type is unsupported"
-    ELSE
-      pprintf pc "(_ :@;<1 1>%p)" module_type mt
-    END
-  | None -> pprintf pc "()"
+  let module_arg pc x = match x with [
+    Some (idopt, mt) ->
+     pprintf pc "(%p :@;<1 1>%p)" (pr_vala (pr_opt (pr_vala pr_string) "_")) idopt module_type mt
+  | None -> 
+     pprintf pc "()"
   ] in
   let mal = List.map (fun ma -> (ma, "")) mal in
   if pc.aft = "" then
-    pprintf pc "%s %s%p %s@;%p%p" pref m (plistb module_arg 2) mal defs
+    pprintf pc "%s %p%p %s@;%p%p" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m (plistb (pr_vala module_arg) 2) mal defs
       module_type_level_sig mt
-      (hlist (pr_attribute "@@")) (uv item_attrs)
+      (pr_vala (hlist (pr_attribute "@@"))) item_attrs
   else
-    pprintf pc "@[<a>%s %s%p %s@;%p%p@;<0 0>@]" pref m (plistb module_arg 2) mal
+    pprintf pc "@[<a>%s %p%p %s@;%p%p@;<0 0>@]" pref (pr_vala (pr_opt (pr_vala pr_string) "_")) m (plistb (pr_vala module_arg) 2) mal
       defs module_type_level_sig mt
-      (hlist (pr_attribute "@@")) (uv item_attrs)
+      (pr_vala (hlist (pr_attribute "@@"))) item_attrs
 ;
 
 value str_or_sig_functor pc farg module_expr_or_type met =
+  let pp_sopt p sopt =
+    pprintf pc "%p" (pr_vala (pr_opt (pr_vala pr_string)  "_")) sopt in
+  let pp_farg1 pc (sopt, mt) =
+    pprintf pc "(%p :@;<1 1>%p)" pp_sopt sopt module_type mt
+  in
+  pprintf pc "functor@;@[%p@]@ %s@;%p" (pr_vala (pr_opt pp_farg1 "()")) farg (arrow ()) module_expr_or_type met
+(*
   match farg with [
-    Some (Some s, mt) -> pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ %s@;%p" s module_type mt
+    Some (sopt, mt) -> pprintf pc "functor@;@[%p@]@ %s@;%p" pp_farg1 (sopt,mt) 
       (arrow ()) module_expr_or_type met
-  | Some (None, mt) ->
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    invalid_arg "pr_r.ml: str_or_sig_functor: blank module-name in functor-expression is unsupported"
-    ELSE
-    pprintf pc "functor@;@[(_ :@;<1 1>%p)@]@ %s@;%p" module_type mt
-      (arrow ()) module_expr_or_type met
-    END
   | None ->
-    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    invalid_arg "pr_r.ml: str_or_sig_functor: empty module-arg () in functor-expression is unsupported"
-    ELSE
     pprintf pc "functor@;@[()@]@ %s@;%p"
       (arrow ()) module_expr_or_type met
-    END
   ]
+ *)
 ;
 
 value con_typ_pat pc (loc, sl, tpl) =
-  if tpl = [] then
-    pprintf pc "%p" longident_lident sl
-  else
-    pprintf pc "%p %p" longident_lident sl (hlist type_param) tpl
+  pprintf pc "%p%p" (pr_vala longident_lident) sl
+    (pr_vala (prepend_space_nelist (hlist type_param))) tpl
 ;
 
 value string_eval s =
@@ -1352,19 +1394,19 @@ value string_eval s =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr:< type $lilongid:sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      pprintf pc "type %p =@;%s%p" con_typ_pat (loc, sl, tpl)
-        (if pf then "private " else "") ctyp t
-  | <:with_constr:< type $lilongid:sl$ $list:tpl$ := $t$ >> ->
+  [ <:with_constr:< type $_lilongid:sl$ $_list:tpl$ = $_flag:pf$ $t$ >> ->
+      pprintf pc "type %p =@;%p%p" con_typ_pat (loc, sl, tpl)
+        (pr_vala (pr_bool ("private ",""))) pf ctyp t
+  | <:with_constr:< type $_lilongid:sl$ $_list:tpl$ := $t$ >> ->
       pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp t
-  | <:with_constr:< module $longid:sl$ = $me$ >> ->
-      pprintf pc "module %p =@;%p" longident sl module_expr me
-  | <:with_constr:< module $longid:sl$ := $me$ >> ->
-      pprintf pc "module %p :=@;%p" longident sl module_expr me
-  | <:with_constr:< module type $longid:sl$ = $mt$ >> ->
-      pprintf pc "module type %p =@;%p" longident sl module_type mt
-  | <:with_constr:< module type $longid:sl$ := $mt$ >> ->
-      pprintf pc "module type %p :=@;%p" longident sl module_type mt
+  | <:with_constr:< module $_longid:sl$ = $me$ >> ->
+      pprintf pc "module %p =@;%p" (pr_vala longident) sl module_expr me
+  | <:with_constr:< module $_longid:sl$ := $me$ >> ->
+      pprintf pc "module %p :=@;%p" (pr_vala longident) sl module_expr me
+  | <:with_constr:< module type $_longid:sl$ = $mt$ >> ->
+      pprintf pc "module type %p =@;%p" (pr_vala longident) sl module_type mt
+  | <:with_constr:< module type $_longid:sl$ := $mt$ >> ->
+      pprintf pc "module type %p :=@;%p" (pr_vala longident) sl module_type mt
   | IFDEF STRICT THEN
       x ->
          not_impl "with_constraint" pc x
@@ -1399,19 +1441,21 @@ value map_option f =
 
 value qs pc s = pprintf pc "\"%s\"" s ;
 
+value pr_attrid pc (_,id) = qs pc id ;
+
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
-      [ <:attribute_body< $attrid:(_, id)$ $structure:st$ >> ->
-        pprintf pc "%p%p" qs id (hlist (space_before (semi_after str_item))) st
-      | <:attribute_body< $attrid:(_, id)$ : $signature:si$ >> ->
-        pprintf pc "%p:%p" qs id (hlist (space_before (semi_after sig_item))) si
-      | <:attribute_body< $attrid:(_, id)$ : $type:ty$ >> ->
-        pprintf pc "%p:%p" qs id (space_before ctyp) ty
-      | <:attribute_body< $attrid:(_, id)$ ? $patt:p$ >> ->
-        pprintf pc "%p?%p" qs id (space_before patt) p
-      | <:attribute_body< $attrid:(_, id)$ ? $patt:p$ when $expr:e$ >> ->
-        pprintf pc "%p?%p when %p" qs id (space_before patt) p expr e
+      [ <:attribute_body< $_attrid:aid$ $_structure:st$ >> ->
+        pprintf pc "%p%p" (pr_vala pr_attrid) aid (pr_vala (hlist (space_before (semi_after str_item)))) st
+      | <:attribute_body< $_attrid:aid$ : $_signature:si$ >> ->
+        pprintf pc "%p:%p" (pr_vala pr_attrid) aid (pr_vala (hlist (space_before (semi_after sig_item)))) si
+      | <:attribute_body< $_attrid:aid$ : $_type:ty$ >> ->
+        pprintf pc "%p:%p" (pr_vala pr_attrid) aid (pr_vala (space_before ctyp)) ty
+      | <:attribute_body< $_attrid:aid$ ? $_patt:p$ >> ->
+        pprintf pc "%p?%p" (pr_vala pr_attrid) aid (pr_vala (space_before patt)) p
+      | <:attribute_body< $_attrid:aid$ ? $_patt:p$ when $_expr:e$ >> ->
+        pprintf pc "%p?%p when %p" (pr_vala pr_attrid) aid (pr_vala (space_before patt)) p (pr_vala expr) e
       ]
     ]
     ;
@@ -1445,35 +1489,48 @@ EXTEND_PRINTER
                  (if_then force_vertic curr) (e1, e2)
                  (loop_else_if force_vertic curr) eel
                  (ending_else force_vertic curr) e3)
-      | <:expr< fun [ $list:pwel$ ] >> ->
-          match pwel with
-          [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
-              let (pl, e1) = expr_fun_args e1 in
-              let pl = [p1 :: pl] in
-              horiz_vertic
-                (fun () ->
-                   pprintf pc "fun %p %s %p" (hlist patt) pl (arrow ()) curr e1)
-                (fun () ->
-                   let pl = List.map (fun p -> (p, "")) pl in
-                   match sequencify e1 with
-                   [ Some se ->
-                       sequence_box (fun pc () -> pprintf pc "fun %p -> "
-                         (plist patt 4) pl) pc se
-                   | None ->
-                       pprintf pc "fun %p %s@;%p" (plist patt 4) pl (arrow ())
-                         (comm_expr curr) e1 ])
-          | [] -> pprintf pc "fun []"
-          | pwel -> pprintf pc "@[<b>fun@ %p@]" match_assoc_list pwel ]
-      | <:expr< try $e1$ with [ $list:pwel$ ] >> |
-        <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
+      | <:expr< fun [ $_list:pwel$ ] >> ->
+        pr_list_vala
+          (fun pc () -> pprintf pc "fun []")
+          (fun pc pwel -> 
+            pr_vala_with
+              ~{vaant=(fun pc anti -> pprintf pc "@[<b>fun@ %s@]" anti)}
+              ~{vaval=(fun pc pwel ->
+            match pwel with
+              [ [ (p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
+                  let (pl, e1) = expr_fun_args e1 in
+                  let pl = [p1 :: pl] in
+                  horiz_vertic
+                    (fun () ->
+                      pprintf pc "fun %p %s %p" (hlist patt) pl (arrow ()) curr e1)
+                    (fun () ->
+                      let pl = List.map (fun p -> (p, "")) pl in
+                      match sequencify e1 with
+                        [ Some se ->
+                          sequence_box (fun pc () -> pprintf pc "fun %p -> "
+                                                       (plist patt 4) pl) pc se
+                        | None ->
+                           pprintf pc "fun %p %s@;%p" (plist patt 4) pl (arrow ())
+                             (comm_expr curr) e1 ])
+              | pwel -> pprintf pc "@[<b>fun@ %p@]" match_assoc_list pwel ])}
+           pc pwel
+          )
+        pc pwel
+
+      | <:expr< try $e1$ with [ $_list:pwel$ ] >> |
+        <:expr< match $e1$ with [ $_list:pwel$ ] >> as e ->
           let expr_wh =
             if flag_where_after_match.val then expr_wh else curr
           in
           let op =
             match e with
-            [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
+            [ <:expr< try $_$ with [ $_list:_$ ] >> -> "try"
             | _ -> "match" ]
           in
+          pr_vala_with
+            ~{vaant=(fun pc anti ->
+                pprintf pc "%s %p with %s" op expr_wh e1 anti)}
+            ~{vaval=(fun pc pwel ->
           match pwel with
           [ [(p, wo, e)] when is_irrefut_patt p ->
               horiz_vertic
@@ -1527,16 +1584,16 @@ EXTEND_PRINTER
                               se match_assoc_list pwel)
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
-                         match_assoc_list pwel ]) ]
+                         match_assoc_list pwel ]) ])} pc pwel
 
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
+      | <:expr:< let $_flag:rf$ $_list:pel$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None ->
               let expr_wh =
                 if flag_where_after_in.val then expr_wh else curr
               in
-              let pel = List.map (fun x -> ("and",x)) pel in
+              let pel = Pcaml.vala_map (List.map (fun x -> ("and",x))) pel in
               pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
@@ -1547,36 +1604,49 @@ EXTEND_PRINTER
             | (pat, exp) -> [ ("andop_unused", (pat, exp, <:vala< [] >>))::acc ]
         ] in
         let pel = deconstruct_ands [] (bindpat, arg) in
-        pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)
+        pprintf pc "%p@ %p" (letop_up_to_in letop) (<:vala< False >>, <:vala< pel >>)
           curr body
 
-      | <:expr< let $stri:si$ in $e$ >> as ge ->
+      | <:expr< let $_stri:si$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_str_item_up_to_in si curr e ]
-      | <:expr< do { $list:el$ } >> ->
+          | None -> pprintf pc "%p@ %p" (pr_vala let_str_item_up_to_in) si curr e ]
+      | <:expr< do { $_list:el$ } >> ->
+          pr_vala_with
+            ~{vaant=(fun pc anti -> pprintf pc "do { %s }" anti)}
+            ~{vaval=(fun pc el ->
           match el with
           [ [] -> pprintf pc "do {}"
           | [e :: el] ->
               let se = seq_of_expr_ne_list e el in
-              pprintf pc "do {@;%p@ }" hvseq se ]
-      | <:expr:< while $e1$ do { $list:el$ } >> ->
+              pprintf pc "do {@;%p@ }" hvseq se ])}
+            pc el
+      | <:expr:< while $e1$ do { $_list:el$ } >> ->
           let bef pc () = pprintf pc "while@;%p@ " curr e1 in
+          pr_vala_with
+            ~{vaant=(fun pc anti -> pprintf pc "%pdo { %s }" bef () anti)}
+            ~{vaval=(fun pc el ->
           match el with
           [ [] -> pprintf pc "%pdo {}" bef ()
           | [e :: el] ->
               let se = seq_of_expr_ne_list e el in
-              pprintf pc "%pdo {@;%p@ }" bef () hvseq se ]
-      | <:expr:< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+              pprintf pc "%pdo {@;%p@ }" bef () hvseq se ])}
+            pc el
+      | <:expr:< for $v$ = $e1$ $_to:d$ $e2$ do { $_list:el$ } >> ->
           let bef pc () =
-            pprintf pc "@[<a>for %p = %p %s@;<1 4>%p@ @]" patt v curr e1
-              (if d then "to" else "downto") curr e2
+            pprintf pc "@[<a>for %p = %p %p@;<1 4>%p@ @]" patt v curr e1
+              (pr_vala (pr_bool ("to", "downto"))) d curr e2
           in
+          pr_vala_with
+            ~{vaant=(fun pc anti -> pprintf pc "%pdo { %s }" bef () anti)}
+            ~{vaval=(fun pc el ->
           match el with
           [ [] -> pprintf pc "%pdo {}" bef ()
           | [e :: el] ->
               let se = seq_of_expr_ne_list e el in
-              pprintf pc "@[<a>%pdo {@;%p@ }@]" bef () hvseq se ] ]
+              pprintf pc "@[<a>%pdo {@;%p@ }@]" bef () hvseq se ])}
+            pc el
+      ]
     | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
@@ -1613,8 +1683,8 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "alg_attribute"
-      [ <:expr< $e$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p[@%p]" curr e attribute_body attr
+      [ <:expr< $e$ [@ $_attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr e (pr_vala attribute_body) attr
       ]
 
     | "add"
@@ -1686,39 +1756,39 @@ EXTEND_PRINTER
           <:expr< $uid:"[]"$ >> -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
         | <:expr< [ $_$ :: $_$ ] >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
-        | <:expr< { $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-        | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-        | <:expr:< $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" longident li var_escaped (loc,v)
-        | <:expr< ($list:el$) >> ->
-          let el = List.map (fun e -> (e, ",")) el in
-          pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li (plist expr 0) el
+        | <:expr< { $_list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | <:expr< {($_$) with $_list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | <:expr:< $_lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" longident li (pr_vala var_escaped_noloc) v
+        | <:expr< ($_list:el$) >> ->
+          let el = Pcaml.vala_map (List.map (fun e -> (e, ","))) el in
+          pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li (pr_vala (plist expr 0)) el
 
         | e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
         ]
 
-      | <:expr:< $e$ . $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" curr e var_escaped (loc,v)
-      | <:expr< $e$ . $lilongid:lili$ >> -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident lili
+      | <:expr:< $e$ . $_lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" curr e (pr_vala var_escaped_noloc) v
+      | <:expr< $e$ . $_lilongid:lili$ >> -> pprintf pc "%p.@;<0 0>%p" curr e (pr_vala longident_lident) lili
 
       | <:expr< $longid:li$ >> -> longident pc li
 
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p.(%p)" curr x expr_short y
-      | <:expr< $x$ $dotop:op$ ( $list:el$ ) >> ->
+      | <:expr< $x$ $_dotop:op$ ( $list:el$ ) >> ->
           let el = List.map (fun e -> (e, ";")) el in
-          pprintf pc "%p@;<0 0>%s(%p)" curr x op (plist expr_short 0) el
+          pprintf pc "%p@;<0 0>%p(%p)" curr x (pr_vala pr_string) op (plist expr_short 0) el
 
       | <:expr< $x$ .[ $y$ ] >> ->
           pprintf pc "%p.[%p]" curr x expr_short y
-      | <:expr< $x$ $dotop:op$ [ $list:el$ ] >> ->
-          let el = List.map (fun e -> (e, ";")) el in
-          pprintf pc "%p@;<0 0>%s[%p]" curr x op (plist expr_short 0) el
+      | <:expr< $x$ $_dotop:op$ [ $_list:el$ ] >> ->
+          let el = Pcaml.vala_map (List.map (fun e -> (e, ";"))) el in
+          pprintf pc "%p@;<0 0>%p[%p]" curr x (pr_vala pr_string) op (pr_vala (plist expr_short 0)) el
 
-      | <:expr< $e$ .{ $list:el$ } >> ->
-          let el = List.map (fun e -> (e, ",")) el in
-          pprintf pc "%p.{%p}" curr e (plist expr_short 0) el
-      | <:expr< $x$ $dotop:op$ { $list:el$ } >> ->
-          let el = List.map (fun e -> (e, ";")) el in
-          pprintf pc "%p@;<0 0>%s{%p}" curr x op (plist expr_short 0) el
+      | <:expr< $e$ .{ $_list:el$ } >> ->
+          let el = Pcaml.vala_map (List.map (fun e -> (e, ","))) el in
+          pprintf pc "%p.{%p}" curr e (pr_vala (plist expr_short 0)) el
+      | <:expr< $x$ $_dotop:op$ { $_list:el$ } >> ->
+          let el = Pcaml.vala_map (List.map (fun e -> (e, ";"))) el in
+          pprintf pc "%p@;<0 0>%p{%p}" curr x (pr_vala pr_string) op (pr_vala (plist expr_short 0)) el
       ]
     | "~-"
       [ <:expr< $lid:op$ $x$ >> as z ->
@@ -1727,22 +1797,26 @@ EXTEND_PRINTER
           pprintf pc "%s%p" op (unary in_ops curr) x
         else next pc z ]
     | "simple"
-      [ <:expr< ($list:el$) >> ->
-          let el = List.map (fun e -> (e, ",")) el in
-          pprintf pc "@[<1>(%p)@]" (plist expr 0) el
-      | <:expr< {$list:lel$} >> ->
-          let lxl = List.map (fun lx -> (lx, ";")) lel in
-          pprintf pc "@[{%p}@]" (plist (comm_patt_any record_binding) 1)
+      [ <:expr< ($_list:el$) >> ->
+          let el = Pcaml.vala_map (List.map (fun e -> (e, ","))) el in
+          pprintf pc "@[<1>(%p)@]" (pr_vala (plist expr 0)) el
+      | <:expr< {$_list:lel$} >> ->
+          let lxl = Pcaml.vala_map (List.map (fun lx -> (lx, ";"))) lel in
+          pprintf pc "@[{%p}@]" (pr_vala (plist (comm_patt_any record_binding) 1))
             lxl
-      | <:expr< {($e$) with $list:lel$} >> ->
-          let lxl = List.map (fun lx -> (lx, ";")) lel in
+      | <:expr< {($e$) with $_list:lel$} >> ->
+          let lxl = Pcaml.vala_map (List.map (fun lx -> (lx, ";"))) lel in
           pprintf pc "@[{(%p) with@ %p}@]" expr e
-            (plist (comm_patt_any record_binding) 1) lxl
-      | <:expr< [| $list:el$ |] >> ->
+            (pr_vala (plist (comm_patt_any record_binding) 1)) lxl
+      | <:expr< [| $_list:el$ |] >> ->
+         pr_vala_with
+           ~{vaant=(fun pc anti -> pprintf pc "[| %s |]" anti)}
+           ~{vaval=(fun pc el ->
           if el = [] then pprintf pc "[| |]"
           else
             let el = List.map (fun e -> (e, ";")) el in
-            pprintf pc "@[<3>[| %p |]@]" (plist expr 0) el
+            pprintf pc "@[<3>[| %p |]@]" (plist expr 0) el)}
+        pc el
       | <:expr< [$_$ :: $_$] >> as z ->
           let (xl, y, last_comm) = make_expr_list z in
           let xl = List.map (fun x -> (x, ";")) xl in
@@ -1758,33 +1832,44 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(module %p :@ %p)@]" module_expr me module_type mt
       |  <:expr< (module $me$) >> ->
           pprintf pc "(module %p)" module_expr me
-      | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
+      | <:expr< $_int:s$ >> | <:expr< $_flo:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
-          else pprintf pc "%s" s
-      | <:expr< $int32:s$ >> ->
+          else pprintf pc "%s" s)
+            pc s
+      | <:expr< $_int32:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sl)" s
-          else pprintf pc "%sl" s
-      | <:expr< $int64:s$ >> ->
+          else pprintf pc "%sl" s)
+            pc s
+      | <:expr< $_int64:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sL)" s
-          else pprintf pc "%sL" s
-      | <:expr< $nativeint:s$ >> ->
+          else pprintf pc "%sL" s)
+            pc s
+      | <:expr< $_nativeint:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
-          else pprintf pc "%sn" s
+          else pprintf pc "%sn" s)
+            pc s
       | <:expr< . >> -> pprintf pc "."
       | <:expr:< $lid:s$ >> when is_special_op s ->
           pprintf pc "( %s )" s
-      | <:expr:< $lid:s$ >> ->
-          var_escaped pc (loc, s)
+      | <:expr:< $_lid:s$ >> ->
+          (pr_vala var_escaped_noloc) pc s
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
-      | <:expr< $str:s$ >> ->
-          pprintf pc "\"%s\"" s
+      | <:expr< $_str:s$ >> ->
+          pr_vala (fun pc s -> pprintf pc "\"%s\"" s) pc s
       | <:expr< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
-      | <:expr< $chr:s$ >> ->
-          pprintf pc "'%s'" s
+      | <:expr< $_chr:s$ >> ->
+          pr_vala (fun pc s -> pprintf pc "'%s'" s) pc s
       | MLast.ExOlb loc _ _ | MLast.ExLab loc _ _ ->
           error loc "labels not pretty printed (in expr); add pr_ro.cmo"
+      | MLast.ExXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
+
       | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
         <:expr< $_$ := $_$ >> |
         <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
@@ -1811,8 +1896,8 @@ EXTEND_PRINTER
           in
           left_operator pc 0 unfold next z ]
     | "alg_attribute"
-      [ <:patt< $p$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p[@%p]" curr p attribute_body attr
+      [ <:patt< $p$ [@ $_attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr p (pr_vala attribute_body) attr
       ]
     | [ <:patt< exception $p$ >> ->
           pprintf pc "exception %p" next p
@@ -1834,27 +1919,31 @@ EXTEND_PRINTER
     | "dot"
       [ <:patt< $longid:li$ . $p$ >> -> pprintf pc "%p.%p" longident li curr p
       | <:patt< $longid:li$ >> -> pprintf pc "%p" longident li
-      | <:patt< $longid:li$ (type $list:l$) >> ->
-        pprintf pc "%p (type %p)" longident li (hlist lident) (List.map snd l)
+      | <:patt< $longid:li$ (type $_list:l$) >> ->
+        pprintf pc "%p (type %p)" longident li (pr_vala (hlist lident)) (Pcaml.vala_map (List.map snd) l)
       ]
     | "simple"
       [ <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
       | <:patt< ($x$ as $y$) >> ->
           pprintf pc "@[<1>(%p@ as %p)@]" patt x patt y
-      | <:patt< ($list:pl$) >> ->
-          let pl = List.map (fun p -> (p, ",")) pl in
-          pprintf pc "@[<1>(%p)@]" (plist patt 0) pl
-      | <:patt< ($list:pl$, ..) >> ->
-          let pl = List.map (fun p -> (p, ",")) pl in
-          pprintf pc "@[<1>(%p, ..)@]" (plist patt 0) pl
-      | <:patt< {$list:lpl$} >> ->
-          let lxl = List.map (fun lx -> (lx, ";")) lpl in
-          pprintf pc "@[<1>{%p}@]" (plist (binding patt) 0) lxl
-      | <:patt< [| $list:pl$ |] >> ->
+      | <:patt< ($_list:pl$, $_closed:clflag$) >> ->
+          let pl = Pcaml.vala_map (List.map (fun p -> (p, ","))) pl in
+          pprintf pc "@[<1>(%p%p)@]" (pr_vala (plist patt 0)) pl
+            (pr_vala (pr_bool ("",", .."))) clflag
+
+      | <:patt< {$_list:lpl$} >> ->
+          let lxl = Pcaml.vala_map (List.map (fun lx -> (lx, ";"))) lpl in
+          pprintf pc "@[<1>{%p}@]" (pr_vala (plist (binding patt) 0)) lxl
+      | <:patt< [| $_list:pl$ |] >> ->
+         pr_vala_with
+           ~{vaant=(fun pc anti -> pprintf pc "[| %s |]" anti)}
+           ~{vaval=(fun pc pl ->
           if pl = [] then pprintf pc "[| |]"
           else
             let pl = List.map (fun p -> (p, ";")) pl in
-            pprintf pc "@[<3>[| %p |]@]" (plist patt 0) pl
+            pprintf pc "@[<3>[| %p |]@]" (plist patt 0) pl)}
+           pc pl
+
       | <:patt< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_patt_list z in
           let xl = List.map (fun x -> (x, ";")) xl in
@@ -1866,38 +1955,46 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
-      | <:patt:< (type $lid:s$) >> ->
-          pprintf pc "(type %p)" var_escaped (loc, s)
-      | <:patt< (module $uidopt:s$ : $mt$) >> ->
-          let s = uidopt_to_maybe_blank s in
-          pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
-      | <:patt< (module $uidopt:s$) >> ->
-          let s = match s with [ None -> "_" | Some s -> uv s ] in
-          pprintf pc "(module %s)" s
-      | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
+      | <:patt:< (type $_lid:s$) >> ->
+          pprintf pc "(type %p)" (pr_vala var_escaped_noloc) s
+      | <:patt< (module $_uidopt:s$ : $mt$) >> ->
+          pprintf pc "@[<1>(module %p :@ %p)@]" (pr_vala (pr_opt (pr_vala pr_string) "_")) s module_type mt
+      | <:patt< (module $_uidopt:s$) >> ->
+          pprintf pc "(module %p)" (pr_vala (pr_opt (pr_vala pr_string) "_")) s
+      | <:patt< $_int:s$ >> | <:patt< $_flo:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
-          else pprintf pc "%s" s
-      | <:patt< $int32:s$ >> ->
+          else pprintf pc "%s" s)
+            pc s
+      | <:patt< $_int32:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sl)" s
-          else pprintf pc "%sl" s
-      | <:patt< $int64:s$ >> ->
+          else pprintf pc "%sl" s)
+            pc s
+      | <:patt< $_int64:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sL)" s
-          else pprintf pc "%sL" s
-      | <:patt< $nativeint:s$ >> ->
+          else pprintf pc "%sL" s)
+            pc s
+      | <:patt< $_nativeint:s$ >> ->
+          pr_vala (fun pc s ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
-          else pprintf pc "%sn" s
+          else pprintf pc "%sn" s)
+            pc s
       | <:patt< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | <:patt:< $lid:s$ >> when is_special_op s ->
           pprintf pc "( %s )" s
-      | <:patt:< $lid:s$ >> ->
-          var_escaped pc (loc, s)
-      | <:patt< $chr:s$ >> ->
-          pprintf pc "'%s'" s
-      | <:patt< $str:s$ >> ->
-          pprintf pc "\"%s\"" s
+      | <:patt:< $_lid:s$ >> ->
+          (pr_vala var_escaped_noloc) pc s
+      | <:patt< $_chr:s$ >> ->
+          pr_vala (fun pc s -> pprintf pc "'%s'" s) pc s
+      | <:patt< $_str:s$ >> ->
+          pr_vala (fun pc s -> pprintf pc "\"%s\"" s) pc s
       | <:patt< _ >> ->
           pprintf pc "_"
+      | MLast.PaXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       | MLast.PaLab loc _ _ | MLast.PaOlb loc _ _ ->
           error loc "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
@@ -1917,12 +2014,16 @@ EXTEND_PRINTER
   ;
   pr_ctyp:
     [ "top"
-      [ <:ctyp< $x$ == $priv:pf$ $y$ >> ->
-          let op = if pf then "== private" else "==" in
-          operator pc next next 2 op x y ]
+      [ <:ctyp< $x$ == $_priv:pf$ $y$ >> ->
+       let spc = Pcaml.vala_mapa (fun [ False -> "" | True -> " " ]) (fun _ -> " ") pf in
+       pprintf pc "%p ==%s%p@;%p"
+         next x
+         spc
+         (pr_vala (pr_bool ("private",""))) pf
+         next y ]
     | "alg_attribute"
-      [ <:ctyp< $ct$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      [ <:ctyp< $ct$ [@ $_attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct (pr_vala attribute_body) attr
       ]
     | "below_alg_attribute"
       [ z -> next pc z ]
@@ -1931,10 +2032,10 @@ EXTEND_PRINTER
       [ <:ctyp< $t1$ as $t2$ >> ->
           pprintf pc "%p@ as %p" curr t1 next t2 ]
     | "poly"
-      [ <:ctyp< ! $list:pl$ . $t$ >> ->
-          pprintf pc "! %p .@;%p" (hlist typevar) pl ctyp t
-      | <:ctyp:< type $list:pl$ . $t$ >> ->
-          pprintf pc "type %p .@;%p" (hlist lident) pl ctyp t ]
+      [ <:ctyp< ! $_list:pl$ . $t$ >> ->
+          pprintf pc "! %p .@;%p" (pr_vala (hlist typevar)) pl ctyp t
+      | <:ctyp:< type $_list:pl$ . $t$ >> ->
+          pprintf pc "type %p .@;%p" (pr_vala (hlist lident)) pl ctyp t ]
     | "arrow"
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
@@ -1953,19 +2054,22 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [
-        <:ctyp< $longid:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
+        <:ctyp< $longid:me$ . $_lid:lid$ >> -> pprintf pc "%p.%p" longident me (pr_vala pr_string) lid
       | <:ctyp< $longid:me$ . ( $t$ ) >> -> pprintf pc "%p.( %p )" longident me ctyp t
       ]
     | "simple"
-      [ <:ctyp< { $list:ltl$ } >> ->
+      [ <:ctyp< { $_list:ltl$ } >> ->
           horiz_vertic
             (fun () ->
                pprintf pc "{ %p }"
-                 (hlistl (semi_after label_decl) label_decl) ltl)
+                 (pr_vala (hlistl (semi_after label_decl) label_decl)) ltl)
             (fun () ->
                pprintf pc "@[<2>{ %p }@]"
-                 (vlistl (semi_after label_decl) label_decl) ltl)
-      | <:ctyp< [ $list:vdl$ ] >> ->
+                 (pr_vala (vlistl (semi_after label_decl) label_decl)) ltl)
+      | <:ctyp< [ $_list:vdl$ ] >> ->
+         pr_vala_with
+           ~{vaant=(fun pc anti -> pprintf pc "[ %s ]" anti)}
+        ~{vaval=(fun pc vdl ->
           if vdl = [] then pprintf pc "[ | ]"
           else
             horiz_vertic_if (has_cons_with_params vdl)
@@ -1974,46 +2078,57 @@ EXTEND_PRINTER
                    vdl)
               (fun () ->
                  pprintf pc "[ %p ]" (vlist2 cons_decl (bar_before cons_decl))
-                   vdl)
-      | <:ctyp< ($list:tl$) >> ->
-          let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "@[<1>(%p)@]" (plist labeled_ctyp 0) tl
+                   vdl))}
+        pc vdl
 
-      | <:ctyp< $lidopt:lab$ : (module $uid:s$ : $mt$) -> $ct$ >> ->
-          match lab with [
-              None ->
-                pprintf pc "@[<1>(module %s :@ %p) -> %p@]" s module_type mt ctyp_arrow ct
-            | Some lab ->
-                pprintf pc "@[<1>%s:(module %s :@ %p) -> %p@]" (uv lab) s module_type mt ctyp_arrow ct
-            ]
+      | <:ctyp< ($_list:tl$) >> ->
+          let tl = Pcaml.vala_map (List.map (fun t -> (t, " *"))) tl in
+          pprintf pc "@[<1>(%p)@]" (pr_vala (plist labeled_ctyp 0)) tl
+
+      | <:ctyp< $_lidopt:lab$ : (module $_uid:s$ : $mt$) -> $ct$ >> ->
+          let pr_lab pc s = pprintf pc "%s:" s in
+          pprintf pc "@[<1>%p(module %p :@ %p) -> %p@]"
+            (pr_vala (pr_opt (pr_vala pr_lab) "")) lab
+            (pr_vala pr_string) s
+            module_type mt
+            ctyp_arrow ct
 
       | <:ctyp< ( module $mt$ ) >> ->
           pprintf pc "@[(module@ %p)@]" module_type mt
-      | <:ctyp:< $lid:t$ >> ->
-          var_escaped pc (loc, t)
+      | <:ctyp:< $_lid:t$ >> ->
+          pr_vala (var_escaped_noloc) pc t
       | <:ctyp:< ' $s$ >> ->
           pprintf pc "%p" typevar s
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< .. >> -> pprintf pc ".."
-      | <:ctyp< external $str:s$ >> -> pprintf pc "external \"%s\"" s
+      | <:ctyp< external $_str:s$ >> -> pprintf pc "external %p" (pr_vala qstring) s
       | <:ctyp< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | <:ctyp< ?$i$: $t$ >> | <:ctyp< ~$_$: $t$ >> ->
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
+      | MLast.TyXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
        (* <:ctyp< [ < $list:_$ ] >> | *) <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >>
       | <:ctyp< $_$ [@ $attribute:_$ ] >>
         as z ->
-          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z
+      | MLast.TyXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
+      ]
+    ]
   ;
   pr_str_item:
     [ "top"
-      [ <:str_item< # $lid:s$ $e$ >> ->
-          pprintf pc "#%s %p" s expr e
-      | <:str_item< declare $list:sil$ end >> ->
+      [ <:str_item< # $_lid:s$ $e$ >> ->
+          pprintf pc "#%p %p" (pr_vala pr_string) s expr e
+      | <:str_item< declare $_list:sil$ end >> ->
+        pr_vala_with
+          ~{vaant=(fun pc anti -> pprintf pc "declare %s end" anti)}
+          ~{vaval=(fun pc sil ->
           if flag_expand_declare.val then
             let str_item_fst pc (si, is_last) =
               if is_last then str_item pc si else semi_after str_item pc si
@@ -2041,43 +2156,51 @@ EXTEND_PRINTER
                    (hlist (semi_after str_item)) sil)
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
-                   (vlist (semi_after str_item)) sil)
+                   (vlist (semi_after str_item)) sil))}
+        pc sil
 
-      | <:str_item:< exception $excon:ec$ $_itemattrs:item_attrs$ >> ->
-          pprintf pc "exception %p%p" (extension_constructor loc) ec
-            (hlist (pr_attribute "@@")) (uv item_attrs)
+      | <:str_item:< exception $_excon:ec$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "exception %p%p" (pr_vala (extension_constructor loc)) ec
+            (pr_vala (hlist (pr_attribute "@@"))) item_attrs
 
-      | <:str_item:< external $lid:n$ : $list:tyvars$ . $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          if is_special_op n then
+      | <:str_item:< external $_lid:n$ : $_list:tyvars$ . $t$ = $_list:sl$ $_itemattrs:attrs$ >> ->
+          if Pcaml.vala_mapa is_special_op (fun _ -> False) n then
             external_decl_original pc (loc, n, tyvars, t, sl, attrs)
           else
             external_decl pc (loc, n, tyvars, t, sl, attrs)
       | <:str_item< include $me$ $_itemattrs:attrs$ >> ->
-          pprintf pc "include %p%p" module_expr me (hlist (pr_attribute "@@")) (uv attrs)
-      | <:str_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt, item_attrs) -> (map_option uv (uv m), mt, item_attrs)) mdl in
-          let rf = if rf then " rec" else "" in
-          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
-      | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
-          sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
+          pprintf pc "include %p%p" module_expr me (pr_vala (hlist (pr_attribute "@@"))) attrs
+      | <:str_item< module $_flag:rf$ $_list:mdl$ >> ->
+          let rf = pr_vala (pr_bool (" rec","")) pc rf in
+          pr_vala_with
+            ~{vaant=(fun pc anti -> pprintf pc "module %s %s" rf anti)}
+            ~{vaval=(fun pc mdl ->
+          (vlist2 (str_module ("module"^rf)) (str_module "and")) pc mdl)}
+            pc mdl
+      | <:str_item< module type $_:m$ = $mt$ $_itemattrs:item_attrs$ >> ->
+          sig_module_or_module_type "module type" "=" pc (<:vala< Some m >>, mt, item_attrs)
       | <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ->
-          pprintf pc "open%s %p%p" (if (uv ovf) then "!" else "")
-            module_expr me (hlist (pr_attribute "@@")) (uv attrs)
-      | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
-          pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
-            (vlist2 type_decl (and_before type_decl)) tdl
+          pprintf pc "open%p %p%p"
+            (pr_vala (pr_bool ("!",""))) ovf
+            module_expr me (pr_vala (hlist (pr_attribute "@@"))) attrs
+      | <:str_item< type $_flag:nonrf$ $_list:tdl$ >> ->
+          pprintf pc "type%p %p"
+        (pr_vala (pr_bool (" nonrec", ""))) nonrf
+            (pr_vala (vlist2 type_decl (and_before type_decl))) tdl
       | MLast.StTypExten loc te ->
           pprintf pc "type %p" (type_extension loc) te
-      | <:str_item< value $flag:rf$ $list:pel$ >> ->
+      | <:str_item< value $_flag:rf$ $_list:pel$ >> ->
           horiz_vertic
             (fun () ->
-               pprintf pc "value%s %p" (if rf then " rec" else "")
-                 (hlist2 value_binding (and_before value_binding)) pel)
+               pprintf pc "value%p %p"
+                 (pr_vala (pr_bool (" rec",""))) rf
+                 (pr_vala (hlist2 value_binding (and_before value_binding))) pel)
             (fun () ->
-               pprintf pc "value%s %p" (if rf then " rec" else "")
-                 (vlist2 value_binding (and_before value_binding)) pel)
-      | <:str_item< $exp:e$ $itemattrs:attrs$ >> ->
-          pprintf pc "%p%p" expr e (hlist (pr_attribute "@@")) attrs
+               pprintf pc "value%p %p"
+                 (pr_vala (pr_bool (" rec",""))) rf
+                 (pr_vala (vlist2 value_binding (and_before value_binding))) pel)
+      | <:str_item< $exp:e$ $_itemattrs:attrs$ >> ->
+          pprintf pc "%p%p" expr e (pr_vala (hlist (pr_attribute "@@"))) attrs
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.StUse _ fn sl ->
@@ -2085,16 +2208,21 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
-      | <:str_item< [%% $_extension:e$ ] $itemattrs:attrs$ >> ->
-          pprintf pc "%p%p" (pr_extension "%%") e (hlist (pr_attribute "@@")) attrs
+      | <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >> ->
+          pprintf pc "%p%p" (pr_extension "%%") e (pr_vala (hlist (pr_attribute "@@"))) attrs
+      | MLast.StXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       ] ]
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< # $lid:s$ $e$ >> ->
+      [ <:sig_item< # $_lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
-          pprintf pc "(* #%s %p *)" s expr e
-      | <:sig_item< declare $list:sil$ end >> ->
+          pprintf pc "(* #%p %p *)" (pr_vala pr_string) s expr e
+      | <:sig_item< declare $_list:sil$ end >> ->
+        pr_vala_with
+          ~{vaant=(fun pc anti -> pprintf pc "declare %s end" anti)}
+          ~{vaval=(fun pc sil ->
           if flag_expand_declare.val then
             if sil = [] then pc.bef
             else vlistl (semi_after sig_item) sig_item pc sil
@@ -2106,48 +2234,56 @@ EXTEND_PRINTER
                    (hlist (semi_after sig_item)) sil)
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
-                   (vlist (semi_after sig_item)) sil)
+                   (vlist (semi_after sig_item)) sil))}
+          pc sil
       | MLast.SgExc _ gc item_attrs -> pprintf pc "exception %p%p" cons_decl gc
-            (hlist (pr_attribute "@@")) (uv item_attrs)
+            (pr_vala (hlist (pr_attribute "@@"))) item_attrs
 
-      | <:sig_item:< external $lid:n$ : $list:tyvars$ . $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          if is_special_op n then
+      | <:sig_item:< external $_lid:n$ : $_list:tyvars$ . $t$ = $_list:sl$ $_itemattrs:attrs$ >> ->
+          if Pcaml.vala_mapa is_special_op (fun _ -> False) n then
             external_decl_original pc (loc, n, tyvars, t, sl, attrs)
           else
             external_decl pc (loc, n, tyvars, t, sl, attrs)
       | <:sig_item< include $mt$ $_itemattrs:item_attrs$ >> ->
-          pprintf pc "include %p%p" module_type mt (hlist (pr_attribute "@@")) (uv item_attrs)
-      | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt, attrs) -> (map_option uv (uv m), mt, attrs)) mdl in
-          let rf = if rf then " rec" else "" in
-          vlist2 (sig_module_or_module_type ("module" ^ rf) ":")
-            (sig_module_or_module_type "and" ":") pc mdl
-      | <:sig_item:< module $uid:i$ := $longid:li$  $_itemattrs:item_attrs$ >> ->
-          pprintf pc "module %s := %p%p" i longident li (hlist (pr_attribute "@@")) (uv item_attrs)
-      | <:sig_item:< module alias $uid:i$ = $longid:li$ $itemattrs:item_attrs$ >> ->
-          pprintf pc "module alias %s = %p%p" i longident li (hlist (pr_attribute "@@")) item_attrs
-      | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
-          sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
-      | <:sig_item< module type $m$ := $mt$ $_itemattrs:item_attrs$ >> ->
-          sig_module_or_module_type "module type" ":=" pc (Some m, mt, item_attrs)
+          pprintf pc "include %p%p" module_type mt (pr_vala (hlist (pr_attribute "@@"))) item_attrs
+      | <:sig_item< module $_flag:rf$ $_list:mdl$ >> ->
+          let rf = pr_vala (pr_bool (" rec","")) pc rf in
+          pr_vala_with
+            ~{vaant=(fun pc anti ->  pprintf pc "module %s %s" rf anti)}
+            ~{vaval=(fun pc mdl ->
+            (vlist2
+               (sig_module_or_module_type ("module" ^ rf) ":")
+               (sig_module_or_module_type "and" ":")) pc mdl)}
+            pc mdl
+      | <:sig_item:< module $_uid:i$ := $longid:li$  $_itemattrs:item_attrs$ >> ->
+          pprintf pc "module %p := %p%p" (pr_vala pr_string) i
+            longident li (pr_vala (hlist (pr_attribute "@@"))) item_attrs
+      | <:sig_item:< module alias $_uid:i$ = $longid:li$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "module alias %p = %p%p" (pr_vala pr_string) i longident li (pr_vala (hlist (pr_attribute "@@"))) item_attrs
+      | <:sig_item< module type $_:m$ = $mt$ $_itemattrs:item_attrs$ >> ->
+          sig_module_or_module_type "module type" "=" pc (<:vala< Some m >>, mt, item_attrs)
+      | <:sig_item< module type $_:m$ := $mt$ $_itemattrs:item_attrs$ >> ->
+          sig_module_or_module_type "module type" ":=" pc (<:vala< Some m >>, mt, item_attrs)
       | <:sig_item< open $longid:i$ $_itemattrs:item_attrs$ >> ->
-          pprintf pc "open %p%p" longident i (hlist (pr_attribute "@@")) (uv item_attrs)
-      | <:sig_item< type $flag:nonrf$ $list:tdl$ >> ->
-          pprintf pc "type%s %p" (if nonrf then " nonrec" else "") (vlist2 type_decl (and_before type_decl)) tdl
+          pprintf pc "open %p%p" longident i (pr_vala (hlist (pr_attribute "@@"))) item_attrs
+      | <:sig_item< type $_flag:nonrf$ $_list:tdl$ >> ->
+          pprintf pc "type%p %p"
+            (pr_vala (pr_bool (" nonrec", ""))) nonrf
+            (pr_vala (vlist2 type_decl (and_before type_decl))) tdl
       | MLast.SgTypExten loc te ->
           pprintf pc "type %p" (type_extension loc) te
 
-      | <:sig_item:< value $lid:s$ : ! $list:ls$ . $t$ $itemattrs:attrs$ >> when is_special_op s ->
-          pprintf pc "value ( %s ) :@;%p%p%p" s typevars_binder ls ctyp t (hlist (pr_attribute "@@")) attrs
+      | <:sig_item:< value $lid:s$ : ! $_list:ls$ . $t$ $_itemattrs:attrs$ >> when is_special_op s ->
+          pprintf pc "value ( %s ) :@;%p%p%p" s (pr_vala typevars_binder) ls ctyp t (pr_vala (hlist (pr_attribute "@@"))) attrs
 
-      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_special_op s ->
-          pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
+      | <:sig_item:< value $lid:s$ : $t$ $_itemattrs:attrs$ >> when is_special_op s ->
+          pprintf pc "value ( %s ) :@;%p%p" s ctyp t (pr_vala (hlist (pr_attribute "@@"))) attrs
 
-      | <:sig_item:< value $lid:s$ : ! $list:ls$ . $t$ $itemattrs:attrs$ >> ->
-          pprintf pc "value %p :@;%p%p%p" var_escaped (loc, s) typevars_binder ls ctyp t (hlist (pr_attribute "@@")) attrs
+      | <:sig_item:< value $_lid:s$ : ! $_list:ls$ . $t$ $_itemattrs:attrs$ >> ->
+          pprintf pc "value %p :@;%p%p%p" (pr_vala var_escaped_noloc) s (pr_vala typevars_binder) ls ctyp t (pr_vala (hlist (pr_attribute "@@"))) attrs
 
-      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
-          pprintf pc "value %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
+      | <:sig_item:< value $_lid:s$ : $t$ $_itemattrs:attrs$ >> ->
+          pprintf pc "value %p :@;%p%p" (pr_vala var_escaped_noloc) s ctyp t (pr_vala (hlist (pr_attribute "@@"))) attrs
 
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
@@ -2156,18 +2292,22 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
-      | <:sig_item< [%% $_extension:e$ ] $itemattrs:attrs$ >> ->
-          pprintf pc "%p%p" (pr_extension "%%") e (hlist (pr_attribute "@@")) attrs
+      | <:sig_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >> ->
+          pprintf pc "%p%p" (pr_extension "%%") e (pr_vala (hlist (pr_attribute "@@"))) attrs
+      | MLast.SgXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       ] ]
   ;
   pr_longident:
         [ "dot"
-      [ <:extended_longident< $longid:x$ . $uid:uid$ >> ->
-          pprintf pc "%p.%p" curr x cons_escaped uid
+      [ <:extended_longident< $longid:x$ . $_uid:uid$ >> ->
+          pprintf pc "%p.%p" curr x (pr_vala cons_escaped) uid
       | <:extended_longident< $longid:x$ ( $longid:y$ ) >> ->
           pprintf pc "%p(%p)" longident x longident y
-      | <:extended_longident< $uid:s$ >> ->
-          pprintf pc "%p" cons_escaped s
+      | <:extended_longident< $_uid:s$ >> ->
+          pprintf pc "%p" (pr_vala cons_escaped) s
+      | MLast.LiXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       ]
     | "bottom" [
         z -> pprintf pc "[INTERNAL ERROR(pr_module_longident): unexpected longident]"
@@ -2176,22 +2316,26 @@ EXTEND_PRINTER
   ;
   pr_module_expr:
     [ "top"
-      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me ]
+      [ <:module_expr< functor $_fp:arg$ -> $me$ >> ->
+          str_or_sig_functor pc arg module_expr me ]
     | "alg_attribute"
-      [ <:module_expr< $ct$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      [ <:module_expr< $ct$ [@ $_attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct (pr_vala attribute_body) attr
       ]
 
-    | [ <:module_expr< struct $list:sil$ end >> ->
+    | [ <:module_expr< struct $_list:sil$ end >> ->
           (* Heuristic : I don't like to print structs horizontally
              when alone in a line. *)
+        pr_vala_with
+          ~{vaant=(fun pc anti -> pprintf pc "struct %s end" anti)}
+          ~{vaval=(fun pc sil ->
           horiz_vertic_if (alone_in_line pc)
             (fun () ->
                pprintf pc "struct %p end" (hlist (semi_after str_item)) sil)
             (fun () ->
                pprintf pc "@[<b>struct@;%p@ end@]"
-                 (vlist (semi_after str_item)) sil) ]
+                 (vlist (semi_after str_item)) sil))}
+          pc sil ]
     | "apply"
       [ <:module_expr< $x$ $y$ >> as z ->
           let unfold =
@@ -2204,8 +2348,8 @@ EXTEND_PRINTER
       [ <:module_expr< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:module_expr< $uid:s$ >> ->
-          pprintf pc "%s" s
+      [ <:module_expr< $_uid:s$ >> ->
+          pprintf pc "%p" (pr_vala pr_string) s
       | <:module_expr< (value $e$ : $mt1$ :> $mt2$) >> ->
           pprintf pc "@[<1>(value %p :@ %p :>@ %p)@]" expr e module_type mt1 module_type mt2
       | <:module_expr< (value $e$ : $mt$) >> ->
@@ -2216,6 +2360,8 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
+      | MLast.MeXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
       | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> |
@@ -2226,42 +2372,49 @@ EXTEND_PRINTER
   ;
   pr_module_type:
     [ "top"
-      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
+      [ <:module_type< functor $_fp:arg$ -> $mt2$ >> ->
+          str_or_sig_functor pc arg module_type mt2
       ]
     | [ <:module_type< module type of $me$ >> ->
           pprintf pc "@[module type of@ %p@]" module_expr me ]
 
     | "alg_attribute"
-      [ <:module_type< $ct$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      [ <:module_type< $ct$ [@ $_attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct (pr_vala attribute_body) attr
       ]
-    | "with" [ <:module_type< $mt$ with $list:wcl$ >> ->
+    | "with" [ <:module_type< $mt$ with $_list:wcl$ >> ->
         pprintf pc "%p with@;%p" module_type mt
-          (vlist2 with_constraint (and_before with_constraint)) wcl ]
+          (pr_vala (vlist2 with_constraint (and_before with_constraint))) wcl ]
 
-    | "sig" [ <:module_type< sig $list:sil$ end >> ->
+    | "sig" [ <:module_type< sig $_list:sil$ end >> ->
          (* Heuristic : I don't like to print sigs horizontally
             when alone in a line. *)
+        pr_vala_with
+          ~{vaant=(fun pc anti -> pprintf pc "sig %s end" anti)}
+          ~{vaval=(fun pc sil ->
           horiz_vertic_if (alone_in_line pc)
             (fun () ->
                pprintf pc "sig %p end" (hlist (semi_after sig_item)) sil)
             (fun () ->
                pprintf pc "@[<b>sig@;%p@ end@]"
-                 (vlist (semi_after sig_item)) sil) ]
+                 (vlist (semi_after sig_item)) sil))}
+          pc sil ]
     | "dot"
-      [ <:module_type< $longid:li$ . $lid:s$ >> ->
-          pprintf pc "%p.%s" longident li s
+      [ <:module_type< $longid:li$ . $_lid:s$ >> ->
+          pprintf pc "%p.%p" longident li (pr_vala pr_string) s
       | <:module_type< $longid:li$ >> ->
           pprintf pc "%p" longident li
-      | <:module_type< $lid:s$ >> ->
-          pprintf pc "%s" s
+      | <:module_type< $_lid:s$ >> ->
+          pprintf pc "%p" (pr_vala pr_string) s
     ]
     | "simple"
-      [ <:module_type< ' $s$ >> ->
-          pprintf pc "'%s" s
+      [ <:module_type< ' $_:s$ >> ->
+          pprintf pc "'%p" (pr_vala pr_string) s
       | <:module_type< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%") e ]
+          pprintf pc "%p" (pr_extension "%") e
+      | MLast.MtXtr _ s _ ->
+         pprintf pc "%p" pr_xtr s
+    ]
     | "bottom"
       [ <:module_type< functor $fp:_$ -> $_$ >>
       | <:module_type< module type of $_$ >>
