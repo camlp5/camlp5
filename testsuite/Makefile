@@ -20,7 +20,10 @@ TESTS= $(MATRIXTESTS) \
 	extfun_test.TEST reloc_test.TEST o_top_test2.TEST o_top_test.TEST r_top_test.TEST grammar_bug_test.TEST \
 	little_lang_test.TEST o_lexer_test.TEST r_lexer_test.TEST quotedext_test.TEST
 
-MATRIXTESTS=official2official_matrixtest.TEST o2official_matrixtest.TEST r2official_matrixtest.TEST o2r_matrixtest.TEST r2r_matrixtest.TEST r2o_matrixtest.TEST o2o_matrixtest.TEST
+MATRIXTESTS=official2official_matrixtest.TEST o2official_matrixtest.TEST r2official_matrixtest.TEST \
+	o2patr_matrixtest.TEST \
+	o2r_matrixtest.TEST r2r_matrixtest.TEST \
+	r2o_matrixtest.TEST o2o_matrixtest.TEST
 
 ANTIQUOTATIONTESTS= \
 	q_MLast_antiquottest.TEST \
@@ -77,6 +80,7 @@ OCAMLLINKC=$(LAUNCH) $(OCAMLFIND) ocamlc
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -linkall -linkpkg $+ -o $@
 
 o2r_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_matrixtest.cmo
+o2patr_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2patr_matrixtest.cmo
 r2r_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_matrixtest.cmo
 o2o_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_matrixtest.cmo
 r2o_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_matrixtest.cmo
