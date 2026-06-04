@@ -154,7 +154,7 @@ value pr l = do {
 }
 ;
 value to_official x =
-  x |> List.map fst |> Ast2pt.implem "<stdin>";
+  x |> List.map fst |> Ast2pt.interf "<stdin>";
 end;
 value both_pa1 = ((fun x -> Implem.pa1 x), (fun x -> Interf.pa1 x)) ;
 value both_pr = ((fun x -> Implem.pr x), (fun x -> Interf.pr x)) ;

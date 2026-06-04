@@ -1,0 +1,36 @@
+(**pp -syntax camlp5r *)
+(* camlp5r *)
+(* o2r_test.ml *)
+
+open Testutil;
+open Testutil2;
+
+open OUnit2;
+open OUnitTest;
+
+Pcaml.inter_phrases.val := Some ";\n" ;
+
+
+module PatRP = struct
+  module Base = PrintBase(struct end) ;
+  module R = Print_patr.PP(Base) ;
+  module RO = Print_patro.PP(Base)(R) ;
+  module RP = Print_patrp.PP(Base)(R) ;
+  module Pretty = PrettyPrint(Base.Printers) ;
+end ;
+
+module PAPR = PAPRGen(MLParsers.OP.Base)(MLPrinters.RP.Base.Printers) ;
+
+value tests = "matrix" >::: (Papr_test_matrix.o2r PAPR.both_pa1 PAPR.both_pr None ()) ;
+
+value _ =
+if not Sys.interactive.val then
+  run_test_tt_main tests
+else ()
+;  
+(*
+;;; Local Variables: ***
+;;; mode:tuareg ***
+;;; End: ***
+
+*)

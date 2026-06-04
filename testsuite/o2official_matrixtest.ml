@@ -1,6 +1,8 @@
 (**pp -syntax camlp5r -package camlp5.pr_official *)
 (* camlp5r *)
-(* r2official_test.ml *)
+(* o2official_test.ml *)
+
+[@@@warnerror "-misplaced-attribute";] ;
 
 open Testutil;
 open Testutil2;
@@ -9,24 +11,25 @@ open OUnit2;
 open OUnitTest;
 
 Pcaml.inter_phrases.val := Some ";;\n" ;
+Pcaml.no_constructors_arity.val := True;
 
-module PAPR = PAPRGen(MLParsers.RP.Base)(MLPrinters.RP.Base.Printers) ;
+module PAPR = PAPRGen(MLParsers.OP.Base)(MLPrinters.RP.Base.Printers) ;
 
 module Official = struct
 module Implem = struct
 value pr l =
-  Pr_official.(with_buffer_formatter pp_implem (l, Ploc.dummy))
+  l |> PAPR.Implem.to_official |> Official.Implem.pr
 ;
 end ;
 module Interf = struct
 value pr l =
-  Pr_official.(with_buffer_formatter pp_interf (l, Ploc.dummy))
+  l |> PAPR.Interf.to_official |> Official.Interf.pr
 ;
 end ;
 value both_pr = (Implem.pr, Interf.pr) ;
 end ;
 
-value tests = "matrix" >::: (Papr_test_matrix.r2official PAPR.both_pa1 Official.both_pr (Some Testutil.Official.both_pa) ()) ;
+value tests = "matrix" >::: (Papr_test_matrix.o2official PAPR.both_pa1 Official.both_pr (Some Testutil.Official.both_pa) ()) ;
 
 
 value _ =
