@@ -1264,20 +1264,12 @@ value exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs) =
       ] ]
 ;
 
-value functor_parameter_unvala arg =
-  match arg with [
-    None -> None
-  | Some (idopt, mt) -> Some (option_map uv (uv idopt), mt)
-  ]
-;
-
 value pr_opt somepr noneval pc x =
   match x with [
       None -> pprintf pc "%s" noneval
     | Some x -> pprintf pc "%p" somepr x
     ]
 ;
-
 
 value str_module pref pc (m, me, item_attrs) =
   let (mal, me) =
