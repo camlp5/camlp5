@@ -5764,7 +5764,7 @@ end;|foo}
      r_input = OK {foo|match x with [ C (type a) y -> y ];|foo} ;
      o_output = OK {foo|let _ = match x with C (type a) y -> y;;
 |foo};
-     official_output = SKIP ";;match x with | C (type 'a) y -> y" "ugh, compiler-libs bug" ;
+     official_output = OK {foo|;;match x with | C (type a) y -> y|foo} ;
      r_output = OK {foo|match x with [ C (type a) y -> y ];
 |foo}
     }
@@ -5775,7 +5775,7 @@ end;|foo}
      r_input = OK {foo|match x with [ C (type a b c) y -> y ];|foo} ;
      o_output = OK {foo|let _ = match x with C (type a b c) y -> y;;
 |foo};
-     official_output = SKIP ";;match x with | C (type 'a 'b 'c) y -> y" "ugh, compiler-libs bug" ;
+     official_output = OK {foo|;;match x with | C (type a b c) y -> y|foo} ;
      r_output = OK {foo|match x with [ C (type a b c) y -> y ];
 |foo}
     }
