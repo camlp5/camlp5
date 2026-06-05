@@ -180,12 +180,12 @@ print_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 print_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_o.cmo
 pr_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_op.cmo
+print_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 print_patr.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
-pr_patr.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo print_patr.cmo
+print_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 print_patro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+print_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 print_patrp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
-pr_patro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_patro.cmo
-pr_patrp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo print_patrp.cmo
 pr_scheme.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_schemep.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo

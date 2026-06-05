@@ -757,47 +757,58 @@ and patt =
         PaExc loc ename ->
           let p = patt (exception_to_constructor_pattern f0) in
           mkpat loc (ocaml_ppat_exception p)
-      | _ -> 
-      let al : list (option string * Parsetree.pattern) = List.map label_patt al in
-      let p = (patt f).ppat_desc in
-      match ocaml_ppat_construct_args p with
-      [ Some (li, li_loc, None, _) →
-          if Prtools.no_constructors_arity.val then
+
+
+      | PaLong loc li tyvars ->
+          let al : list (option string * Parsetree.pattern) = List.map label_patt al in
+          let li = match li with [
+              <:longident:< $uid:s$ >> -> <:longident< $uid:conv_con s$ >>
+            | <:longident:< $longid:li$ . $uid:s$ >> -> <:longident< $longid:li$ . $uid:conv_con s$ >>
+            | _ -> failwith "Lapply not allowed here"
+            ] in
+          let li_loc = mkloc (MLast.loc_of_longid li) in
+          let li = longid_to_longident li in
+          let tyvars = List.map (fun (loc,v) -> (mkloc loc, v)) (uv tyvars) in
+          if Prtools.no_constructors_arity.val || List.length al = 1 then
             let a =
               match al with
-              [ [(None, a)] -> a
-              | [(Some lab, _)] ->
-                 error (loc_of_patt f)
-                   (Printf.sprintf "single labeled pattern argument %s not allowed" lab)
-              | _ ->
-                 mkpat loc (ocaml_ppat_tuple al Closed) ]
+                [ [(None, a)] -> a
+                | [(Some lab, _)] ->
+                   error (loc_of_patt f)
+                     (Printf.sprintf "single labeled pattern argument %s not allowed" lab)
+                | _ ->
+                   mkpat loc (ocaml_ppat_tuple al Closed) ]
             in
-            mkpat loc (ocaml_ppat_construct li_loc li (Some ([],a)) False)
-          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li [] al
-      | Some _ | None →
-          match ocaml_ppat_variant with
-          [ Some (ppat_variant_pat, ppat_variant) →
-              match ppat_variant_pat p with
+            mkpat loc (ocaml_ppat_construct li_loc li (Some (tyvars,a)) False)
+          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li tyvars al
+      | f ->
+
+      let al : list (option string * Parsetree.pattern) = List.map label_patt al in
+      let p = (patt f).ppat_desc in
+      match ocaml_ppat_variant with
+        [ Some (ppat_variant_pat, ppat_variant) →
+            match ppat_variant_pat p with
               [ Some (s, None) →
-                  let a =
-                    match al with
+                let a =
+                  match al with
                     [ [(None, a)] → a
                     | [(Some lab, _)] ->
                        error (loc_of_patt f)
                          (Printf.sprintf "single labeled pattern argument %s not allowed" lab)
                     | _ →
-                      mkpat loc (ocaml_ppat_tuple al Closed)
+                       mkpat loc (ocaml_ppat_tuple al Closed)
                     ]
-                  in
-                  mkpat loc (ppat_variant (s, Some a))
-              | Some _ | None →
-                  error (loc_of_patt f)
-                    ("this is not a constructor, " ^
-                     "it cannot be applied in a pattern") ]
-          | None →
+                    in
+                    mkpat loc (ppat_variant (s, Some a))
+                  | Some _ | None →
+                               error (loc_of_patt f)
+                               ("this is not a constructor, " ^
+                                  "it cannot be applied in a pattern") ]
+            | None →
               error (loc_of_patt f)
-                ("this is not a constructor, " ^
-                 "it cannot be applied in a pattern") ] ]
+              ("this is not a constructor, " ^
+                 "it cannot be applied in a pattern") ]
+
       ]
   | PaArr loc pl →
       match ocaml_ppat_array with

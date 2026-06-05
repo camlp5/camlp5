@@ -2845,7 +2845,7 @@ and M : S[@@"foo"];];
 |foo}
     };
     {name="refutable-funarg-1"; implem = True ;
-     exclude=["r2official"];
+     exclude=[];
      o_input = OK {foo|let f (Some x) = 1|foo} ;
      official_input = OK {foo|let f (Some x) = 1|foo} ;
      r_input = OK {foo|value f = fun [ Some x -> 1 ];|foo} ;
@@ -2858,11 +2858,6 @@ and M : S[@@"foo"];];
   fun
   [ Some x -> 1 ];
 |foo}
-    };
-    {(skip) with
-     name="refutable-funarg-1-r2official" ;
-     r_input = OK {foo|value f = fun [ Some x -> 1 ];|foo} ;
-     official_output = OK {foo|let f ((Some (x))[@ocaml.explicit_arity ]) = 1|foo}
     };
     {name="refutable-funarg-2"; implem = True ;
      exclude=[];
@@ -6828,21 +6823,12 @@ ELSE
      r_output = OK {foo|match x with (~{x = t}, y) -> 1;|foo}
     }
  ;{name="labeled-tuple-pat-7"; implem = True ;
-     exclude=["r2official"];
+     exclude=[];
      o_input = OK {foo|match x with M(~x:t, y) -> 1|foo} ;
      official_input = OK {foo|match x with M(~x:t, y) -> 1|foo} ;
      r_input = OK {foo|match x with [ M(~{x=t}, y) -> 1 ];|foo} ;
      o_output = OK {foo|let _ = match x with M(~x:t, y) -> 1;;|foo};
      official_output = OK {foo|;;match x with | M(~x:t, y) -> 1|foo};
-     r_output = OK {foo|match x with [ M (~{x = t}, y) -> 1 ];|foo}
-    }
- ;{name="labeled-tuple-pat-7-r2official"; implem = True ;
-     exclude=[];
-     o_input = SKIP "" "" ;
-     official_input = SKIP "" "" ;
-     r_input = OK {foo|match x with [ M(~{x=t}, y) -> 1 ];|foo} ;
-     o_output = OK {foo|let _ = match x with M(~x:t, y) -> 1;;|foo};
-     official_output = OK {foo|;;match x with | ((M ((~x:t, y)))[@ocaml.explicit_arity ]) -> 1|foo};
      r_output = OK {foo|match x with [ M (~{x = t}, y) -> 1 ];|foo}
     }
  ;{name="bivariant-type-parameter-syntax"; implem = True ;

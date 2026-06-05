@@ -1240,6 +1240,7 @@ value ocaml_ppat_construct loc li po chk_arity  =
     let po = option_map (fun (_, p) -> p) po in
     Ppat_construct (mkloc loc li) po
   ELSE
+    let po = option_map (fun (l,p) -> (List.map (fun (loc,v) -> mkloc loc v) l, p)) po in
     Ppat_construct (mkloc loc li) po
   END
 ;
