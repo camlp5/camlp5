@@ -10,6 +10,9 @@ module PrettyPrint (P : PRINTERS) = struct
 value pp eprinter pps x =
   Fmt.(pf pps "%s" (Eprinter.apply eprinter Pprintf.empty_pc x)) ;
 
+value show eprinter x =
+  Eprinter.apply eprinter Pprintf.empty_pc x ;
+
   value pp_attribute_body = pp P.pr_attribute_body ;
   value pp_expr = pp P.pr_expr ;
   value pp_patt = pp P.pr_patt ;
@@ -23,6 +26,21 @@ value pp eprinter pps x =
   value pp_class_str_item = pp P.pr_class_str_item ;
   value pp_class_type = pp P.pr_class_type ;
   value pp_class_expr = pp P.pr_class_expr ;
+
+  value show_attribute_body = show P.pr_attribute_body ;
+  value show_expr = show P.pr_expr ;
+  value show_patt = show P.pr_patt ;
+  value show_ctyp = show P.pr_ctyp ;
+  value show_str_item = show P.pr_str_item ;
+  value show_sig_item = show P.pr_sig_item ;
+  value show_longident = show P.pr_longident ;
+  value show_module_expr = show P.pr_module_expr ;
+  value show_module_type = show P.pr_module_type ;
+  value show_class_sig_item = show P.pr_class_sig_item ;
+  value show_class_str_item = show P.pr_class_str_item ;
+  value show_class_type = show P.pr_class_type ;
+  value show_class_expr = show P.pr_class_expr ;
+
 end;
 
 module R = struct

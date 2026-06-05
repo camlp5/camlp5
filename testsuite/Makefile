@@ -45,8 +45,8 @@ all: roundtrippers \
 	roundtrip_lexer.byte \
 	$(TESTS:.TEST=.byte)
 
-matrix-test:: $(MATRIXTESTS)
-	for t in $(MATRIXTESTS); do echo "==== $$t ====" ; ./$$t -only-test $(ONLYTEST) || true; done
+matrix-test:: $(MATRIXTESTS:.TEST=.byte)
+	for t in $(MATRIXTESTS:.TEST=.byte); do echo "==== $$t ====" ; ./$$t -only-test $(ONLYTEST) || true; done
 
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
@@ -97,6 +97,7 @@ o_lexer_test.byte: testutil.cmo o_lexer_test.cmo
 r_lexer_test.byte: testutil.cmo r_lexer_test.cmo
 grammar_bug_test.byte: alt_pa_o.cmo grammar_bug_test.cmo
 quotedext_test.byte: testutil.cmo testutil2.cmo quotedext_test.cmo
+roundtrip_lexer.byte: testutil.cmo roundtrip_lexer.cmo
 
 r2sch_test.byte: testutil.cmo r2sch_test.cmo
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.pr_scheme.link -linkall -linkpkg testutil.cmo r2sch_test.cmo -o r2sch_test.byte

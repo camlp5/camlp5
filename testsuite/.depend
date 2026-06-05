@@ -20,27 +20,35 @@ little_lang_test.cmo : \
 little_lang_test.cmx : \
     testutil2.cmx \
     testutil.cmx
-o2o_test.cmo : \
+o2o_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-o2o_test.cmx : \
+o2o_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
-o2official_test.cmo : \
+o2official_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-o2official_test.cmx : \
+o2official_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
-o2r_test.cmo : \
+o2patr_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-o2r_test.cmx : \
+o2patr_matrixtest.cmx : \
+    testutil2.cmx \
+    testutil.cmx \
+    papr_test_matrix.cmx
+o2r_matrixtest.cmo : \
+    testutil2.cmo \
+    testutil.cmo \
+    papr_test_matrix.cmo
+o2r_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
@@ -58,19 +66,19 @@ o_top_test2.cmo : \
 o_top_test2.cmx : \
     testutil2.cmx \
     testutil.cmx
-official2official_test.cmo : \
+official2official_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-official2official_test.cmx : \
+official2official_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
-official_parser_test.cmo : \
+official_parser_antiquottest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     antiquotation_test.cmo
-official_parser_test.cmx : \
+official_parser_antiquottest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     antiquotation_test.cmx
@@ -82,37 +90,37 @@ papr_test_matrix.cmo : \
 papr_test_matrix.cmx : \
     testutil2.cmx \
     testutil.cmx
-q_MLast_test.cmo : \
+q_MLast_antiquottest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     antiquotation_test.cmo
-q_MLast_test.cmx : \
+q_MLast_antiquottest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     antiquotation_test.cmx
 quotedext_test.cmo :
 quotedext_test.cmx :
-r2o_test.cmo : \
+r2o_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-r2o_test.cmx : \
+r2o_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
-r2official_test.cmo : \
+r2official_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-r2official_test.cmx : \
+r2official_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
-r2r_test.cmo : \
+r2r_matrixtest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     papr_test_matrix.cmo
-r2r_test.cmx : \
+r2r_matrixtest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     papr_test_matrix.cmx
@@ -132,11 +140,11 @@ reloc_test.cmo : \
     testutil.cmo
 reloc_test.cmx : \
     testutil.cmx
-revised_parser_test.cmo : \
+revised_parser_antiquottest.cmo : \
     testutil2.cmo \
     testutil.cmo \
     antiquotation_test.cmo
-revised_parser_test.cmx : \
+revised_parser_antiquottest.cmx : \
     testutil2.cmx \
     testutil.cmx \
     antiquotation_test.cmx

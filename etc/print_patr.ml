@@ -1354,7 +1354,7 @@ value sig_module_or_module_type pref defs pc ((m : Ploc.vala (option (Ploc.vala 
 ;
 
 value str_or_sig_functor pc farg module_expr_or_type met =
-  let pp_sopt p sopt =
+  let pp_sopt pc sopt =
     pprintf pc "%p" (pr_vala (pr_opt (pr_vala pr_string)  "_")) sopt in
   let pp_farg1 pc (sopt, mt) =
     pprintf pc "(%p :@;<1 1>%p)" pp_sopt sopt module_type mt
@@ -1857,7 +1857,7 @@ EXTEND_PRINTER
           pprintf pc "( %s )" s
       | <:expr:< $_lid:s$ >> ->
           (pr_vala var_escaped_noloc) pc s
-      | <:expr< `$s$ >> ->
+      | <:expr< `$_:s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $_str:s$ >> ->
           pr_vala (fun pc s -> pprintf pc "\"%s\"" s) pc s
@@ -1997,7 +1997,7 @@ EXTEND_PRINTER
          pprintf pc "%p" pr_xtr s
       | MLast.PaLab loc _ _ | MLast.PaOlb loc _ _ ->
           error loc "labels not pretty printed (in patt); add pr_ro.cmo"
-      | <:patt< `$s$ >> ->
+      | <:patt< `$_:s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
       |  <:patt< exception $_$ >>
@@ -2109,8 +2109,8 @@ EXTEND_PRINTER
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
       | MLast.TyXtr _ s _ ->
          pprintf pc "%p" pr_xtr s
-      | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
-       (* <:ctyp< [ < $list:_$ ] >> | *) <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
+      | <:ctyp< [ = $_list:_$ ] >> | <:ctyp< [ > $_list:_$ ] >> |
+       (* <:ctyp< [ < $_list:_$ ] >> | *) <:ctyp< [ < $_list:_$ > $_list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >>
       | <:ctyp< $_$ [@ $attribute:_$ ] >>
@@ -2171,7 +2171,7 @@ EXTEND_PRINTER
       | <:str_item< include $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "include %p%p" module_expr me (pr_vala (hlist (pr_attribute "@@"))) attrs
       | <:str_item< module $_flag:rf$ $_list:mdl$ >> ->
-          let rf = pr_vala (pr_bool (" rec","")) pc rf in
+          let rf = pr_vala (pr_bool (" rec","")) Pprintf.empty_pc rf in
           pr_vala_with
             ~{vaant=(fun pc anti -> pprintf pc "module %s %s" rf anti)}
             ~{vaval=(fun pc mdl ->
@@ -2201,7 +2201,7 @@ EXTEND_PRINTER
                  (pr_vala (vlist2 value_binding (and_before value_binding))) pel)
       | <:str_item< $exp:e$ $_itemattrs:attrs$ >> ->
           pprintf pc "%p%p" expr e (pr_vala (hlist (pr_attribute "@@"))) attrs
-      | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
+      | <:str_item< class type $_list:_$ >> | <:str_item< class $_list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.StUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
@@ -2247,7 +2247,7 @@ EXTEND_PRINTER
       | <:sig_item< include $mt$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "include %p%p" module_type mt (pr_vala (hlist (pr_attribute "@@"))) item_attrs
       | <:sig_item< module $_flag:rf$ $_list:mdl$ >> ->
-          let rf = pr_vala (pr_bool (" rec","")) pc rf in
+          let rf = pr_vala (pr_bool (" rec","")) Pprintf.empty_pc rf in
           pr_vala_with
             ~{vaant=(fun pc anti ->  pprintf pc "module %s %s" rf anti)}
             ~{vaval=(fun pc mdl ->
@@ -2285,7 +2285,7 @@ EXTEND_PRINTER
       | <:sig_item:< value $_lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           pprintf pc "value %p :@;%p%p" (pr_vala var_escaped_noloc) s ctyp t (pr_vala (hlist (pr_attribute "@@"))) attrs
 
-      | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
+      | <:sig_item< class type $_list:_$ >> | <:sig_item< class $_list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.SgUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
@@ -2314,6 +2314,7 @@ EXTEND_PRINTER
       ]
     ]
   ;
+
   pr_module_expr:
     [ "top"
       [ <:module_expr< functor $_fp:arg$ -> $me$ >> ->

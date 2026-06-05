@@ -316,8 +316,8 @@ EXTEND_PRINTER
             let fel = List.map (fun fe -> (fe, ";")) fel in
             pprintf pc "{< %p >}" (plist field_expr 3) fel)}
            pc fel
-      | <:expr:< `$s$ >> ->
-          pprintf pc "`%p" Pr_r.var_escaped (loc, s)
+      | <:expr:< `$_:s$ >> ->
+          pprintf pc "`%p" (pr_vala var_escaped_noloc) s
       | <:expr< new $_longid:_$ . $_lid:_$ >> | <:expr< new $_lid:_$ >> | <:expr< object $_list:_$ end >> as z ->
           pprintf pc "@[<1>(%p)@]" expr z
       | z ->
