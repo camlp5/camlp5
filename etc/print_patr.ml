@@ -904,7 +904,6 @@ value type_decl pc td =
     (td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
-  let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
        pprintf pc "%p%p %p %p%p%p%p" (pr_vala tdname) tn
