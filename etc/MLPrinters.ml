@@ -75,4 +75,11 @@ module OP = struct
   module O = Print_o.PP(Base) ;
   module OP = Print_op.PP(Base) ;
   module Pretty = PrettyPrint(Base.Printers) ;
+  value pp_longident_lident pps x =
+    Fmt.(pf pps "%s" (O.longident_lident Pprintf.empty_pc x)) ;
+  value show_longident_lident x =
+    (O.longident_lident Pprintf.empty_pc x) ;
+
+  value pp_attribute pps x = Pretty.pp_attribute_body pps (Pcaml.unvala x) ;
+  value show_attribute x = Fmt.(str "%a" pp_attribute x) ;
 end ;
