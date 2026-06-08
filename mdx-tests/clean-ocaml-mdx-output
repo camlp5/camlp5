@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use strict ;
+
+undef $/ ;
+
+{
+  my $s ;
+  while ($s = <ARGV>) {
+
+    $s =~ s,.*OCaml version.*,,g ;
+    $s =~ s,.*#help.*,,g ;
+
+    $s =~ s,.*Command line:.*\n,,g ;
+    $s =~ s,.*: added to search path.*\n,,g ;
+    $s =~ s,.*: loaded.*\n,,g ;
+    $s =~ s,.*Cannot read directory.*stublibs.*\n,,g ;
+
+    $s =~ s,#<\|(?:[^\|]|\|[^>])*\|>\n?,,gs ;
+
+    print $s;
+  }
+}
