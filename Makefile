@@ -20,7 +20,7 @@ all: world.opt
 test::
 	$(MAKE) -C test clean all
 	$(MAKE) -C testsuite clean all-tests
-	$(MAKE) -C mdx-tests clean all
+	$(MAKE) -C tests-mdx clean all
 
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..
@@ -86,7 +86,7 @@ clean::
 	$(RM) -rf local-install
 	$(MAKE) -C test clean
 	$(MAKE) -C testsuite clean
-	$(MAKE) -C mdx-tests clean
+	$(MAKE) -C tests-mdx clean
 	$(MAKE) -C toolsuite clean
 	$(MAKE) -C scripts clean
 	$(MAKE) -C ppxprint clean
