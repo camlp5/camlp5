@@ -16,6 +16,6 @@ revised_toplevel.asciidoc.corrected: $(shell ls fixtures/*.ml)
 	diff -Bwiu $^
 
 clean:
-	$(RM) -f fixtures/*.cm* *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt link* *.corrected
+	$(RM) -f fixtures/*.cm* *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt link* *.NEW *.corrected *.corrected.UNMODIFIED
 
 realclean: clean
