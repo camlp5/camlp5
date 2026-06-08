@@ -77,7 +77,7 @@ OCAMLLINKC=$(LAUNCH) $(OCAMLFIND) ocamlc
 	$(LAUNCH) $(YAWRAP) ocamlfind ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -warn-error A -warn-error -53 -c $<
 
 %.byte: | %.ml
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers -linkall -linkpkg $+ -o $@
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers.full,camlp5.printers.full -linkall -linkpkg $+ -o $@
 
 o2r_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_matrixtest.cmo
 o2patr_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2patr_matrixtest.cmo
@@ -100,7 +100,7 @@ quotedext_test.byte: testutil.cmo testutil2.cmo quotedext_test.cmo
 roundtrip_lexer.byte: testutil.cmo roundtrip_lexer.cmo
 
 r2sch_test.byte: testutil.cmo r2sch_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers,camlp5.printers,camlp5.pr_scheme.link -linkall -linkpkg testutil.cmo r2sch_test.cmo -o r2sch_test.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.parsers.full,camlp5.printers.full,camlp5.pr_scheme.link -linkall -linkpkg testutil.cmo r2sch_test.cmo -o r2sch_test.byte
 
 grammar_bug_test.TEST:: grammar_bug_test.byte
 	$(NOVERBOSE) mkdir -p _build
@@ -116,10 +116,10 @@ r_top_test.byte: testutil.cmo testutil2.cmo r_top_test.cmo
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_r.link,camlp5.pr_official.link,camlp5.toploop.link -linkall -linkpkg $^ -o r_top_test.byte
 
 sch2r_test.pa_scheme.byte: testutil.cmo testutil2.cmo sch2r_test.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.parsers,camlp5.printers -linkall -linkpkg $^ -o sch2r_test.pa_scheme.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pa_scheme.link,camlp5.parsers.full,camlp5.printers.full -linkall -linkpkg $^ -o sch2r_test.pa_scheme.byte
 
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
-	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.parsers,camlp5.printers -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.parsers.full,camlp5.printers.full -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
 	$(MKCAMLP5) -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@

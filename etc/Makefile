@@ -9,7 +9,11 @@ OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo 
 	print_patr.cmo print_patro.cmo print_patrp.cmo \
 	pr_r.cmo pr_ro.cmo pr_rp.cmo \
 	pr_o.cmo pr_op.cmo \
-	pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo $(MLPARSERS_OBJS) $(MLPRINTERS_OBJS) $(OTHERLANGS)
+	pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo \
+	q_phony.cmo  papr_phony_macro.cmo pr_official.cmo \
+	$(MLPARSERS_OBJS) MLParsers.cmo \
+	$(MLPRINTERS_OBJS) MLPrinters.cmo \
+	$(OTHERLANGS)
 INSTALL_CMI=$(OBJS:.cmo=.cmi) $(MLPARSERS_CMI) $(MLPRINTERS_CMI)
 CAMLP5OM=parse_o.cmo pa_o.cmo parse_op.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
@@ -22,16 +26,14 @@ COUTLIB=mlprinters.cma mlparsers.cma
 COPTLIB=mlprinters.cmxa  mlparsers.cmxa
 
 MLPARSERS_OBJS=../meta/parse_r.cmo ../meta/parse_rp.cmo \
-	parse_o.cmo parse_op.cmo parse_oop.cmo \
-	MLParsers.cmo
+	parse_o.cmo parse_op.cmo parse_oop.cmo
 
 MLPARSERS_XOBJS=$(MLPARSERS_OBJS:.cmo=.cmx)
 MLPARSERS_CMI=$(MLPARSERS_OBJS:.cmo=.cmi)
 
 MLPRINTERS_OBJS=o_keywords.cmo print_o.cmo print_op.cmo \
 	r_keywords.cmo print_r.cmo print_ro.cmo print_rp.cmo \
-	print_patr.cmo print_patro.cmo print_patrp.cmo \
-	MLPrinters.cmo
+	print_patr.cmo print_patro.cmo print_patrp.cmo
 
 MLPRINTERS_XOBJS=$(MLPRINTERS_OBJS:.cmo=.cmx)
 MLPRINTERS_CMI=$(MLPRINTERS_OBJS:.cmo=.cmi)

@@ -56,6 +56,11 @@ package "parsers" (
     requires = "camlp5"
     archive(byte) = "parse_q_MLast.cmo parse_q_ast_base.cmo parse_q_ast.cmo mlparsers.cma"
     archive(native) = "parse_q_MLast.cmx parse_q_ast_base.cmx parse_q_ast.cmx mlparsers.cmxa"
+  package "full" (
+    requires = "camlp5.parsers"
+    archive(byte) = "MLParsers.cmo"
+    archive(native) = "MLParsers.cmx"
+  )
 )
 
 package "pa_r" (
@@ -116,6 +121,11 @@ package "printers" (
     requires = "camlp5"
     archive(byte) = "mlprinters.cma"
     archive(native) = "mlprinters.cmxa"
+  package "full" (
+    requires = "camlp5.printers"
+    archive(byte) = "MLPrinters.cmo"
+    archive(native) = "MLPrinters.cmx"
+  )
 )
 
 package "pr_r" (
