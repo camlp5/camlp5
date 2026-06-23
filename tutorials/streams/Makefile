@@ -18,3 +18,4 @@ test:: all
 clean:
 	rm -f streams streams.opt *.cm* *.o
 
+depend::

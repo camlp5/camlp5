@@ -1,7 +1,7 @@
 (* camlp5r *)
 (* calc.ml,v *)
 
-value g = Grammar.gcreate (Plexer.gmake ());
+value g = Grammar.gcreate (Pcaml.Lexer.gmake ());
 value e = Grammar.Entry.create g "expression";
 
 EXTEND

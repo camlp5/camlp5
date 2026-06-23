@@ -6,7 +6,8 @@ DESTDIR=
 RM=rm
 
 LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
-OCAMLFIND=$(LAUNCH) ocamlfind
-NOT_OCAMLFIND=$(LAUNCH) not-ocamlfind
-MKCAMLP5=$(LAUNCH) mkcamlp5
+YAWRAP=ocamlfind camlp5-buildscripts/ya-wrap-ocamlfind
+OCAMLFIND=ocamlfind
+NOT_OCAMLFIND=not-ocamlfind
 SYNTAX := camlp5o
+PACKAGES := camlp5

@@ -55,6 +55,6 @@ value meta_p_sexp se =
   sexp se
 ;
 
-Quotation.add "sexp"
+Pcaml.QH.add "sexp"
   (apply_entry sexp_eoi meta_e_sexp meta_p_sexp)
 ;

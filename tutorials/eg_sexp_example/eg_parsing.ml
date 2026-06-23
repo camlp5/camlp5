@@ -1,4 +1,4 @@
-(* camlp5o *)
+(*pp -syntax camlp5o *)
 (* eg_sexp.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 

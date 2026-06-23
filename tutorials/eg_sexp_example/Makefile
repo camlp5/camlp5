@@ -3,10 +3,10 @@
 
 include Makefile.include
 
-PACKAGES := $(PACKAGES),fmt
+PACKAGES := $(PACKAGES),fmt,sexp_example.parser
 
 ML=\
-	eg_quotations.ml eg_parsing.ml eg_q_ast.cmo \
+	eg_quotations.ml eg_parsing.ml eg_q_ast.ml \
 
 CMO := $(ML:.ml=.cmo)
 CMI := $(ML:.ml=.cmi)
@@ -21,25 +21,27 @@ test:
 doc: $(CMT) $(CMTI)
 
 eg_quotations.cmo: eg_quotations.ml
-	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.quotations" $@
-
 eg_parsing.cmo: eg_parsing.ml
-	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.parser" $@
-
 eg_q_ast.cmo: eg_q_ast.ml
-	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.parser_quotations" $@
+
+.ml.cmo:
+	$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
+
+.ml.cmx:
+	$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamlopt $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
+
 
 .SUFFIXES: .cmo .cmi .ml .mli .cmx .cma .cmxa .cmt .cmti
 
 clean::
 	rm -rf META *.cm* *.o
 
-EXTERNAL := $(shell $(OCAMLFIND) query -predicates byte -format '%m' $(PACKAGES) | grep local-install)
+EXTERNAL := $(shell $(LAUNCH) $(OCAMLFIND) query -predicates byte -format '%m' $(PACKAGES) | grep local-install)
 $(CMO) $(CMI) $(CMX): $(EXTERNAL)
 
 depend::
 	echo "$(CMO) $(CMI) $(CMX): $(EXTERNAL)" > .depend.NEW
-	$(OCAMLFIND) ocamldep $(DEBUG) -package $(PACKAGES) -syntax $(SYNTAX) *.ml *.mli >> .depend.NEW \
+	$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamldep $(DEBUG) -package $(PACKAGES) -syntax $(SYNTAX) *.ml >> .depend.NEW \
 		&& mv .depend.NEW .depend
 
 -include .depend

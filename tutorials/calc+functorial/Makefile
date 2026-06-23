@@ -35,3 +35,4 @@ test:: all
 clean:
 	rm -f calc calc.opt *.cm* *.o calclexer.ml
 
+depend::

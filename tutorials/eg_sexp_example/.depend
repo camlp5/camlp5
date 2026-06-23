@@ -1,0 +1,7 @@
+eg_quotations.cmo eg_parsing.cmo eg_q_ast.cmo eg_quotations.cmi eg_parsing.cmi eg_q_ast.cmi eg_quotations.cmx eg_parsing.cmx eg_q_ast.cmx: ../../local-install/lib/sexp_example/META
+eg_parsing.cmo :
+eg_parsing.cmx :
+eg_q_ast.cmo :
+eg_q_ast.cmx :
+eg_quotations.cmo :
+eg_quotations.cmx :

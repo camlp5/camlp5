@@ -28,3 +28,4 @@ test:: all
 clean:
 	rm -f calc calc.opt *.cm* *.o *ppo.ml
 
+depend::

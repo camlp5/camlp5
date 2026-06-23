@@ -52,5 +52,5 @@ EXTEND
 
 END;
 
-Quotation.add "sexp" (Q_MLast.apply_entry sexp_eoi "sexp") ;
+Pcaml.QH.add "sexp" (Q_MLast.apply_entry sexp_eoi "sexp") ;
   
