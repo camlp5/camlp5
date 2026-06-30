@@ -6943,7 +6943,7 @@ ELSE
      official_input = OK {foo|type t = (module%ext [@a] M:MT) -> t |foo} ;
      r_input = OK {foo|type t = (module%ext [@a] M:MT) -> t ;|foo} ;
      o_output = OK {foo|type t = (module M : MT[@a]) -> t;;|foo};
-     official_output = OK {foo|type t = (module M : MT) -> t|foo} ;
+     official_output = OK {foo|type t = (module M : ((MT)[@a ])) -> t|foo} ;
      r_output = OK {foo|type t = (module M : MT[@"a"]) -> t;|foo}
     }
 ]
