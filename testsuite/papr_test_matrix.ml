@@ -79,6 +79,33 @@ let x = 1|foo};
 value x = 1;
 |foo}
     };
+    {name="simple-string"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|"abc\n\t\b\"\\\ \r\x41\065"|foo} ;
+     official_input = OK {foo|"abc\n\t\b\"\\\ \r\x41\065"|foo} ;
+     r_input = OK {foo|"abc\n\t\b\"\\\ \r\x41\065";|foo} ;
+     o_output = OK {foo|let _ = "abc\n\t\b\"\\ \r\x41\065";;|foo};
+     official_output = OK {foo|;;"abc\n\t\b\"\\ \rAA"|foo} ;
+     r_output = OK {foo|"abc\n\t\b\"\\ \r\x41\065";|foo}
+    };
+    {name="octal-string"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|"\o101"|foo} ;
+     official_input = OK {foo|"\o101"|foo} ;
+     r_input = OK {foo|"\o101";|foo} ;
+     o_output = OK {foo|let _ = "\o101";;|foo};
+     official_output = OK {foo|;;"A"|foo} ;
+     r_output = OK {foo|"\o101";|foo}
+    };
+    {name="unicode-string"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|"\u{207A}\u{f}"|foo} ;
+     official_input = OK {foo|"\u{207A}\u{f}"|foo} ;
+     r_input = OK {foo|"\u{207A}\u{f}";|foo} ;
+     o_output = OK {foo|let _ = "\u{207A}\u{f}";;|foo};
+     official_output = OK {foo|;;"\226\129\186\015"|foo} ;
+     r_output = OK {foo|"\u{207A}\u{f}";|foo}
+    };
     {name="infix1"; implem = True ;
      exclude=[];
      o_input = OK"(a + b) c;;" ;

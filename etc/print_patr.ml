@@ -865,7 +865,7 @@ value typevar pc s =
     if String.contains s '\'' then
       pprintf pc "' %s" s
     else if is_keyword s then
-      pprintf pc "'\#%s" s
+      pprintf pc "'\\#%s" s
     else
       pprintf pc "'%s" s
    ]

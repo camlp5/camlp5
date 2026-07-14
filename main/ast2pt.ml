@@ -20,12 +20,112 @@ value get_tag x =
 
 value error loc str = Ploc.raise loc (Failure str);
 
+value string_of_uchar uc =
+  let b = Buffer.create 4 in do {
+  Uutf.Buffer.add_utf_8 b uc ;
+  Buffer.contents b
+}
+;
+
+value digit2int = fun [
+  '0'..'9' as c -> (Char.code c) - (Char.code '0')
+| 'a'..'f' as c -> (Char.code c) - (Char.code 'a') + 10
+| 'A'..'F' as c -> (Char.code c) - (Char.code 'A') + 10
+| _ -> failwith "unescape_string: bad digit"
+]
+;
+
+value hexstring2int digits = int_of_string ("0x"^digits) ;
+
+value unescape_string s =
+  let slen = String.length s in
+  let b = Buffer.create slen in
+  let rec unrec i =
+    if i = String.length s then Buffer.contents b
+    else match s.[i] with [
+           '\\' -> backslash (i+1)
+         | c -> do { Buffer.add_char b c ; unrec (i+1) }
+           ]
+  and backslash i =
+    if i = slen then failwith "unescape_string: malformed trailing backslash escape"
+    else
+      match s.[i] with [
+          ('\'' | '"' | ' ' | '\\') as c -> do { Buffer.add_char b c ; unrec (i+1) }
+        | 'b' ->  do { Buffer.add_char b '\b' ; unrec (i+1) }
+        | 'r' ->  do { Buffer.add_char b '\r' ; unrec (i+1) }
+        | 'n' ->  do { Buffer.add_char b '\n' ; unrec (i+1) }
+        | 't' ->  do { Buffer.add_char b '\t' ; unrec (i+1) }
+        | '0'..'9' -> let i = dec i in unrec i
+        | 'x' -> let i = hex (i+1) in unrec i
+        | 'o' -> let i = oct (i+1) in unrec i
+        | 'u' -> let i = uni (i+1) in unrec i
+        | c -> failwith (Printf.sprintf "unescape_string: unrecognized backslash '%c' escape at offset %d" c i)
+        ]
+  and dec i =
+    if i+3 > slen then
+      failwith (Printf.sprintf "unescape_string: decimal escape without enough digits at offset %d" i)
+    else
+      match (s.[i], s.[i+1], s.[i+2]) with [
+          ((('0'..'9') as c1), (('0'..'9') as c2), (('0'..'9') as c3)) ->
+          let code = (digit2int c1)*100 +(digit2int c2)*10 + (digit2int c3) in
+          do { Buffer.add_char b (Char.chr code) ; i+3 }
+
+        | _ -> failwith (Printf.sprintf "unescape_string: malformed decimal escape at offset %d" i)
+        ]
+  and oct i =
+    if i+3 > slen then
+      failwith (Printf.sprintf "unescape_string: octal escape without enough digits at offset %d" i)
+    else
+      match (s.[i], s.[i+1], s.[i+2]) with [
+          ((('0'..'7') as c1), (('0'..'7') as c2), (('0'..'7') as c3)) ->
+          let code = (digit2int c1)*64 +(digit2int c2)*8 + (digit2int c3) in
+          do { Buffer.add_char b (Char.chr code) ; i+3 }
+
+        | _ -> failwith (Printf.sprintf "unescape_string: malformed octal escape at offset %d" i)
+        ]
+  and hex i =
+    if i+2 > slen then
+      failwith (Printf.sprintf "unescape_string: hex escape without enough digits at offset %d" i)
+    else
+      match (s.[i], s.[i+1]) with [
+          ((('0'..'7'|'a'..'f'|'A'..'F') as c1), (('0'..'7'|'a'..'f'|'A'..'F') as c2)) ->
+          let code = (digit2int c1)*16 +(digit2int c2) in
+          do { Buffer.add_char b (Char.chr code) ; i+2 }
+
+        | _ -> failwith (Printf.sprintf "unescape_string: malformed hex escape at offset %d" i)
+        ]
+
+  and uni i = do {
+    if i >= slen || s.[i] <> '{' then
+      failwith (Printf.sprintf "unescape_string: malformed unicode escape at offset %d" i)
+    else ();
+    match String.index_from_opt s (i+1) '}' with [
+      None ->
+        failwith (Printf.sprintf "unescape_string: malformed unicode escape (no '}') at offset %d" i)
+    | Some j ->
+       let digits = String.sub s (i+1) (j - (i+1)) in
+       let n = hexstring2int digits in
+       let uc = Uchar.of_int n in
+       do { Buffer.add_string b (string_of_uchar uc) ; j+1 }
+      ]
+  }
+in unrec 0
+;
 value char_of_char_token loc s =
   try Plexing.eval_char s with [ Failure _ as exn → Ploc.raise loc exn ]
 ;
 
 value string_of_string_token loc s =
+(*
   try Plexing.eval_string loc s with [ Failure _ as exn → Ploc.raise loc exn ]
+ *)
+
+  try unescape_string s
+  with [
+      Failure msg →
+      let msg = Printf.sprintf "exception in string \"%s\": %s" s msg in
+          Ploc.raise loc (Failure msg) ]
+
 ;
 
 value mkloc loc =

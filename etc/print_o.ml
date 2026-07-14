@@ -554,7 +554,7 @@ value type_var pc v =
   if String.contains v '\'' then
     pprintf pc "' %s" v
   else if is_keyword v then
-    pprintf pc "'\#%s" v
+    pprintf pc "'\\#%s" v
   else
     pprintf pc "'%s" v
 ;
