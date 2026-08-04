@@ -13,7 +13,7 @@ include Pcamlbase ;
 
 type status = option Ploc.t;
 
-value version = "8.05.01";
+value version = "8.05.02";
 value syntax_name = ref "";
 
 value ocaml_version =

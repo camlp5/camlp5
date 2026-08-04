@@ -1,4 +1,4 @@
-version: "8.05.01"
+version: "8.05.02"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """
@@ -42,6 +42,7 @@ depends: [
   "rresult"
   "bos"
   "fmt"
+  "uutf"
   "mdx" {>= "2.3.0" & with-test}
 ]
 build: [

@@ -1,3 +1,9 @@
+Camlp5 Version 8.05.02:
+-----------------------
+
+* [29 Jun 2026] fix one test that broke between 5.5.0~beta1 and ~rc1 b/c
+  a pretty-printing fix got pushed to the release.
+
 Camlp5 Version 8.05.01:
 -----------------------
 
