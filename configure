@@ -189,7 +189,7 @@ x=$ocamlc_where
 y=$(echo $x | sed -e 's|\\\\|/|g')
 OLIBDIR="$y"
 if [ "$OVERSION" "<" "4.14" ]; then
-  C5PACKAGES="compiler-libs,compiler-libs.common,rresult,bos,re,pcre2"
+  C5PACKAGES="compiler-libs,compiler-libs.common,rresult,bos,re,pcre2,uutf"
 else
   C5PACKAGES="compiler-libs,compiler-libs.common,camlp-streams,rresult,bos,re,pcre2,uutf"
 fi
