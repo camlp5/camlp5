@@ -30,7 +30,7 @@ bug-reports: "https://github.com/camlp5/camlp5/issues"
 depends: [
   "ocaml" {>= "4.10" & < "5.6.0" }
   "ocamlfind"
-  "not-ocamlfind" { >= "0.10" }
+  "not-ocamlfind" { >= "0.15" }
   "camlp-streams" { >= "5.0" }
   "conf-perl"
   "conf-bash"
