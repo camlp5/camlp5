@@ -219,3 +219,21 @@ value string_of_loc fname line bp ep =
 value string_of_location {fname=fname; bp=bp; ep=ep; line_nb=line; bol_pos=bol} =
   string_of_loc fname line (bp - bol) (ep - bol)
 ;
+
+module Internal = struct
+type nonrec t = t ==
+  { fname : string;
+    line_nb : int;
+    bol_pos : int;
+    line_nb_last : int;
+    bol_pos_last : int;
+    bp : int;
+    ep : int;
+    comm : string;
+    ecomm : string }
+;
+type _t = t ;
+
+value of_t loc = loc ;
+end
+;

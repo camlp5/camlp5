@@ -133,3 +133,20 @@ value string_of_location : t -> string;
 value make : int -> int -> (int * int) -> t;
    (** deprecated function since version 6.00; use [make_loc] instead
        with the empty string *)
+
+module Internal : sig
+type t =
+  { fname : string;
+    line_nb : int;
+    bol_pos : int;
+    line_nb_last : int;
+    bol_pos_last : int;
+    bp : int;
+    ep : int;
+    comm : string;
+    ecomm : string }
+;
+type _t = t ;
+
+value of_t : t -> _t ;
+end ;
