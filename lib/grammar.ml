@@ -227,6 +227,22 @@ value fold_entry f e init =
 
 value floc = ref (fun _ -> failwith "internal error when computing location");
 
+value with_dummy_locations f arg =
+  let restore = 
+    let old_floc = floc.val in
+    fun () -> floc.val := old_floc in
+  let dummy_floc _ = Ploc.dummy in
+  try
+    let () = (floc.val := dummy_floc) in
+    let rv = f arg in
+    let () = restore() in
+    rv
+  with ex ->
+        let rbt = Printexc.get_raw_backtrace() in
+        let () = restore() in
+        Printexc.raise_with_backtrace ex rbt
+;
+
 value loc_of_token_interval bp ep =
   if bp == ep then
     if bp == 0 then Ploc.dummy

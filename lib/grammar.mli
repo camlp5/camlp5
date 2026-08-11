@@ -33,6 +33,8 @@ value parsable : g -> Stream.t char -> parsable;
        several calls of entries of the same grammar, to prevent possible
        loss of tokens. To be used with [Entry.parse_parsable] below *)
 
+value with_dummy_locations : ('a -> 'b) -> 'a -> 'b ;
+
 module Entry :
   sig
     type e 'a = 'x;
