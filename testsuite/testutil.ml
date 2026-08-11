@@ -4,6 +4,22 @@
 
 open Printf;
 
+value list_of_stream strm =
+let rec listrec acc = parser [
+  [: `t ; strm :] -> listrec [t::acc] strm
+| [: :] -> List.rev acc
+]
+in listrec [] strm
+;
+
+value stream_of_list l =
+  let rec listrec = fun [
+      [] -> [: :]
+    | [h::t] -> [: `h ; listrec t :]
+      ]
+in listrec l
+;
+
 value map_stream f =
   let rec mrec = parser [
     [: `e ; strm :] -> [: `f e ; mrec strm :]

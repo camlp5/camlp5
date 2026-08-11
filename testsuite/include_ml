@@ -123,7 +123,9 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
  *)
 print_string "================ START ================\n";; flush stdout ;;
 
-
+let toklist = lex_string Pcaml.gram {|a+b } |} ;;
+let tokstrm = stream_of_list toklist ;;
+Grammar.with_dummy_locations (Grammar.Entry.parse_token_stream Pcaml.expr) tokstrm ;;
 
 (*
 ;;; Local Variables: ***
