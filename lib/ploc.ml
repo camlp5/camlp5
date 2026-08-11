@@ -221,6 +221,7 @@ value string_of_location {fname=fname; bp=bp; ep=ep; line_nb=line; bol_pos=bol} 
 ;
 
 module Internal = struct
+type real_t = t ;
 type nonrec t = t ==
   { fname : string;
     line_nb : int;
@@ -232,8 +233,6 @@ type nonrec t = t ==
     comm : string;
     ecomm : string }
 ;
-type _t = t ;
-
 value of_t loc = loc ;
 end
 ;

@@ -135,6 +135,7 @@ value make : int -> int -> (int * int) -> t;
        with the empty string *)
 
 module Internal : sig
+type real_t = t ;
 type t =
   { fname : string;
     line_nb : int;
@@ -146,7 +147,6 @@ type t =
     comm : string;
     ecomm : string }
 ;
-type _t = t ;
 
-value of_t : t -> _t ;
+value of_t : real_t -> t ;
 end ;
