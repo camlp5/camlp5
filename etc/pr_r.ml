@@ -1680,21 +1680,21 @@ EXTEND_PRINTER
       [ 
         <:expr< $longid:li$ . ( $e$ ) >> ->
         match e with [
-          <:expr< $uid:"[]"$ >> -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
-        | <:expr< [ $_$ :: $_$ ] >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+          <:expr< $uid:"[]"$ >> -> pprintf pc "%p.@[<a>[]@]" longident li
+        | <:expr< [ $_$ :: $_$ ] >> -> pprintf pc "%p.%p" longident li curr e
 
-        | <:expr< { $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-        | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-        | <:expr:< $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" longident li var_escaped (loc,v)
+        | <:expr< { $list:_$ } >> -> pprintf pc "%p.%p" longident li curr e
+        | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.%p" longident li curr e
+        | <:expr:< $lid:v$ >> -> pprintf pc "%p.%p" longident li var_escaped (loc,v)
         | <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
-          pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li (plist expr 0) el
+          pprintf pc "%p.@[<a>(%p)@]" longident li (plist expr 0) el
 
-        | e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
+        | e -> pprintf pc "%p.@[<a>(%p)@]" longident li expr e
         ]
 
-      | <:expr:< $e$ . $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" curr e var_escaped (loc,v)
-      | <:expr< $e$ . $lilongid:lili$ >> -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident lili
+      | <:expr:< $e$ . $lid:v$ >> -> pprintf pc "%p.%p" curr e var_escaped (loc,v)
+      | <:expr< $e$ . $lilongid:lili$ >> -> pprintf pc "%p.%p" curr e longident_lident lili
 
       | <:expr< $longid:li$ >> -> longident pc li
 

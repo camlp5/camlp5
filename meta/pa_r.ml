@@ -16,11 +16,14 @@ Pcaml.no_constructors_arity.val := False;
 
 do {
   let odfa = Plexer.dollar_for_antiquotation.val in
+  let odni = Plexer.dot_newline_is.val in
   let osrs = Plexer.simplest_raw_strings.val in
   Plexer.dollar_for_antiquotation.val := False;
   Plexer.simplest_raw_strings.val := False;
   Plexer.utf8_lexing.val := True;
+  Plexer.dot_newline_is.val := ";";
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
+  Plexer.dot_newline_is.val := odni;
   Plexer.dollar_for_antiquotation.val := odfa;
   Plexer.simplest_raw_strings.val := osrs ;
   Grammar.Unsafe.clear_entry attribute_body;
@@ -855,6 +858,7 @@ EXTEND
           <:module_type< module type of $me$ >> ]
     | "simple"
       [ li = extended_longident; "."; i = V LIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
+      | li = extended_longident; "."; i = V GIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:module_type< $longid:li$ >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
@@ -1518,7 +1522,7 @@ EXTEND
       [ t1 = SELF; "->"; t2 = SELF → <:ctyp< $t1$ → $t2$ >> ]
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
-    | LEFTA
+    | "ident" LEFTA
       [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
@@ -1830,11 +1834,13 @@ EXTEND
   longident_lident:
     [ [ li = V longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
+      | i = V GIDENT → (None, i)
       ] ]
   ;
   extended_longident_lident:
     [ [ li = V extended_longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
+      | i = V GIDENT → (None, i)
       ] ]
   ;
   (* Labels *)

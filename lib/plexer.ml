@@ -12,6 +12,7 @@ value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
+value dot_newline_is = ref ".";
 
 value force_antiquot_loc = ref False;
 
@@ -20,6 +21,7 @@ type context =
     simplest_raw_strings : bool ;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
+    dot_newline_is : string;
     find_kwd : string -> string;
     is_kwd : string -> bool;
     line_cnt : int -> char -> unit;
@@ -775,6 +777,7 @@ value next_token_after_spaces ctx bp =
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
+  | "." ?= [ "\n" ] -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
   | "." dotsymbolchar symbolchar_star ->
       keyword_or_error ctx (bp, $pos) $buf
   | "." ->
@@ -879,6 +882,7 @@ value make_ctx kwd_table =
      dollar_for_antiquotation = dollar_for_antiquotation.val;
      simplest_raw_strings = simplest_raw_strings.val ;
      specific_space_dot = specific_space_dot.val;
+     dot_newline_is = dot_newline_is.val;
      find_kwd = Hashtbl.find kwd_table;
      is_kwd = Hashtbl.mem kwd_table;
      line_cnt bp1 c =
