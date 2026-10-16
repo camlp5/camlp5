@@ -56,6 +56,53 @@ do {
   Eprinter.clear pr_class_type;
 };
 
+
+(* UTF8 functions specific to pr_r *)
+
+value default_lang =
+  try Sys.getenv "LC_ALL" with
+  [ Not_found ->
+      try Sys.getenv "LC_MESSAGES" with
+      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
+;
+
+value utf8 =
+  let s = default_lang in
+  let utf8_str = "utf-8" in
+  let slen = String.length s in
+  let ulen = String.length utf8_str in
+  slen >= ulen &&
+  string_lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+;
+
+(* Type variables and identifiers in Greek *)
+
+value greek_tab =
+  [| "α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+     "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω" |]
+;
+value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
+
+value try_greek s = do {
+  if utf8 then do {
+    if String.length s = 1 then do {
+      let c = Char.code s.[0] - Char.code 'a' in
+      let g = greek_tab.(c mod Array.length greek_tab) in
+      let n = c / Array.length greek_tab in
+      if n < Array.length index_tab then Some (g ^ index_tab.(n))
+      else None
+    }
+    else None
+  }
+  else None
+};
+
+value try_greek_lident s =
+  if utf8 then
+    english2greek_lident s
+  else s
+;
+
 (* general functions *)
 
 value error loc msg = Ploc.raise loc (Failure msg);
@@ -176,10 +223,10 @@ value expand_lprintf pc loc f =
   else f pc
 ;
 
-
 value string pc s = pprintf pc "\"%s\"" s;
 
 value lident pc v =
+  let v = try_greek_lident v in
   if is_keyword v then pprintf pc "\\#%s@ " v
   else pprintf pc "%s" v
 ;
@@ -363,23 +410,7 @@ value patt_as pc z =
   | z -> patt pc z ]
 ;
 
-(* utilities specific to pr_r *)
-
-value default_lang =
-  try Sys.getenv "LC_ALL" with
-  [ Not_found ->
-      try Sys.getenv "LC_MESSAGES" with
-      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
-;
-
-value utf8 =
-  let s = default_lang in
-  let utf8_str = "utf-8" in
-  let slen = String.length s in
-  let ulen = String.length utf8_str in
-  slen >= ulen &&
-  string_lowercase (String.sub s (slen - ulen) ulen) = utf8_str
-;
+(* more utilities specific to pr_r *)
 
 value arrow () = if utf8 then "→" else "->";
 
@@ -790,28 +821,6 @@ value start_with s s_ini =
   let len = String.length s_ini in
   String.length s >= len && String.sub s 0 len = s_ini
 ;
-
-(* Type variables in Greek *)
-
-value greek_tab =
-  [| "α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
-     "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω" |]
-;
-value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
-
-value try_greek s = do {
-  if utf8 then do {
-    if String.length s = 1 then do {
-      let c = Char.code s.[0] - Char.code 'a' in
-      let g = greek_tab.(c mod Array.length greek_tab) in
-      let n = c / Array.length greek_tab in
-      if n < Array.length index_tab then Some (g ^ index_tab.(n))
-      else None
-    }
-    else None
-  }
-  else None
-};
 
 value typevar pc s =
   match try_greek s with [

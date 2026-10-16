@@ -14,7 +14,7 @@ endif
 DIFF=diff -Bwi -u20
 RM=rm
 
-TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test r2official_test \
+TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test r2official_test greek_test \
         r2sch_test q_MLast_test revised_parser_test official_parser_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test reloc_test o_top_test2 o_top_test r_top_test grammar_bug_test \
@@ -41,6 +41,7 @@ all: roundtrippers \
 	r2r_test.byte \
 	r2o_test.byte \
 	o2o_test.byte \
+	greek_test.byte \
 	official2official_test.byte \
 	o2official_test.byte \
 	r2official_test.byte \
@@ -263,6 +264,13 @@ sch2r_test.pa_schemer:: sch2r_test.pa_schemer.byte
 
 sch2r_test.pa_schemer.byte: sch2r_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.ml -o sch2r_test.pa_schemer.byte
+
+greek_test:: greek_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	env LC_ALL=en_US.UTF-8 ./greek_test.byte $(TESTARGS)
+
+greek_test.byte: papr_test_matrix.cmo testutil.cmo testutil2.cmo greek_test.ml
+	$(OCAMLFIND) ocamlc $(OCAMLCFLAGS) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.pr_official.link -I ../etc -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo greek_test.ml -o greek_test.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
 	$(MKCAMLP5) -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@

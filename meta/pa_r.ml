@@ -858,7 +858,6 @@ EXTEND
           <:module_type< module type of $me$ >> ]
     | "simple"
       [ li = extended_longident; "."; i = V LIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
-      | li = extended_longident; "."; i = V GIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:module_type< $longid:li$ >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
@@ -1145,7 +1144,7 @@ EXTEND
       | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
-      | i = V GIDENT → <:expr< $_lid:i$ >>
+      | i = V GIDENT → <:expr< $_lid:Pcaml.vala_map (greek2english_lident loc) i$ >>
       | e = expr_longident → e
       | "["; "]" → <:expr< $uid:"[]"$ >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
@@ -1261,7 +1260,7 @@ EXTEND
   ;
   patt_ident: [
     [ s = V LIDENT → <:patt< $_lid:s$ >>
-    | s = V GIDENT → <:patt< $_lid:s$ >>
+    | s = V GIDENT → <:patt< $_lid:Pcaml.vala_map (greek2english_lident loc) s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
         <:patt< $uid:i$ >> ->
@@ -1833,14 +1832,15 @@ EXTEND
   ;
   longident_lident:
     [ [ li = V longident "longid" ; "."; i = V LIDENT → (Some li, i)
+      | li = V longident "longid" ; "."; i = V GIDENT → (Some li, Pcaml.vala_map (greek2english_lident loc) i)
       | i = V LIDENT → (None, i)
-      | i = V GIDENT → (None, i)
+      | i = V GIDENT → (None, Pcaml.vala_map (greek2english_lident loc) i)
       ] ]
   ;
   extended_longident_lident:
     [ [ li = V extended_longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
-      | i = V GIDENT → (None, i)
+      | i = V GIDENT → (None, Pcaml.vala_map (greek2english_lident loc) i)
       ] ]
   ;
   (* Labels *)

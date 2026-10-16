@@ -45,5 +45,7 @@ module Revised :
     value is_infix_operator : string → bool;
     value is_dotop : string → bool;
     value is_special_op : string → bool;
+    value english2greek_lident : string -> string;
+    value greek2english_lident : Ploc.t -> string -> string;
   end
 ;

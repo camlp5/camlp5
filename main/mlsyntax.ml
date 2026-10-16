@@ -193,4 +193,56 @@ value is_dotop s =
 
 value is_special_op s = is_operator s || is_letop s || is_andop s || is_dotop s ;
 
+value greek_lidents_list =
+  [ ("α", "alpha")
+  ; ("β", "beta")
+  ; ("γ", "gamma")
+  ; ("δ", "delta")
+  ; ("ε", "epsilon")
+  ; ("ζ", "zeta")
+  ; ("η", "eta")
+  ; ("θ", "theta")
+  ; ("ι", "iota")
+  ; ("κ", "kappa")
+  ; ("λ", "lambda")
+  ; ("μ", "mu")
+  ; ("ν", "nu")
+  ; ("ξ", "xi")
+  ; ("ο", "omicron")
+  ; ("π", "pi")
+  ; ("ρ", "rho")
+  ; ("σ", "sigma")
+  ; ("τ", "tau")
+  ; ("υ", "upsilon")
+  ; ("φ", "phi")
+  ; ("χ", "chi")
+  ; ("ψ", "psi")
+  ; ("ω", "omega")
+  ]
+;
+
+value greek2english_lident_map = Hashtbl.create 23 ;
+value english2greek_lident_map = Hashtbl.create 23 ;
+greek_lidents_list
+|> List.iter (fun (gid, engid) ->
+       let engid = "__"^engid^"__" in do {
+       Hashtbl.add greek2english_lident_map gid engid ;
+       Hashtbl.add english2greek_lident_map engid gid
+     }) ;
+
+value english2greek_lident s =
+  match Hashtbl.find_opt english2greek_lident_map s with [
+      None -> s
+    | Some s -> s
+    ]
+;
+
+value greek2english_lident loc s =
+  match Hashtbl.find_opt greek2english_lident_map s with [
+      None -> Ploc.raise loc (Failure ("Mlsyntax.Revised.greek2english_lident: greek identifier <<"^s^">> is not mappable to english"))
+    | Some s -> s
+    ]
+;
+
 end ;
+
