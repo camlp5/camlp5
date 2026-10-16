@@ -15,11 +15,14 @@ Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
 
 let odfa = !(Plexer.dollar_for_antiquotation) in
+let odni = !(Plexer.dot_newline_is) in
 let osrs = !(Plexer.simplest_raw_strings) in
 Plexer.dollar_for_antiquotation := false;
 Plexer.simplest_raw_strings := false;
 Plexer.utf8_lexing := true;
+Plexer.dot_newline_is := ";";
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
+Plexer.dot_newline_is := odni;
 Plexer.dollar_for_antiquotation := odfa;
 Plexer.simplest_raw_strings := osrs;
 Grammar.Unsafe.clear_entry attribute_body;
@@ -1883,6 +1886,18 @@ Grammar.safe_extend
            "194fe98d",
            (fun (li : 'extended_longident) (loc : Ploc.t) ->
               (MLast.MtLong (loc, li) : 'module_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("GIDENT", "")),
+           "194fe98d",
+           (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
+              (MLast.MtLongLid (loc, li, i) : 'module_type)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -5057,7 +5072,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (t2 : 'ctyp) (t1 : 'ctyp) (loc : Ploc.t) ->
               (MLast.TyApp (loc, t1, t2) : 'ctyp)))];
-       None, Some Gramext.LeftA,
+       Some "ident", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
@@ -6594,6 +6609,11 @@ Grammar.safe_extend
       None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+           "194fe98d",
+           (fun (i : string) (loc : Ploc.t) ->
+              (None, i : 'longident_lident)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
@@ -6613,6 +6633,11 @@ Grammar.safe_extend
       None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+           "194fe98d",
+           (fun (i : string) (loc : Ploc.t) ->
+              (None, i : 'extended_longident_lident)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
