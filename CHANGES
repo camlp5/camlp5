@@ -1,3 +1,11 @@
+Camlp5 Version 8.05.03:
+-----------------------
+
+* [15 Oct 2026] resurrect "dot_newline_is" support in the revised syntax.
+  This allows you to use ".<NEWLINE>" as a stand-in for ";".  Camlp5
+  used to support this, but I removed it back around the 8.00 days, b/c
+  I didn't know what it was for.  It's to support a Coq-like syntax.
+
 Camlp5 Version 8.05.02:
 -----------------------
 
