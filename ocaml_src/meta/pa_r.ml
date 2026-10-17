@@ -1894,18 +1894,6 @@ Grammar.safe_extend
                       (extended_longident :
                        'extended_longident Grammar.Entry.e)))
                 (Grammar.s_token ("", ".")))
-             (Grammar.s_token ("GIDENT", "")),
-           "194fe98d",
-           (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
-              (MLast.MtLongLid (loc, li, i) : 'module_type)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm
-                      (extended_longident :
-                       'extended_longident Grammar.Entry.e)))
-                (Grammar.s_token ("", ".")))
              (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
@@ -3540,7 +3528,9 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
-              (MLast.ExLid (loc, i) : 'expr)));
+              (MLast.ExLid
+                 (loc, Pcaml.vala_map (greek2english_lident loc) i) :
+               'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
@@ -4051,7 +4041,9 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            "194fe98d",
            (fun (s : string) (loc : Ploc.t) ->
-              (MLast.PaLid (loc, s) : 'patt_ident)));
+              (MLast.PaLid
+                 (loc, Pcaml.vala_map (greek2english_lident loc) s) :
+               'patt_ident)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
@@ -6612,12 +6604,24 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
-              (None, i : 'longident_lident)));
+              (None, Pcaml.vala_map (greek2english_lident loc) i :
+               'longident_lident)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (None, i : 'longident_lident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("GIDENT", "")),
+           "194fe98d",
+           (fun (i : string) _ (li : 'longident) (loc : Ploc.t) ->
+              (Some li, Pcaml.vala_map (greek2english_lident loc) i :
+               'longident_lident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -6636,7 +6640,8 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
-              (None, i : 'extended_longident_lident)));
+              (None, Pcaml.vala_map (greek2english_lident loc) i :
+               'extended_longident_lident)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            "194fe98d",

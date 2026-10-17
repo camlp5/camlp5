@@ -170,5 +170,62 @@ module Revised =
     let is_special_op s =
       is_operator s || is_letop s || is_andop s || is_dotop s
     ;;
+    let greek_lidents_list =
+      ["α", "alpha"; "β", "beta"; "γ", "gamma"; "δ", "delta"; "ε", "epsilon";
+       "ζ", "zeta"; "η", "eta"; "θ", "theta"; "ι", "iota"; "κ", "kappa";
+       "λ", "lambda"; "μ", "mu"; "ν", "nu"; "ξ", "xi"; "ο", "omicron";
+       "π", "pi"; "ρ", "rho"; "σ", "sigma"; "τ", "tau"; "υ", "upsilon";
+       "φ", "phi"; "χ", "chi"; "ψ", "psi"; "ω", "omega"]
+    ;;
+    let prefix = "__greek_";;
+    let prefixlen = String.length prefix;;
+    let hexify_greek_lident s =
+      let b = Buffer.create (prefixlen + String.length s * 2) in
+      Buffer.add_string b prefix;
+      s |>
+        String.iter
+          (fun c ->
+             Buffer.add_string b (Printf.sprintf "%02x" (Char.code c)));
+      Buffer.contents b
+    ;;
+    let unhexify_greek_lident s =
+      let slen = String.length s in
+      if slen <= prefixlen then None
+      else if (slen - prefixlen) mod 2 <> 0 then None
+      else if String.sub s 0 prefixlen <> prefix then None
+      else
+        let s = String.sub s prefixlen (slen - prefixlen) in
+        let slen = String.length s in
+        let b = Buffer.create (slen / 2) in
+        for i = 0 to slen / 2 - 1 do
+          let ofs = i * 2 in
+          let cstr = String.sub s ofs 2 in
+          let cstr = "0x" ^ cstr in
+          let c = Char.chr (int_of_string cstr) in Buffer.add_char b c
+        done;
+        Some (Buffer.contents b)
+    ;;
+    let greek2english_lident_map = Hashtbl.create 23;;
+    let english2greek_lident_map = Hashtbl.create 23;;
+    greek_lidents_list |>
+      List.iter
+        (fun (gid, engid) ->
+           let engid = "__" ^ engid ^ "__" in
+           Hashtbl.add greek2english_lident_map gid engid;
+           Hashtbl.add english2greek_lident_map engid gid);;
+    let english2greek_lident s =
+      match Hashtbl.find_opt english2greek_lident_map s with
+        Some s -> s
+      | None ->
+          match unhexify_greek_lident s with
+            Some s -> s
+          | None -> s
+    ;;
+    let greek2english_lident loc s =
+      match Hashtbl.find_opt greek2english_lident_map s with
+        Some s -> s
+      | None -> hexify_greek_lident s
+    ;;
   end
 ;;
+

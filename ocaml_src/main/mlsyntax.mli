@@ -45,5 +45,10 @@ module Revised :
     val is_infix_operator : string -> bool;;
     val is_dotop : string -> bool;;
     val is_special_op : string -> bool;;
+    val english2greek_lident : string -> string;;
+    val greek2english_lident : Ploc.t -> string -> string;;
+    val hexify_greek_lident : string -> string;;
+    val unhexify_greek_lident : string -> string option;;
   end
 ;;
+
