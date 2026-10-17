@@ -47,5 +47,8 @@ module Revised :
     value is_special_op : string → bool;
     value english2greek_lident : string -> string;
     value greek2english_lident : Ploc.t -> string -> string;
+    value hexify_greek_lident : string -> string ;
+    value unhexify_greek_lident : string -> option string ;
   end
 ;
+

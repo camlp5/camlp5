@@ -221,6 +221,34 @@ value greek_lidents_list =
   ]
 ;
 
+value prefix = "__greek_" ;
+value prefixlen = String.length prefix ;
+value hexify_greek_lident s =
+  let b = Buffer.create (prefixlen + (String.length s) * 2) in do {
+    Buffer.add_string b prefix ;
+    s |> String.iter (fun c -> Buffer.add_string b (Printf.sprintf "%02x" (Char.code c))) ;
+    Buffer.contents b
+  }
+;
+value unhexify_greek_lident s =
+    let slen = String.length s in
+    if slen <= prefixlen then None else
+    if (slen - prefixlen) mod 2 <> 0 then None else
+    if String.sub s 0 prefixlen <> prefix then None else
+    let s = String.sub s prefixlen (slen - prefixlen) in
+    let slen = String.length s in
+    let b = Buffer.create (slen/2) in do {
+      for i = 0 to (slen/2) - 1 do {
+          let ofs = i * 2 in
+          let cstr = String.sub s ofs 2 in
+          let cstr = "0x"^cstr in
+          let c = Char.chr (int_of_string cstr) in
+          Buffer.add_char b c
+        } ;
+      Some (Buffer.contents b)
+    }
+;
+
 value greek2english_lident_map = Hashtbl.create 23 ;
 value english2greek_lident_map = Hashtbl.create 23 ;
 greek_lidents_list
@@ -232,15 +260,18 @@ greek_lidents_list
 
 value english2greek_lident s =
   match Hashtbl.find_opt english2greek_lident_map s with [
-      None -> s
-    | Some s -> s
+      Some s -> s
+    | None -> match unhexify_greek_lident s with [
+                  Some s -> s
+                | None -> s
+                ]
     ]
 ;
 
 value greek2english_lident loc s =
   match Hashtbl.find_opt greek2english_lident_map s with [
-      None -> Ploc.raise loc (Failure ("Mlsyntax.Revised.greek2english_lident: greek identifier <<"^s^">> is not mappable to english"))
-    | Some s -> s
+      Some s -> s
+    | None -> hexify_greek_lident s
     ]
 ;
 

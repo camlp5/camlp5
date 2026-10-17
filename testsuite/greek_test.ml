@@ -21,6 +21,24 @@ value test_matrix = [
      official_output = OK {foo|;;__alpha__|foo} ;
      r_output = OK {foo|α;|foo}
     };
+    {name="greek-identifiers-2"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "";
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|ω₂;|foo} ;
+     o_output = OK {foo|__alpha__|foo};
+     official_output = OK {foo|;;__greek_cf89e28282|foo} ;
+     r_output = OK {foo|ω₂;|foo}
+    };
+    {name="greek-identifiers-3"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "";
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|αβ;|foo} ;
+     o_output = OK {foo|__alpha__|foo};
+     official_output = OK {foo|;;__greek_ceb1ceb2|foo} ;
+     r_output = OK {foo|αβ;|foo}
+    };
     {name="greek-expression-1"; implem = True ;
      exclude=[];
      o_input = SKIP "" "";
