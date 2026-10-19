@@ -49,6 +49,10 @@ module Revised :
     value greek_ascii_equiv : string → string;
   (* Gives an ascii equivalent to a greek letter representing a type
      parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
+    value english2greek_lident : string -> string;
+    value greek2english_lident : Ploc.t -> string -> string;
+    value hexify_greek_lident : string -> string ;
+    value unhexify_greek_lident : string -> option string ;
   end
 ;
 

@@ -18,11 +18,14 @@ open Base.Parsers ;
 open Base;
 do {
   let odfa = Lexer.dollar_for_antiquotation.val in
+  let odni = Lexer.dot_newline_is.val in
   let osrs = Lexer.simplest_raw_strings.val in
   Lexer.dollar_for_antiquotation.val := False;
   Lexer.simplest_raw_strings.val := False;
   Lexer.utf8_lexing.val := True;
+  Lexer.dot_newline_is.val := ";";
   Grammar.Unsafe.gram_reinit gram (Lexer.gmake ());
+  Lexer.dot_newline_is.val := odni;
   Lexer.dollar_for_antiquotation.val := odfa;
   Lexer.simplest_raw_strings.val := osrs ;
   Grammar.Unsafe.clear_entry attribute_body;
@@ -1142,7 +1145,7 @@ EXTEND
       | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
-      | i = V GIDENT → <:expr< $_lid:i$ >>
+      | i = V GIDENT → <:expr< $_lid:Pcaml.vala_map (greek2english_lident loc) i$ >>
       | e = expr_longident → e
       | "["; "]" → <:expr< $uid:"[]"$ >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
@@ -1258,7 +1261,7 @@ EXTEND
   ;
   patt_ident: [
     [ s = V LIDENT → <:patt< $_lid:s$ >>
-    | s = V GIDENT → <:patt< $_lid:s$ >>
+    | s = V GIDENT → <:patt< $_lid:Pcaml.vala_map (greek2english_lident loc) s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
         <:patt< $uid:i$ >> ->
@@ -1519,7 +1522,7 @@ EXTEND
       [ t1 = SELF; "->"; t2 = SELF → <:ctyp< $t1$ → $t2$ >> ]
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
-    | LEFTA
+    | "ident" LEFTA
       [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
@@ -1830,12 +1833,15 @@ EXTEND
   ;
   longident_lident:
     [ [ li = V longident "longid" ; "."; i = V LIDENT → (Some li, i)
+      | li = V longident "longid" ; "."; i = V GIDENT → (Some li, Pcaml.vala_map (greek2english_lident loc) i)
       | i = V LIDENT → (None, i)
+      | i = V GIDENT → (None, Pcaml.vala_map (greek2english_lident loc) i)
       ] ]
   ;
   extended_longident_lident:
     [ [ li = V extended_longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
+      | i = V GIDENT → (None, Pcaml.vala_map (greek2english_lident loc) i)
       ] ]
   ;
   (* Labels *)

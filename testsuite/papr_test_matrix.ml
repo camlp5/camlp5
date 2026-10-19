@@ -5466,6 +5466,16 @@ END
      o_output = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool;;|foo};
      official_output = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool|foo} ;
      r_output = OK {foo|type t = ?improper:bool -> ~pat:string -> string -> bool;|foo}
+    };
+    {name="dot-newline"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x|foo} ;
+     official_input = OK {foo|x|foo} ;
+     r_input = OK {foo|x.
+|foo} ;
+     o_output = OK {foo|let _ = x;;|foo};
+     official_output = OK {foo|;;x|foo} ;
+     r_output = OK {foo|x;|foo}
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN

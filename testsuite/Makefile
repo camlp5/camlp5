@@ -14,7 +14,7 @@ endif
 DIFF=diff -Bwi -u20
 RM=rm
 
-TESTS= $(MATRIXTESTS) \
+TESTS= $(MATRIXTESTS) greek_test.TEST \
 	$(ANTIQUOTATIONTESTS) \
         r2sch_test.TEST sch2r_test.pa_scheme.TEST sch2r_test.pa_schemer.TEST \
 	extfun_test.TEST reloc_test.TEST o_top_test2.TEST o_top_test.TEST r_top_test.TEST grammar_bug_test.TEST \
@@ -87,6 +87,7 @@ r2o_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_matrixt
 official2official_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_matrixtest.cmo
 o2official_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_matrixtest.cmo
 r2official_matrixtest.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_matrixtest.cmo
+greek_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo greek_test.cmo
 q_MLast_antiquottest.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo q_MLast_antiquottest.cmo
 revised_parser_antiquottest.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo revised_parser_antiquottest.cmo
 official_parser_antiquottest.byte: testutil.cmo testutil2.cmo antiquotation_test.cmo official_parser_antiquottest.cmo
@@ -106,6 +107,10 @@ grammar_bug_test.TEST:: grammar_bug_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	HAS_ARGLE=true ./grammar_bug_test.byte $(TESTARGS)
 
+greek_test.TEST:: greek_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	env LC_ALL=en_US.UTF-8 ./greek_test.byte $(TESTARGS)
+
 o_top_test.byte: testutil.cmo testutil2.cmo o_top_test.cmo
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -linkall -linkpkg $^ -o o_top_test.byte
 
@@ -120,6 +125,9 @@ sch2r_test.pa_scheme.byte: testutil.cmo testutil2.cmo sch2r_test.cmo
 
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.parsers.full,camlp5.printers.full -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
+
+greek_test.byte: testutil.cmo testutil2.cmo papr_test_matrix.cmo greek_test.cmo
+	$(OCAMLLINKC) $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.parsers.full,camlp5.printers.full,camlp5.pr_official.link -linkall -linkpkg $^ -o greek_test.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
 	$(MKCAMLP5) -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
