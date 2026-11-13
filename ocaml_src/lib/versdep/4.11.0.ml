@@ -619,7 +619,7 @@ let ocaml_ppat_effect p1 p2 =
   failwith "Internal error: effect pattern not  available until Ocaml 5.3.0"
 ;;
 
-let ocaml_pexp_function lab eo pel =
+let ocaml_pexp_function funloc lab eo pel =
   match pel with
     [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}]
     when lab = "" && eo = None ->

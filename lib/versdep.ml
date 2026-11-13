@@ -1033,7 +1033,7 @@ ELSE
 value ocaml_ppat_effect p1 p2 = Ppat_effect p1 p2 ;
 END ;
 
-value ocaml_pexp_function lab eo pel =
+value ocaml_pexp_function funloc lab eo pel =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     match pel with [
       [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
@@ -1064,7 +1064,7 @@ value ocaml_pexp_function lab eo pel =
        Pexp_function [fparam] None (Pfunction_body e)
     | pel ->
         if lab = "" && eo = None then
-          Pexp_function [] None (Pfunction_cases pel loc_none [])
+          Pexp_function [] None (Pfunction_cases pel funloc [])
         else failwith "internal error: bad ast in ocaml_pexp_function"
     ] in
         ocaml_pexp_function_coalesce e

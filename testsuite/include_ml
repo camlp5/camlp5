@@ -57,10 +57,14 @@ let pp_ploc_t pps (loc : Ploc.t) = Fmt.(pf pps "<%s>" (Ploc.string_of_location l
 (*
 #install_printer pp_ploc_t ;;
  *)
-let pp_location_t pps (loc : Location.t) = Fmt.(pf pps "<loc>") ;;
+let pp_location_verbose = ref false ;;
+let pp_location_t pps (loc : Location.t) =
+  if !pp_location_verbose then
+    Fmt.(pf pps "%a" Location.print_loc loc)
+  else
+    Fmt.(pf pps "<loc>") ;;
 
 #install_printer pp_location_t ;;
-
 
 let pp_char_stream strm =
   let l = Stream.npeek !Toploop.max_printer_depth strm in
@@ -92,10 +96,10 @@ let pp_lexbuf lb =
   Format.print_string ">>"
 ;;
 #install_printer pp_lexbuf ;;
-
+(*
 let pp_expression e = Fmt.(pf stdout "#<expression< %a >>" Pprintast.expression e) ;;
 #install_printer pp_expression ;;
-
+ *)
 
 open Asttypes ;;
 open Parsetree ;;

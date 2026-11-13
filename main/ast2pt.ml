@@ -70,7 +70,7 @@ value mklazy loc e =
         ghpat (ocaml_ppat_construct (mkloc loc) (ocaml_longident_lident (mkloc loc) "()") None False)
       in
       let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
-      let f = ghexp (ocaml_pexp_function "" None [pwe]) in
+      let f = ghexp (ocaml_pexp_function (mkloc loc) "" None [pwe]) in
       let delayed = ocaml_longident_of_string_list (mkloc loc) ["Lazy"; "Delayed"] in
       let cloc = mkloc loc in
       let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) False) in
@@ -1070,6 +1070,7 @@ and expr =
       let df = if uv df then Upto else Downto in
       mkexp loc (ocaml_pexp_for (patt i) (expr e1) (expr e2) df (expr e3))
   | ExFun loc pel →
+      let funloc = mkloc loc in
       match uv pel with
       [ [(PaLab ploc p po, w, e)] →
         let lab = label_of_patt p in
@@ -1078,7 +1079,7 @@ and expr =
             [ Some p → p
             | None → p ]
         in
-        mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
+        mkexp loc (ocaml_pexp_function funloc lab None [mkpwe (p, w, e)])
 
       | [(PaNty loc s, w, e)] →
           mkexp loc (ocaml_pexp_newtype (mkloc loc) (uv s) (expr e))
@@ -1090,7 +1091,7 @@ and expr =
             | Some _ | None → (p, eo) ]
           in
           mkexp loc
-            (ocaml_pexp_function ("?" ^ lab) (option_map expr (uv eo))
+            (ocaml_pexp_function funloc ("?" ^ lab) (option_map expr (uv eo))
                [mkpwe (p, w, e)])
       | pel →
           let pel =
@@ -1098,7 +1099,7 @@ and expr =
               Prtools.do_split_or_patterns_with_bindings pel
             else pel
           in
-          mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel)) ]
+          mkexp loc (ocaml_pexp_function funloc "" None (List.map mkpwe pel)) ]
   | ExIfe loc e1 e2 e3 →
       let e3o =
         match e3 with

@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "8.05.03";;
+let version = "8.05.04";;
 let syntax_name = ref "";;
 
 let ocaml_version =
