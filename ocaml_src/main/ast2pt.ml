@@ -20,12 +20,125 @@ let get_tag x =
 
 let error loc str = Ploc.raise loc (Failure str);;
 
+let string_of_uchar uc =
+  let b = Buffer.create 4 in Uutf.Buffer.add_utf_8 b uc; Buffer.contents b
+;;
+
+let digit2int =
+  function
+    '0'..'9' as c -> Char.code c - Char.code '0'
+  | 'a'..'f' as c -> Char.code c - Char.code 'a' + 10
+  | 'A'..'F' as c -> Char.code c - Char.code 'A' + 10
+  | _ -> failwith "unescape_string: bad digit"
+;;
+
+let hexstring2int digits = int_of_string ("0x" ^ digits);;
+
+let unescape_string s =
+  let slen = String.length s in
+  let b = Buffer.create slen in
+  let rec unrec i =
+    if i = String.length s then Buffer.contents b
+    else
+      match s.[i] with
+        '\\' -> backslash (i + 1)
+      | c -> Buffer.add_char b c; unrec (i + 1)
+  and backslash i =
+    if i = slen then
+      failwith "unescape_string: malformed trailing backslash escape"
+    else
+      match s.[i] with
+        '\'' | '"' | ' ' | '\\' as c -> Buffer.add_char b c; unrec (i + 1)
+      | 'b' -> Buffer.add_char b '\b'; unrec (i + 1)
+      | 'r' -> Buffer.add_char b '\r'; unrec (i + 1)
+      | 'n' -> Buffer.add_char b '\n'; unrec (i + 1)
+      | 't' -> Buffer.add_char b '\t'; unrec (i + 1)
+      | '0'..'9' -> let i = dec i in unrec i
+      | 'x' -> let i = hex (i + 1) in unrec i
+      | 'o' -> let i = oct (i + 1) in unrec i
+      | 'u' -> let i = uni (i + 1) in unrec i
+      | c ->
+          failwith
+            (Printf.sprintf
+               "unescape_string: unrecognized backslash '%c' escape at offset %d"
+               c i)
+  and dec i =
+    if i + 3 > slen then
+      failwith
+        (Printf.sprintf
+           "unescape_string: decimal escape without enough digits at offset %d"
+           i)
+    else
+      match s.[i], s.[i+1], s.[i+2] with
+        ('0'..'9' as c1), ('0'..'9' as c2), ('0'..'9' as c3) ->
+          let code = digit2int c1 * 100 + digit2int c2 * 10 + digit2int c3 in
+          Buffer.add_char b (Char.chr code); i + 3
+      | _ ->
+          failwith
+            (Printf.sprintf
+               "unescape_string: malformed decimal escape at offset %d" i)
+  and oct i =
+    if i + 3 > slen then
+      failwith
+        (Printf.sprintf
+           "unescape_string: octal escape without enough digits at offset %d"
+           i)
+    else
+      match s.[i], s.[i+1], s.[i+2] with
+        ('0'..'7' as c1), ('0'..'7' as c2), ('0'..'7' as c3) ->
+          let code = digit2int c1 * 64 + digit2int c2 * 8 + digit2int c3 in
+          Buffer.add_char b (Char.chr code); i + 3
+      | _ ->
+          failwith
+            (Printf.sprintf
+               "unescape_string: malformed octal escape at offset %d" i)
+  and hex i =
+    if i + 2 > slen then
+      failwith
+        (Printf.sprintf
+           "unescape_string: hex escape without enough digits at offset %d" i)
+    else
+      match s.[i], s.[i+1] with
+        ('0'..'7' | 'a'..'f' | 'A'..'F' as c1),
+        ('0'..'7' | 'a'..'f' | 'A'..'F' as c2) ->
+          let code = digit2int c1 * 16 + digit2int c2 in
+          Buffer.add_char b (Char.chr code); i + 2
+      | _ ->
+          failwith
+            (Printf.sprintf
+               "unescape_string: malformed hex escape at offset %d" i)
+  and uni i =
+    if i >= slen || s.[i] <> '{' then
+      failwith
+        (Printf.sprintf
+           "unescape_string: malformed unicode escape at offset %d" i);
+    match String.index_from_opt s (i + 1) '}' with
+      None ->
+        failwith
+          (Printf.sprintf
+             "unescape_string: malformed unicode escape (no '}') at offset %d"
+             i)
+    | Some j ->
+        let digits = String.sub s (i + 1) (j - (i + 1)) in
+        let n = hexstring2int digits in
+        let uc = Uchar.of_int n in
+        Buffer.add_string b (string_of_uchar uc); j + 1
+  in
+  unrec 0
+;;
 let char_of_char_token loc s =
   try Plexing.eval_char s with Failure _ as exn -> Ploc.raise loc exn
 ;;
 
 let string_of_string_token loc s =
-  try Plexing.eval_string loc s with Failure _ as exn -> Ploc.raise loc exn
+  (*
+    try Plexing.eval_string loc s with [ Failure _ as exn → Ploc.raise loc exn ]
+   *)
+
+  try unescape_string s with
+    Failure msg ->
+      let msg = Printf.sprintf "exception in string \"%s\": %s" s msg in
+      Ploc.raise loc (Failure msg)
 ;;
 
 let mkloc loc =
@@ -79,7 +192,7 @@ let mklazy loc e =
              (ocaml_longident_lident (mkloc loc) "()") None false)
       in
       let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
-      let f = ghexp (ocaml_pexp_function "" None [pwe]) in
+      let f = ghexp (ocaml_pexp_function (mkloc loc) "" None [pwe]) in
       let delayed =
         ocaml_longident_of_string_list (mkloc loc) ["Lazy"; "Delayed"]
       in
@@ -944,53 +1057,62 @@ and patt =
         PaExc (loc, ename) ->
           let p = patt (exception_to_constructor_pattern f0) in
           mkpat loc (ocaml_ppat_exception p)
-      | _ ->
+      | PaLong (loc, li, tyvars) ->
+          let (al : (string option * Parsetree.pattern) list) =
+            List.map label_patt al
+          in
+          let li =
+            match li with
+              MLast.LiUid (loc, s) -> MLast.LiUid (loc, conv_con s)
+            | MLast.LiAcc (loc, li, s) -> MLast.LiAcc (loc, li, conv_con s)
+            | _ -> failwith "Lapply not allowed here"
+          in
+          let li_loc = mkloc (MLast.loc_of_longid li) in
+          let li = longid_to_longident li in
+          let tyvars = List.map (fun (loc, v) -> mkloc loc, v) (uv tyvars) in
+          if !(Prtools.no_constructors_arity) || List.length al = 1 then
+            let a =
+              match al with
+                [None, a] -> a
+              | [Some lab, _] ->
+                  error (loc_of_patt f)
+                    (Printf.sprintf
+                       "single labeled pattern argument %s not allowed" lab)
+              | _ -> mkpat loc (ocaml_ppat_tuple al Closed)
+            in
+            mkpat loc
+              (ocaml_ppat_construct li_loc li (Some (tyvars, a)) false)
+          else
+            mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li tyvars al
+      | f ->
           let (al : (string option * Parsetree.pattern) list) =
             List.map label_patt al
           in
           let p = (patt f).ppat_desc in
-          match ocaml_ppat_construct_args p with
-            Some (li, li_loc, None, _) ->
-              if !(Prtools.no_constructors_arity) then
-                let a =
-                  match al with
-                    [None, a] -> a
-                  | [Some lab, _] ->
-                      error (loc_of_patt f)
-                        (Printf.sprintf
-                           "single labeled pattern argument %s not allowed"
-                           lab)
-                  | _ -> mkpat loc (ocaml_ppat_tuple al Closed)
-                in
-                mkpat loc
-                  (ocaml_ppat_construct li_loc li (Some ([], a)) false)
-              else
-                mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li [] al
-          | Some _ | None ->
-              match ocaml_ppat_variant with
-                Some (ppat_variant_pat, ppat_variant) ->
-                  begin match ppat_variant_pat p with
-                    Some (s, None) ->
-                      let a =
-                        match al with
-                          [None, a] -> a
-                        | [Some lab, _] ->
-                            error (loc_of_patt f)
-                              (Printf.sprintf
-                                 "single labeled pattern argument %s not allowed"
-                                 lab)
-                        | _ -> mkpat loc (ocaml_ppat_tuple al Closed)
-                      in
-                      mkpat loc (ppat_variant (s, Some a))
-                  | Some _ | None ->
-                      error (loc_of_patt f)
-                        ("this is not a constructor, " ^
-                         "it cannot be applied in a pattern")
-                  end
-              | None ->
+          match ocaml_ppat_variant with
+            Some (ppat_variant_pat, ppat_variant) ->
+              begin match ppat_variant_pat p with
+                Some (s, None) ->
+                  let a =
+                    match al with
+                      [None, a] -> a
+                    | [Some lab, _] ->
+                        error (loc_of_patt f)
+                          (Printf.sprintf
+                             "single labeled pattern argument %s not allowed"
+                             lab)
+                    | _ -> mkpat loc (ocaml_ppat_tuple al Closed)
+                  in
+                  mkpat loc (ppat_variant (s, Some a))
+              | Some _ | None ->
                   error (loc_of_patt f)
                     ("this is not a constructor, " ^
                      "it cannot be applied in a pattern")
+              end
+          | None ->
+              error (loc_of_patt f)
+                ("this is not a constructor, " ^
+                 "it cannot be applied in a pattern")
       end
   | PaArr (loc, pl) ->
       begin match ocaml_ppat_array with
@@ -1325,6 +1447,7 @@ and expr =
       let df = if uv df then Upto else Downto in
       mkexp loc (ocaml_pexp_for (patt i) (expr e1) (expr e2) df (expr e3))
   | ExFun (loc, pel) ->
+      let funloc = mkloc loc in
       begin match uv pel with
         [PaLab (ploc, p, po), w, e] ->
           let lab = label_of_patt p in
@@ -1333,7 +1456,7 @@ and expr =
               Some p -> p
             | None -> p
           in
-          mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
+          mkexp loc (ocaml_pexp_function funloc lab None [mkpwe (p, w, e)])
       | [PaNty (loc, s), w, e] ->
           mkexp loc (ocaml_pexp_newtype (mkloc loc) (uv s) (expr e))
       | [PaOlb (loc, p, eo), w, e] ->
@@ -1344,7 +1467,7 @@ and expr =
             | Some _ | None -> p, eo
           in
           mkexp loc
-            (ocaml_pexp_function ("?" ^ lab) (option_map expr (uv eo))
+            (ocaml_pexp_function funloc ("?" ^ lab) (option_map expr (uv eo))
                [mkpwe (p, w, e)])
       | pel ->
           let pel =
@@ -1352,7 +1475,7 @@ and expr =
               Prtools.do_split_or_patterns_with_bindings pel
             else pel
           in
-          mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel))
+          mkexp loc (ocaml_pexp_function funloc "" None (List.map mkpwe pel))
       end
   | ExIfe (loc, e1, e2, e3) ->
       let e3o =

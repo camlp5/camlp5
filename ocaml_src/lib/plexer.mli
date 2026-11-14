@@ -11,6 +11,7 @@ module type LEXER =
     val simplest_raw_strings : bool ref;;
     val dollar_for_antiquotation : bool ref;;
     val specific_space_dot : bool ref;;
+    val dot_newline_is : string ref;;
     val no_quotations : bool ref;;
     val utf8_lexing : bool ref;;
     val force_antiquot_loc : bool ref;;

@@ -133,3 +133,21 @@ val string_of_location : t -> string;;
 val make : int -> int -> int * int -> t;;
    (** deprecated function since version 6.00; use [make_loc] instead
        with the empty string *)
+
+module Internal :
+  sig
+    type real_t = t;;
+    type t =
+      { fname : string;
+        line_nb : int;
+        bol_pos : int;
+        line_nb_last : int;
+        bol_pos_last : int;
+        bp : int;
+        ep : int;
+        comm : string;
+        ecomm : string }
+    ;;
+    val of_t : real_t -> t;;
+  end
+;;

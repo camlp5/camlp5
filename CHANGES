@@ -6,6 +6,10 @@ Camlp5 Version 8.05.03:
   used to support this, but I removed it back around the 8.00 days, b/c
   I didn't know what it was for.  It's to support a Coq-like syntax.
 
+  Also resurrect all the various greek identifier support in revised
+  syntax (with appropriate conversions for original/official syntax
+  so the AST remains kosher).
+
 Camlp5 Version 8.05.02:
 -----------------------
 

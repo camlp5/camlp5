@@ -8,9 +8,12 @@
 [@@@warnerror "-generative-application-expects-unit"];;
 
 open Printf;;
-open Pcamlbase;;
 
-let version = "8.05.03";;
+include Pcamlbase;;
+
+type status = Ploc.t option;;
+
+let version = "8.05.04";;
 let syntax_name = ref "";;
 
 let ocaml_version =
@@ -28,67 +31,8 @@ let ocaml_version =
 module Lexer = Plexer.Make (struct  end);;
 
 module ParseBase = Mlsyntax.ParseBase (Lexer);;
+let input_file = ParseBase.input_file;;
 include ParseBase.Parsers;;
-
-type 'a ast_transducer_t =
-  { name : string;
-    parse : (char Stream.t -> 'a) option ref;
-    transform : ('a -> 'a) option ref }
-;;
-
-let set_ast_parse att pf =
-  match !(att.parse) with
-    Some _ ->
-      failwith
-        (Printf.sprintf
-           "Pcaml.set_ast_parse: transducer \"%s\" already has a parse(r)"
-           att.name)
-  | None -> att.parse := Some pf
-;;
-
-let set_ast_transform att tf =
-  match !(att.transform) with
-    Some _ ->
-      failwith
-        (Printf.sprintf
-           "Pcaml.set_ast_transform: transducer \"%s\" already has a tranform(er)"
-           att.name)
-  | None -> att.transform := Some tf
-;;
-
-let transduce att x =
-  let parse =
-    match !(att.parse) with
-      None ->
-        failwith
-          (Printf.sprintf
-             "Pcaml.transduce: transducer \"%s\" has no configured parser"
-             att.name)
-    | Some x -> x
-  in
-  let x = parse x in
-  match !(att.transform) with
-    None -> x
-  | Some f -> f x
-;;
-
-let transduce_interf =
-  {name = "interf"; parse = ref None; transform = ref None}
-;;
-let transduce_implem =
-  {name = "implem"; parse = ref None; transform = ref None}
-;;
-let transduce_top_phrase =
-  {name = "top_phrase"; parse = ref None; transform = ref None}
-;;
-let transduce_use_file =
-  {name = "use_file"; parse = ref None; transform = ref None}
-;;
-
-let parse_interf x = transduce transduce_interf x;;
-let parse_implem x = transduce transduce_implem x;;
-let parse_top_phrase x = transduce transduce_top_phrase x;;
-let parse_use_file x = transduce transduce_use_file x;;
 
 let rec skip_to_eol cs =
   match Stream.peek cs with
@@ -102,8 +46,9 @@ let output_file = ref None;;
 
 let rename_id = ref (fun x -> x);;
 
-module QuotationHelper = Quotation.QuotationExpansion (ParseBase);;
+ module QuotationHelper = Quotation.QuotationExpansion (ParseBase);;
 module QH = QuotationHelper;;
+include QH;;
 
 let pp_print_format pps str =
   let flush ini cnt =

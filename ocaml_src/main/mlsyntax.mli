@@ -46,6 +46,10 @@ module Revised :
     val is_dotop : string -> bool;;
     val is_special_op : string -> bool;;
     val greek_ascii_equiv : string -> string;;
+    val english2greek_lident : string -> string;;
+    val greek2english_lident : Ploc.t -> string -> string;;
+    val hexify_greek_lident : string -> string;;
+    val unhexify_greek_lident : string -> string option;;
   end
 ;;
 
@@ -107,6 +111,15 @@ module type PARSERS =
 
 type directive_fun = MLast.expr option -> unit;;
 
+type 'a ast_transducer_t =
+  { name : string;
+    parse : (char Stream.t -> 'a) option ref;
+    transform : ('a -> 'a) option ref }
+;;
+val set_ast_parse : 'a ast_transducer_t -> (char Stream.t -> 'a) -> unit;;
+val set_ast_transform : 'a ast_transducer_t -> ('a -> 'a) -> unit;;
+val transduce : 'a ast_transducer_t -> char Stream.t -> 'a;;
+
 module type PARSEBASESIG =
   sig
     module Lexer : Plexer.LEXER;;
@@ -118,6 +131,18 @@ module type PARSEBASESIG =
     val directives : (string * directive_fun) list ref;;
     val add_directive : string -> directive_fun -> unit;;
     val get_directives : unit -> (string * directive_fun) list;;
+    val transduce_interf :
+      ((MLast.sig_item * MLast.loc) list * status) ast_transducer_t;;
+    val transduce_implem :
+      ((MLast.str_item * MLast.loc) list * status) ast_transducer_t;;
+    val transduce_top_phrase : MLast.str_item option ast_transducer_t;;
+    val transduce_use_file : (MLast.str_item list * bool) ast_transducer_t;;
+    val parse_interf :
+      char Stream.t -> (MLast.sig_item * MLast.loc) list * status;;
+    val parse_implem :
+      char Stream.t -> (MLast.str_item * MLast.loc) list * status;;
+    val parse_top_phrase : char Stream.t -> MLast.str_item option;;
+    val parse_use_file : char Stream.t -> MLast.str_item list * bool;;
   end
 ;;
 

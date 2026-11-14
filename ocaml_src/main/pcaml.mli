@@ -4,6 +4,10 @@
 
 (* #load "pa_macro.cmo" *)
 
+include module type of Pcamlbase;;
+
+type status = Ploc.t option;;
+
 (** Language grammar, entries and printers.
 
    Hold variables to be set by language syntax extensions. Some of them
@@ -15,42 +19,12 @@ val syntax_name : string ref;;
 
 module Lexer : Plexer.LEXER;;
 module ParseBase : (Mlsyntax.PARSEBASESIG with module Lexer = Lexer);;
-open Mlsyntax;;
+
 include Mlsyntax.PARSERS;;
 
-type 'a ast_transducer_t =
-  { name : string;
-    parse : (char Stream.t -> 'a) option ref;
-    transform : ('a -> 'a) option ref }
-;;
-val set_ast_parse : 'a ast_transducer_t -> (char Stream.t -> 'a) -> unit;;
-val set_ast_transform : 'a ast_transducer_t -> ('a -> 'a) -> unit;;
-val transduce : 'a ast_transducer_t -> char Stream.t -> 'a;;
-val transduce_interf :
-  ((MLast.sig_item * MLast.loc) list * status) ast_transducer_t;;
-val transduce_implem :
-  ((MLast.str_item * MLast.loc) list * status) ast_transducer_t;;
-val transduce_top_phrase : MLast.str_item option ast_transducer_t;;
-val transduce_use_file : (MLast.str_item list * bool) ast_transducer_t;;
+val input_file : string ref;;
+   (** The file currently being parsed. *)
 
-val parse_interf :
-  char Stream.t -> (MLast.sig_item * MLast.loc) list * status;;
-val parse_implem :
-  char Stream.t -> (MLast.str_item * MLast.loc) list * status;;
-   (** Called when parsing an interface (mli file) or an implementation
-       (ml file) to build the syntax tree; the returned list contains the
-       phrases (signature items or structure items) and their locations;
-       the boolean tells that the parser has encountered a directive; in
-       this case, since the directive may change the syntax, the parsing
-       stops, the directive is evaluated, and this function is called
-       again.
-       These functions are references, because they can be changed to
-       use another technology than the Camlp5 extended grammars. By
-       default, they use the grammars entries [implem] and [interf]
-       defined below. *)
-
-val parse_top_phrase : char Stream.t -> MLast.str_item option;;
-val parse_use_file : char Stream.t -> MLast.str_item list * bool;;
 
 
 val output_file : string option ref;;
@@ -67,8 +41,12 @@ val add_options : (string * Arg.spec * string) list -> unit;;
 val no_constructors_arity : bool ref;;
    (** [True]: dont generate constructor arity. *)
 
-module QuotationHelper : Quotation.QUOTATION_EXPANSION;;
-module QH : Quotation.QUOTATION_EXPANSION;;
+module QuotationHelper :
+  (module type of Quotation.QuotationExpansion (ParseBase))
+;;
+module QH : (module type of QuotationHelper);;
+
+include module type of QH;;
 
 (** {6 Printers} *)
 

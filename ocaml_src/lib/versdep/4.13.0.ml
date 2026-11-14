@@ -628,7 +628,7 @@ let ocaml_ppat_effect p1 p2 =
   failwith "Internal error: effect pattern not  available until Ocaml 5.3.0"
 ;;
 
-let ocaml_pexp_function lab eo pel =
+let ocaml_pexp_function funloc lab eo pel =
   match pel with
     [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}]
     when lab = "" && eo = None ->
@@ -748,6 +748,9 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
+  let po =
+    option_map (fun (l, p) -> List.map (fun (loc, v) -> mkloc loc v) l, p) po
+  in
   Ppat_construct (mkloc loc li, po)
 ;;
 

@@ -237,9 +237,9 @@ else
 fi
 
 if [ "$($ocamlc -warn-error +A-11 2>&1)" = "" ]; then
-  WARNERR="-warn-error +A-11"
+  WARNERR="-warn-error +A-11 -warn-error +8"
 else
-  WARNERR=""
+  WARNERR="-warn-error +8"
 fi
 
 if make -f config/Makefile.check --no-print-directory >/dev/null 2>&1; then

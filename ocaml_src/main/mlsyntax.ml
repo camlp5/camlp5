@@ -139,6 +139,62 @@ module Original =
     let is_special_op s =
       is_operator s || is_letop s || is_andop s || is_dotop s
     ;;
+    let greek_lidents_list =
+      ["α", "alpha"; "β", "beta"; "γ", "gamma"; "δ", "delta"; "ε", "epsilon";
+       "ζ", "zeta"; "η", "eta"; "θ", "theta"; "ι", "iota"; "κ", "kappa";
+       "λ", "lambda"; "μ", "mu"; "ν", "nu"; "ξ", "xi"; "ο", "omicron";
+       "π", "pi"; "ρ", "rho"; "σ", "sigma"; "τ", "tau"; "υ", "upsilon";
+       "φ", "phi"; "χ", "chi"; "ψ", "psi"; "ω", "omega"]
+    ;;
+    let prefix = "__greek_";;
+    let prefixlen = String.length prefix;;
+    let hexify_greek_lident s =
+      let b = Buffer.create (prefixlen + String.length s * 2) in
+      Buffer.add_string b prefix;
+      s |>
+        String.iter
+          (fun c ->
+             Buffer.add_string b (Printf.sprintf "%02x" (Char.code c)));
+      Buffer.contents b
+    ;;
+    let unhexify_greek_lident s =
+      let slen = String.length s in
+      if slen <= prefixlen then None
+      else if (slen - prefixlen) mod 2 <> 0 then None
+      else if String.sub s 0 prefixlen <> prefix then None
+      else
+        let s = String.sub s prefixlen (slen - prefixlen) in
+        let slen = String.length s in
+        let b = Buffer.create (slen / 2) in
+        for i = 0 to slen / 2 - 1 do
+          let ofs = i * 2 in
+          let cstr = String.sub s ofs 2 in
+          let cstr = "0x" ^ cstr in
+          let c = Char.chr (int_of_string cstr) in Buffer.add_char b c
+        done;
+        Some (Buffer.contents b)
+    ;;
+    let greek2english_lident_map = Hashtbl.create 23;;
+    let english2greek_lident_map = Hashtbl.create 23;;
+    greek_lidents_list |>
+      List.iter
+        (fun (gid, engid) ->
+           let engid = "__" ^ engid ^ "__" in
+           Hashtbl.add greek2english_lident_map gid engid;
+           Hashtbl.add english2greek_lident_map engid gid);;
+    let english2greek_lident s =
+      match Hashtbl.find_opt english2greek_lident_map s with
+        Some s -> s
+      | None ->
+          match unhexify_greek_lident s with
+            Some s -> s
+          | None -> s
+    ;;
+    let greek2english_lident loc s =
+      match Hashtbl.find_opt greek2english_lident_map s with
+        Some s -> s
+      | None -> hexify_greek_lident s
+    ;;
   end
 ;;
 
@@ -320,6 +376,48 @@ module type PARSERS =
 
 type directive_fun = MLast.expr option -> unit;;
 
+type 'a ast_transducer_t =
+  { name : string;
+    parse : (char Stream.t -> 'a) option ref;
+    transform : ('a -> 'a) option ref }
+;;
+
+let set_ast_parse att pf =
+  match !(att.parse) with
+    Some _ ->
+      failwith
+        (Printf.sprintf
+           "Pcaml.set_ast_parse: transducer \"%s\" already has a parse(r)"
+           att.name)
+  | None -> att.parse := Some pf
+;;
+
+let set_ast_transform att tf =
+  match !(att.transform) with
+    Some _ ->
+      failwith
+        (Printf.sprintf
+           "Pcaml.set_ast_transform: transducer \"%s\" already has a tranform(er)"
+           att.name)
+  | None -> att.transform := Some tf
+;;
+
+let transduce att x =
+  let parse =
+    match !(att.parse) with
+      None ->
+        failwith
+          (Printf.sprintf
+             "Pcaml.transduce: transducer \"%s\" has no configured parser"
+             att.name)
+    | Some x -> x
+  in
+  let x = parse x in
+  match !(att.transform) with
+    None -> x
+  | Some f -> f x
+;;
+
 module type PARSEBASESIG =
   sig
     module Lexer : Plexer.LEXER;;
@@ -331,9 +429,20 @@ module type PARSEBASESIG =
     val directives : (string * directive_fun) list ref;;
     val add_directive : string -> directive_fun -> unit;;
     val get_directives : unit -> (string * directive_fun) list;;
+    val transduce_interf :
+      ((MLast.sig_item * MLast.loc) list * status) ast_transducer_t;;
+    val transduce_implem :
+      ((MLast.str_item * MLast.loc) list * status) ast_transducer_t;;
+    val transduce_top_phrase : MLast.str_item option ast_transducer_t;;
+    val transduce_use_file : (MLast.str_item list * bool) ast_transducer_t;;
+    val parse_interf :
+      char Stream.t -> (MLast.sig_item * MLast.loc) list * status;;
+    val parse_implem :
+      char Stream.t -> (MLast.str_item * MLast.loc) list * status;;
+    val parse_top_phrase : char Stream.t -> MLast.str_item option;;
+    val parse_use_file : char Stream.t -> MLast.str_item list * bool;;
   end
 ;;
-
 
 module ParseBase (Lexer : Plexer.LEXER) : PARSEBASESIG =
   struct
@@ -347,7 +456,7 @@ module ParseBase (Lexer : Plexer.LEXER) : PARSEBASESIG =
              Plexing.tok_using = (fun _ -> ());
              Plexing.tok_removing = (fun _ -> ());
              Plexing.tok_match =
-               (fun _ -> raise (Match_failure ("mlsyntax.ml", 375, 25)));
+               (fun _ -> raise (Match_failure ("mlsyntax.ml", 513, 25)));
              Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None;
              Plexing.kwds = Hashtbl.create 23}
         ;;
@@ -412,5 +521,21 @@ module ParseBase (Lexer : Plexer.LEXER) : PARSEBASESIG =
     let directives = ref ([] : (string * directive_fun) list);;
     let add_directive k v = directives := (k, v) :: !directives;;
     let get_directives () = let l = !directives in directives := []; l;;
+    let transduce_interf =
+      {name = "interf"; parse = ref None; transform = ref None}
+    ;;
+    let transduce_implem =
+      {name = "implem"; parse = ref None; transform = ref None}
+    ;;
+    let transduce_top_phrase =
+      {name = "top_phrase"; parse = ref None; transform = ref None}
+    ;;
+    let transduce_use_file =
+      {name = "use_file"; parse = ref None; transform = ref None}
+    ;;
+    let parse_interf x = transduce transduce_interf x;;
+    let parse_implem x = transduce transduce_implem x;;
+    let parse_top_phrase x = transduce transduce_top_phrase x;;
+    let parse_use_file x = transduce transduce_use_file x;;
   end
 ;;

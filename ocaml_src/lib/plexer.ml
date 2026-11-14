@@ -10,6 +10,7 @@ module type LEXER =
     val simplest_raw_strings : bool ref;;
     val dollar_for_antiquotation : bool ref;;
     val specific_space_dot : bool ref;;
+    val dot_newline_is : string ref;;
     val no_quotations : bool ref;;
     val utf8_lexing : bool ref;;
     val force_antiquot_loc : bool ref;;
@@ -24,12 +25,14 @@ module Make (_ : sig  end) =
     let error_on_unknown_keywords = ref false;;
     let dollar_for_antiquotation = ref true;;
     let specific_space_dot = ref false;;
+    let dot_newline_is = ref ".";;
     let force_antiquot_loc = ref false;;
     type context =
       { mutable after_space : bool;
         simplest_raw_strings : bool;
         dollar_for_antiquotation : bool;
         specific_space_dot : bool;
+        dot_newline_is : string;
         find_kwd : string -> string;
         is_kwd : string -> bool;
         line_cnt : int -> char -> unit;
@@ -1490,29 +1493,37 @@ module Make (_ : sig  end) =
                           Stream.junk strm__;
                           keyword_or_error ctx (bp, Stream.count strm__) ".."
                       | _ ->
-                          match
-                            try
-                              Some
-                                (dotsymbolchar (Plexing.Lexbuf.add '.' buf)
-                                   strm__)
-                            with Stream.Failure -> None
-                          with
-                            Some buf ->
-                              let buf =
-                                try symbolchar_star buf strm__ with
-                                  Stream.Failure -> raise (Stream.Error "")
-                              in
-                              keyword_or_error ctx (bp, Stream.count strm__)
-                                (Plexing.Lexbuf.get buf)
+                          match Stream.npeek 1 strm__ with
+                            ['\n'] ->
+                              keyword_or_error ctx (bp, bp + 1)
+                                ctx.dot_newline_is
                           | _ ->
-                              let id =
-                                if ctx.specific_space_dot && ctx.after_space
-                                then
-                                  " ."
-                                else "."
-                              in
-                              keyword_or_error ctx (bp, Stream.count strm__)
-                                id
+                              match
+                                try
+                                  Some
+                                    (dotsymbolchar
+                                       (Plexing.Lexbuf.add '.' buf) strm__)
+                                with Stream.Failure -> None
+                              with
+                                Some buf ->
+                                  let buf =
+                                    try symbolchar_star buf strm__ with
+                                      Stream.Failure ->
+                                        raise (Stream.Error "")
+                                  in
+                                  keyword_or_error ctx
+                                    (bp, Stream.count strm__)
+                                    (Plexing.Lexbuf.get buf)
+                              | _ ->
+                                  let id =
+                                    if ctx.specific_space_dot &&
+                                       ctx.after_space
+                                    then
+                                      " ."
+                                    else "."
+                                  in
+                                  keyword_or_error ctx
+                                    (bp, Stream.count strm__) id
                       end
                   | Some ';' ->
                       Stream.junk strm__;
@@ -1682,7 +1693,8 @@ module Make (_ : sig  end) =
        dollar_for_antiquotation = !dollar_for_antiquotation;
        simplest_raw_strings = !simplest_raw_strings;
        specific_space_dot = !specific_space_dot;
-       find_kwd = Hashtbl.find kwd_table; is_kwd = Hashtbl.mem kwd_table;
+       dot_newline_is = !dot_newline_is; find_kwd = Hashtbl.find kwd_table;
+       is_kwd = Hashtbl.mem kwd_table;
        line_cnt =
          (fun bp1 c ->
             match c with
@@ -2022,15 +2034,15 @@ module Make (_ : sig  end) =
       let glexr =
         ref
           {Plexing.tok_func =
-            (fun _ -> raise (Match_failure ("plexer.ml", 1152, 25)));
+            (fun _ -> raise (Match_failure ("plexer.ml", 1165, 25)));
            tok_using =
-             (fun _ -> raise (Match_failure ("plexer.ml", 1152, 45)));
+             (fun _ -> raise (Match_failure ("plexer.ml", 1165, 45)));
            tok_removing =
-             (fun _ -> raise (Match_failure ("plexer.ml", 1152, 68)));
+             (fun _ -> raise (Match_failure ("plexer.ml", 1165, 68)));
            tok_match =
-             (fun _ -> raise (Match_failure ("plexer.ml", 1153, 18)));
+             (fun _ -> raise (Match_failure ("plexer.ml", 1166, 18)));
            tok_text =
-             (fun _ -> raise (Match_failure ("plexer.ml", 1153, 37)));
+             (fun _ -> raise (Match_failure ("plexer.ml", 1166, 37)));
            tok_comm = None; kwds = kwd_table}
       in
       let glex =

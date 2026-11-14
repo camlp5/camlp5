@@ -266,6 +266,19 @@ and print_out_type_1 ppf =
     in
       fprintf ppf "@[%s%a %s@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type_2 ty1 (if utf8 then "→" else "->") print_out_type_1 ty2
+  | IFDEF OCAML_VERSION >= OCAML_5_05_0 THEN
+    Otyp_functor lab id pack ty ->
+    let lab =
+      match lab with [ Nolabel -> "" | Labelled s -> s | Optional s -> s ]
+    in
+    let print_package ppf {opack_path=p; opack_constraints=l} =
+      print_module_out_type ppf p (List.map fst l) (List.map snd l) in
+    fprintf ppf "%s(module %a : %a) -> %a"
+      (if lab <> "" then lab^":" else "")
+      print_ident id
+      print_package pack
+      print_out_type_1 ty
+    END
   | ty -> print_out_type_2 ppf ty ]
 and print_out_type_2 ppf =
   fun
@@ -389,8 +402,11 @@ and print_simple_out_type ppf =
   | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
     Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty    
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_5_05_0 THEN
     Otyp_alias _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
+      fprintf ppf "@[<1>(%a)@]" print_out_type ty
+    ELSE
+    Otyp_alias _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] | Otyp_functor _ _ _ _ as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
     END
   | Otyp_poly _ _ as ty ->
@@ -419,7 +435,12 @@ and print_simple_out_type ppf =
           (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
   | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
       Otyp_attribute _ _ -> ()
-    END ]
+    END
+  | IFDEF OCAML_VERSION >= OCAML_5_05_0 THEN
+    Otyp_external name ->
+      fprintf ppf " =@ external %S" name
+    END
+ ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
   [ [] -> fprintf ppf "%s" name

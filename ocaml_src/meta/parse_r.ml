@@ -11,20 +11,21 @@
 open Asttools;;
 open Mlsyntax.Revised;;
 
-module type PARSE_R_SIG = sig module Base : Mlsyntax.PARSEBASESIG;; end;;
-
-module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION with module Base = Base) :
-  PARSE_R_SIG with module Base = Base =
+module PA (Base : Mlsyntax.PARSEBASESIG)
+  (QH : module type of Quotation.QuotationExpansion (Base)) =
   struct
     module Base = Base;;
     open Base.Parsers;;
     open Base;;
     let odfa = !(Lexer.dollar_for_antiquotation) in
+    let odni = !(Lexer.dot_newline_is) in
     let osrs = !(Lexer.simplest_raw_strings) in
     Lexer.dollar_for_antiquotation := false;
     Lexer.simplest_raw_strings := false;
     Lexer.utf8_lexing := true;
+    Lexer.dot_newline_is := ";";
     Grammar.Unsafe.gram_reinit gram (Lexer.gmake ());
+    Lexer.dot_newline_is := odni;
     Lexer.dollar_for_antiquotation := odfa;
     Lexer.simplest_raw_strings := osrs;
     Grammar.Unsafe.clear_entry attribute_body;
@@ -3669,7 +3670,9 @@ module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION wit
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
                "194fe98d",
                (fun (i : string) (loc : Ploc.t) ->
-                  (MLast.ExLid (loc, i) : 'expr)));
+                  (MLast.ExLid
+                     (loc, Pcaml.vala_map (greek2english_lident loc) i) :
+                   'expr)));
             Grammar.production
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
                "194fe98d",
@@ -4208,7 +4211,9 @@ module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION wit
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
                "194fe98d",
                (fun (s : string) (loc : Ploc.t) ->
-                  (MLast.PaLid (loc, s) : 'patt_ident)));
+                  (MLast.PaLid
+                     (loc, Pcaml.vala_map (greek2english_lident loc) s) :
+                   'patt_ident)));
             Grammar.production
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
                "194fe98d",
@@ -5300,7 +5305,7 @@ module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION wit
                "194fe98d",
                (fun (t2 : 'ctyp) (t1 : 'ctyp) (loc : Ploc.t) ->
                   (MLast.TyApp (loc, t1, t2) : 'ctyp)))];
-           None, Some Gramext.LeftA,
+           Some "ident", Some Gramext.LeftA,
            [Grammar.production
               (Grammar.r_next Grammar.r_stop
                  (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
@@ -6926,10 +6931,28 @@ module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION wit
           (longident_lident : 'longident_lident Grammar.Entry.e) None
           [None, None,
            [Grammar.production
+              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+               "194fe98d",
+               (fun (i : string) (loc : Ploc.t) ->
+                  (None, Pcaml.vala_map (greek2english_lident loc) i :
+                   'longident_lident)));
+            Grammar.production
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
                "194fe98d",
                (fun (i : string) (loc : Ploc.t) ->
                   (None, i : 'longident_lident)));
+            Grammar.production
+              (Grammar.r_next
+                 (Grammar.r_next
+                    (Grammar.r_next Grammar.r_stop
+                       (Grammar.s_nterm
+                          (longident : 'longident Grammar.Entry.e)))
+                    (Grammar.s_token ("", ".")))
+                 (Grammar.s_token ("GIDENT", "")),
+               "194fe98d",
+               (fun (i : string) _ (li : 'longident) (loc : Ploc.t) ->
+                  (Some li, Pcaml.vala_map (greek2english_lident loc) i :
+                   'longident_lident)));
             Grammar.production
               (Grammar.r_next
                  (Grammar.r_next
@@ -6947,6 +6970,12 @@ module PA (Base : Mlsyntax.PARSEBASESIG) (QH : Quotation.QUOTATION_EXPANSION wit
           None
           [None, None,
            [Grammar.production
+              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+               "194fe98d",
+               (fun (i : string) (loc : Ploc.t) ->
+                  (None, Pcaml.vala_map (greek2english_lident loc) i :
+                   'extended_longident_lident)));
+            Grammar.production
               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
                "194fe98d",
                (fun (i : string) (loc : Ploc.t) ->

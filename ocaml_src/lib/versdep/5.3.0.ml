@@ -637,7 +637,7 @@ let ocaml_pexp_function_coalesce e =
 
 let ocaml_ppat_effect p1 p2 = Ppat_effect (p1, p2);;
 
-let ocaml_pexp_function lab eo pel =
+let ocaml_pexp_function funloc lab eo pel =
   let e =
     match pel with
       [{pc_lhs = p; pc_guard = None;
@@ -652,7 +652,7 @@ let ocaml_pexp_function lab eo pel =
         Pexp_function ([fparam], None, Pfunction_body e)
     | pel ->
         if lab = "" && eo = None then
-          Pexp_function ([], None, Pfunction_cases (pel, loc_none, []))
+          Pexp_function ([], None, Pfunction_cases (pel, funloc, []))
         else failwith "internal error: bad ast in ocaml_pexp_function"
   in
   ocaml_pexp_function_coalesce e
@@ -771,6 +771,9 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
+  let po =
+    option_map (fun (l, p) -> List.map (fun (loc, v) -> mkloc loc v) l, p) po
+  in
   Ppat_construct (mkloc loc li, po)
 ;;
 

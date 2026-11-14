@@ -10,6 +10,7 @@ open Pcamlbase;;
 
 let default = ref "";;
 
+
 module type QUOTATION_EXPANSION =
   sig
     module Base : Mlsyntax.PARSEBASESIG;;
@@ -35,7 +36,7 @@ module type QUOTATION_EXPANSION =
 ;;
 
 open Mlsyntax;;
-module QuotationExpansion (Base : PARSEBASESIG) : QUOTATION_EXPANSION =
+module QuotationExpansion (Base : PARSEBASESIG) =
   struct
     module Base = Base;;
     module PA = Base.Parsers;;

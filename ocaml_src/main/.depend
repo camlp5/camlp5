@@ -99,6 +99,7 @@ pcaml.cmx : \
     pcaml.cmi
 pcaml.cmi : \
     quotation.cmi \
+    pcamlbase.cmi \
     mlsyntax.cmi \
     mLast.cmi
 pcamlbase.cmo : \
